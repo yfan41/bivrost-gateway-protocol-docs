@@ -1,0 +1,16 @@
+services:
+  dnc:
+    build: .
+    ports:
+      - "8340:8340"
+    volumes:
+      - dnc-data:/data
+    environment:
+      # Change these before first boot; the bootstrap engineer account is
+      # created only when the user table is empty.
+      DNC_BOOTSTRAP_USER: admin
+      DNC_BOOTSTRAP_PASSWORD: admin
+    restart: unless-stopped
+
+volumes:
+  dnc-data:

@@ -1,0 +1,17 @@
+{
+  "name": "dnc-app",
+  "version": "0.1.0",
+  "private": true,
+  "description": "DNC application: CNC program transfer and management on top of Bivrost gateways",
+  "workspaces": [
+    "server",
+    "web"
+  ],
+  "scripts": {
+    "dev:server": "npm run dev -w server",
+    "dev:web": "npm run dev -w web",
+    "build": "npm run build -w server && npm run build -w web",
+    "test": "npm run test -w server && npm run test -w web",
+    "start": "npm run start -w server"
+  }
+}
