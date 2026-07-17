@@ -1,0 +1,26 @@
+/**
+ * Global styles. Starlight accent palette tuned to the Bivrost brand blue
+ * (matching the bivrost logo wordmark).
+ */
+
+/* Dark mode colors. */
+:root {
+  --sl-color-accent-low: #14324f;
+  --sl-color-accent: #2e7fd0;
+  --sl-color-accent-high: #b8d8f5;
+}
+
+/* Light mode colors. */
+:root[data-theme='light'] {
+  --sl-color-accent-low: #d5e5f6;
+  --sl-color-accent: #1e6bb8;
+  --sl-color-accent-high: #154b81;
+}
+
+/* Manual screenshots: card-like framing, keep at natural size but responsive */
+.sl-markdown-content img[src*='/img/protocol/'] {
+  max-width: 100%;
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
