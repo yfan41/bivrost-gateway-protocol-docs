@@ -4,7 +4,7 @@ import starlight from '@astrojs/starlight';
 import { satteri } from '@astrojs/markdown-satteri';
 import starlightLinksValidator from 'starlight-links-validator';
 
-// Default '/' keeps the standalone protocol.bivrost.cn deploy working; the
+// Default '/' keeps the standalone protocol.gateway.docs.bivrost.cn deploy working; the
 // gateway build sets DOCS_BASE=/app/docs so the site can be served from the
 // gateway's wwwroot/app/docs (mirrors the Angular UI's baseHref=/app/gateway/).
 const docsBase = process.env.DOCS_BASE || '/';
@@ -24,6 +24,10 @@ const rebaseAbsoluteLinks = {
   element: [
     {
       filter: ['a', 'img'],
+      /**
+       * @param {any} node hast element node (satteri does not type its hastPlugins)
+       * @param {any} ctx satteri visitor context (exposes setProperty)
+       */
       visit(node, ctx) {
         if (!basePrefix) return;
         const key = node.tagName === 'img' ? 'src' : 'href';
@@ -43,7 +47,7 @@ const rebaseAbsoluteLinks = {
 };
 
 export default defineConfig({
-  site: 'https://protocol.bivrost.cn',
+  site: 'https://protocol.gateway.docs.bivrost.cn',
   base: docsBase,
 
   markdown: {
@@ -67,7 +71,7 @@ export default defineConfig({
       },
       favicon: '/img/favicon.ico',
       social: [
-        { icon: 'open-book', label: '说明书', href: 'https://docs.bivrost.cn/' },
+        { icon: 'open-book', label: '说明书', href: 'https://gateway.docs.bivrost.cn/' },
       ],
       tableOfContents: { minHeadingLevel: 2, maxHeadingLevel: 4 },
       customCss: ['./src/styles/custom.css'],
@@ -139,7 +143,7 @@ export default defineConfig({
         { slug: 'changelog', badge: { text: 'v1.19.7', variant: 'note' } },
         {
           label: '《彼络物联网关 说明书》',
-          link: 'https://docs.bivrost.cn/',
+          link: 'https://gateway.docs.bivrost.cn/',
           attrs: { target: '_blank' },
         },
       ],

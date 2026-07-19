@@ -5,7 +5,7 @@ sidebar:
 ---
 
 
-启用 MQTT 通讯，并开启目标机台/机组的自动采集任务（详见《说明书》[5.3.1.2. 任务设置](https://docs.bivrost.cn/usage/machines#task-settings)，以及 [5.4.1.2. 机组任务设置](https://docs.bivrost.cn/usage/groups#group-tasks)）后，网关会基于 MQTT 协议，将自动采集任务结果数据转化成 JSON 格式的报文，并发布至指定 MQTT 服务器，数据上报的报文默认主题为 "r"。网关也支持 [RPC 接口](/mqtt/rpc/)。用户可以参照《说明书》[5.6.3. MQTT 配置](https://docs.bivrost.cn/usage/communication#mqtt)的说明配置 MQTT 服务。
+启用 MQTT 通讯，并开启目标机台/机组的自动采集任务（详见《说明书》[5.3.1.2. 任务设置](https://gateway.docs.bivrost.cn/usage/machines#task-settings)，以及 [5.4.1.2. 机组任务设置](https://gateway.docs.bivrost.cn/usage/groups#group-tasks)）后，网关会基于 MQTT 协议，将自动采集任务结果数据转化成 JSON 格式的报文，并发布至指定 MQTT 服务器，数据上报的报文默认主题为 "r"。网关也支持 [RPC 接口](/mqtt/rpc/)。用户可以参照《说明书》[5.6.3. MQTT 配置](https://gateway.docs.bivrost.cn/usage/communication#mqtt)的说明配置 MQTT 服务。
 
 ## 4.1. 数据上报报文格式 {#upload-format}
 
@@ -121,7 +121,7 @@ sidebar:
 ### 重要概念 {#key-concepts}
 
 1. `<entityID>` 机台或机组标识：如当前数据属于机台数据时，`<entityID>` 为机台标识 machineID；如当前数据属于机组数据时，`<entityID>` 为机组标识 groupID。machineID 与 groupID 见 [1.1. 基本说明](/conventions/identifiers/)。
-2. `<alias>` 机台或机组名称：用户自定义的机台名称或机组名称（详见《说明书》[5.3.1. 添加机台](https://docs.bivrost.cn/usage/machines#add-machine)，[5.4.1. 添加机组](https://docs.bivrost.cn/usage/groups#add-group)）。
+2. `<alias>` 机台或机组名称：用户自定义的机台名称或机组名称（详见《说明书》[5.3.1. 添加机台](https://gateway.docs.bivrost.cn/usage/machines#add-machine)，[5.4.1. 添加机组](https://gateway.docs.bivrost.cn/usage/groups#add-group)）。
 3. `<type>` 类，`<field>` 字段与 `<tag>` 标签：一个**类**包含至少一个**字段**和不定数量的**标签**。**字段**是数据的名称。当某**类**不能仅以机台或机组进行区分时，我们需要为此数据种类添加**标签**。例如，**类** SpindleOverload（主轴过载数据）包含**字段** CumulativeTime（累计过载时间），和**标签** SpindleNo（主轴号）。
 4. `<tagField>` 标签的字段形式，由**标签**缩写和**标签值**组成。如 S1 是 SpindleNo=1 的字段形式。
 5. `<fieldID>` 字段标识：若**类**中不包含**标签**，则**字段标识**与**类**一致。若**类**包含**标签**，则**字段标识**由**类**和**标签的字段形式**构成。**类**和多个**标签的字段形式**间由下横线隔开。**标签**在字段形式中的顺序由下文中**标签**的序号决定。例如，**字段标识** SpindleOverload_S1 表示第一主轴的过载数据，其中 S1 是 SpindleNo=1 的字段形式；**字段标识** ToolLife_G1_I2 表示刀组 1 中第 2 把刀的寿命数据，其中 G1_I2 是 GroupNum=1;Index=2 的字段形式。

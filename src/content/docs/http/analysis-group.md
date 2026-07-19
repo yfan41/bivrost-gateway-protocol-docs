@@ -158,7 +158,7 @@ GET /api/group-analysis/alarm?groupID=GROUPID&startUnix=STARTUNIX&endUnix=ENDUNI
 | startTime | String | (必需)警报开始时间(UTC) |
 | endTime | String | (必需)警报结束时间(UTC) |
 | alarmMsg | String | (必需)警报内容 |
-| alarmLevel | String | (必需)警报级别。如无警报，返回空 Array。按优先级由高到低分为错误（ERR），警告（WRN），消息（INF）三个级别。用户可以参照《说明书》[5.5.7. 警报监控设置](https://docs.bivrost.cn/usage/tasks#alarm-monitor)，以关键字设置警报级别，及过滤低于最低报警级别的警报；未设置级别的警报均默认为警告级别。 |
+| alarmLevel | String | (必需)警报级别。如无警报，返回空 Array。按优先级由高到低分为错误（ERR），警告（WRN），消息（INF）三个级别。用户可以参照《说明书》[5.5.7. 警报监控设置](https://gateway.docs.bivrost.cn/usage/tasks#alarm-monitor)，以关键字设置警报级别，及过滤低于最低报警级别的警报；未设置级别的警报均默认为警告级别。 |
 
 ## 2.7.2.3. count 机组计数数据分析 {#count}
 

@@ -5,9 +5,9 @@ sidebar:
 ---
 
 
-启用数据库通讯，并开启目标机台/机组的自动采集任务（详见《说明书》[5.3.1.2. 任务设置](https://docs.bivrost.cn/usage/machines#task-settings)，以及 [5.4.1.2. 机组任务设置](https://docs.bivrost.cn/usage/groups#group-tasks)）后，网关将自动采集任务结果写入到指定数据库。当前支持的数据库类型包括：InfluxDB v2.x，MySQL，SQL Server，PostgreSQL 等。用户可以参照《说明书》[5.6.4. 数据库配置](https://docs.bivrost.cn/usage/communication#database)的说明配置数据库服务。
+启用数据库通讯，并开启目标机台/机组的自动采集任务（详见《说明书》[5.3.1.2. 任务设置](https://gateway.docs.bivrost.cn/usage/machines#task-settings)，以及 [5.4.1.2. 机组任务设置](https://gateway.docs.bivrost.cn/usage/groups#group-tasks)）后，网关将自动采集任务结果写入到指定数据库。当前支持的数据库类型包括：InfluxDB v2.x，MySQL，SQL Server，PostgreSQL 等。用户可以参照《说明书》[5.6.4. 数据库配置](https://gateway.docs.bivrost.cn/usage/communication#database)的说明配置数据库服务。
 
-数据库表名为[表前缀][数据类]的形式，其中表前缀在网关通讯配置页设置，详见《说明书》[5.6.4. 数据库配置](https://docs.bivrost.cn/usage/communication#database)；数据表名称与 MQTT 通讯中的数据类 type 相同（详见 [1.2. 数据说明](/conventions/data-classes/)）；如下表所示（以未设置表前缀、保存模式为日志模式的 MySQL 数据库为例），数据库各表名：
+数据库表名为[表前缀][数据类]的形式，其中表前缀在网关通讯配置页设置，详见《说明书》[5.6.4. 数据库配置](https://gateway.docs.bivrost.cn/usage/communication#database)；数据表名称与 MQTT 通讯中的数据类 type 相同（详见 [1.2. 数据说明](/conventions/data-classes/)）；如下表所示（以未设置表前缀、保存模式为日志模式的 MySQL 数据库为例），数据库各表名：
 
 | 表名 | 数据类 |
 | --- | --- |

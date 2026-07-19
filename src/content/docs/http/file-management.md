@@ -7,9 +7,9 @@ sidebar:
 
 通过文件管理接口可以连接目标文件服务器，实现读取文件列表，接收、发送、删除、锁定、解锁文件，创建、删除目录等功能。
 
-目前支持文件传输的文件服务器类型有"机台存储器"，"FTP 服务器"，"共享文件夹"等（详见《说明书》[5.3.1.3. 程序传输设置](https://docs.bivrost.cn/usage/machines#add-machine)），默认为"机台存储器"。部分机床系统可以开启本地 FTP 服务器或共享文件夹的选项以传输文件。而对于部分机台自身存储空间小，或者机台不支持直接访问其存储空间，可以通过外接文件服务器的方式，实现文件传输功能。
+目前支持文件传输的文件服务器类型有"机台存储器"，"FTP 服务器"，"共享文件夹"等（详见《说明书》[5.3.1.3. 程序传输设置](https://gateway.docs.bivrost.cn/usage/machines#add-machine)），默认为"机台存储器"。部分机床系统可以开启本地 FTP 服务器或共享文件夹的选项以传输文件。而对于部分机台自身存储空间小，或者机台不支持直接访问其存储空间，可以通过外接文件服务器的方式，实现文件传输功能。
 
-大部分文件管理接口都可以补充请求参数 dirAtCNC 或 subDir 以指定机台或文件服务器的目录路径，如不补充 dirAtCNC 或 subDir，则默认在根目录下执行对应文件操作。用户可以指定根目录路径（详见《说明书》[5.3.1.3. 程序传输设置](https://docs.bivrost.cn/usage/machines#add-machine)）。如用户未指定根目录路径，则使用如下默认根目录路径。
+大部分文件管理接口都可以补充请求参数 dirAtCNC 或 subDir 以指定机台或文件服务器的目录路径，如不补充 dirAtCNC 或 subDir，则默认在根目录下执行对应文件操作。用户可以指定根目录路径（详见《说明书》[5.3.1.3. 程序传输设置](https://gateway.docs.bivrost.cn/usage/machines#add-machine)）。如用户未指定根目录路径，则使用如下默认根目录路径。
 
 ## 各系统型号默认根目录路径 {#default-root-paths}
 
@@ -57,7 +57,7 @@ GET /api/cnc/readProgramList?machineID=MACHINEID&dirAtCNC=DIRATCNC&subDir=SUBDIR
 | --- | --- | --- |
 | machineID | String | (必需)目标机台标识，详见 [1.1.1. machineID 机台标识](/conventions/identifiers/#machineid) |
 | dirAtCNC | String | 指定目标目录路径。如未补充该参数，则默认为默认根目录路径。各机台系统型号默认根目录路径见[各系统型号默认根目录路径](#default-root-paths)。 |
-| subDir | String | 指定目标子目录路径。如未输入 dirAtCNC，自动将根目录路径与子目录路径拼接为 dirAtCNC。用户可以参考《说明书》[5.3.1.3. 程序传输设置](https://docs.bivrost.cn/usage/machines#add-machine)修改根目录路径，如未修改，默认根目录路径见[各系统型号默认根目录路径](#default-root-paths)。如 dirAtCNC 与 subDir 同时输入，subDir 被忽略。 |
+| subDir | String | 指定目标子目录路径。如未输入 dirAtCNC，自动将根目录路径与子目录路径拼接为 dirAtCNC。用户可以参考《说明书》[5.3.1.3. 程序传输设置](https://gateway.docs.bivrost.cn/usage/machines#add-machine)修改根目录路径，如未修改，默认根目录路径见[各系统型号默认根目录路径](#default-root-paths)。如 dirAtCNC 与 subDir 同时输入，subDir 被忽略。 |
 
 返回示例
 
@@ -121,7 +121,7 @@ GET /api/cnc/receiveFileStream?machineID=MACHINEID&fileName=FILENAME&dirAtCNC=DI
 | machineID | String | (必需)目标机台标识，详见 [1.1.1. machineID 机台标识](/conventions/identifiers/#machineid) |
 | fileName | String | (必需)目标文件的文件名，参考 [2.6.1. readProgramList 读取机台文件列表](#readprogramlist)或 [2.6.15. readAllPrograms 浏览所有文件](#readallprograms)接口返回的文件名。部分系统型号，如 Gsk 广数，Siemens 西门子等，文件名必须包括文件扩展名。 |
 | dirAtCNC | String | 指定目标目录路径。如未补充该参数，则默认为默认根目录路径。各机台系统型号默认根目录路径见[各系统型号默认根目录路径](#default-root-paths)。 |
-| subDir | String | 指定目标子目录路径。如未输入 dirAtCNC，自动将根目录路径与子目录路径拼接为 dirAtCNC。用户可以参考《说明书》[5.3.1.3. 程序传输设置](https://docs.bivrost.cn/usage/machines#add-machine)修改根目录路径，如未修改，默认根目录路径见[各系统型号默认根目录路径](#default-root-paths)。如 dirAtCNC 与 subDir 同时输入，subDir 被忽略。 |
+| subDir | String | 指定目标子目录路径。如未输入 dirAtCNC，自动将根目录路径与子目录路径拼接为 dirAtCNC。用户可以参考《说明书》[5.3.1.3. 程序传输设置](https://gateway.docs.bivrost.cn/usage/machines#add-machine)修改根目录路径，如未修改，默认根目录路径见[各系统型号默认根目录路径](#default-root-paths)。如 dirAtCNC 与 subDir 同时输入，subDir 被忽略。 |
 
 返回示例
 
@@ -160,7 +160,7 @@ GET /api/cnc/receiveFile?machineID=MACHINEID&fileName=FILENAME&dirAtCNC=DIRATCNC
 | machineID | String | (必需)目标机台标识，详见 [1.1.1. machineID 机台标识](/conventions/identifiers/#machineid) |
 | fileName | String | (必需)目标文件的文件名，参考 [2.6.1. readProgramList 读取机台文件列表](#readprogramlist)或 [2.6.15. readAllPrograms 浏览所有文件](#readallprograms)接口返回的文件名。部分系统型号，如 Gsk 广数，Siemens 西门子等，文件名必须包括文件扩展名。 |
 | dirAtCNC | String | 指定目标目录路径。如未补充该参数，则默认为默认根目录路径。各机台系统型号默认根目录路径见[各系统型号默认根目录路径](#default-root-paths)。 |
-| subDir | String | 指定目标子目录路径。如未输入 dirAtCNC，自动将根目录路径与子目录路径拼接为 dirAtCNC。用户可以参考《说明书》[5.3.1.3. 程序传输设置](https://docs.bivrost.cn/usage/machines#add-machine)修改根目录路径，如未修改，默认根目录路径见[各系统型号默认根目录路径](#default-root-paths)。如 dirAtCNC 与 subDir 同时输入，subDir 被忽略。 |
+| subDir | String | 指定目标子目录路径。如未输入 dirAtCNC，自动将根目录路径与子目录路径拼接为 dirAtCNC。用户可以参考《说明书》[5.3.1.3. 程序传输设置](https://gateway.docs.bivrost.cn/usage/machines#add-machine)修改根目录路径，如未修改，默认根目录路径见[各系统型号默认根目录路径](#default-root-paths)。如 dirAtCNC 与 subDir 同时输入，subDir 被忽略。 |
 
 返回示例
 
@@ -197,7 +197,7 @@ GET /api/cnc/readCurrentProgram?machineID=MACHINEID&dirAtCNC=DIRATCNC&subDir=SUB
 | --- | --- | --- |
 | machineID | String | (必需)目标机台标识，machineID 解释见 [1.1. 基本说明](/conventions/identifiers/#machineid)。 |
 | dirAtCNC | String | 指定目标目录路径。如未补充该参数，则默认为默认根目录路径。各机台系统型号默认根目录路径见[各系统型号默认根目录路径](#default-root-paths)。 |
-| subDir | String | 指定目标子目录路径。如未输入 dirAtCNC，自动将根目录路径与子目录路径拼接为 dirAtCNC。用户可以参考《说明书》[5.3.1.3. 程序传输设置](https://docs.bivrost.cn/usage/machines#add-machine)修改根目录路径，如未修改，默认根目录路径见[各系统型号默认根目录路径](#default-root-paths)。如 dirAtCNC 与 subDir 同时输入，subDir 被忽略。 |
+| subDir | String | 指定目标子目录路径。如未输入 dirAtCNC，自动将根目录路径与子目录路径拼接为 dirAtCNC。用户可以参考《说明书》[5.3.1.3. 程序传输设置](https://gateway.docs.bivrost.cn/usage/machines#add-machine)修改根目录路径，如未修改，默认根目录路径见[各系统型号默认根目录路径](#default-root-paths)。如 dirAtCNC 与 subDir 同时输入，subDir 被忽略。 |
 
 返回示例
 
@@ -285,7 +285,7 @@ M30
 | machineID | String | (必需)目标机台标识，详见 [1.1.1. machineID 机台标识](/conventions/identifiers/#machineid) |
 | fileName | String | 目标文件在机台上的文件名，部分系统型号，如 Gsk 广数，Siemens 西门子等，文件名必须包括文件扩展名，可以参考 [2.6.1. readProgramList 读取机台文件列表](#readprogramlist)或 [2.6.15. readAllPrograms 浏览所有文件](#readallprograms)接口返回的文件名。对于 FANUC 系统，fileName 无效，程序名为 Content 中第一个 `\n` 与第二个 `\n` 之间的内容。如 Content 为 `"%\nO3(ROUGH) \nT1M06\nG92X0.Y0.Z0. …"`，则机床上显示的程序名为 O0003，注释为（ROUGH）；如 Content 为 `"%\<SAMPLE>\nT1M06\nG92X0.Y0.Z0. …"`，则机床上显示的程序名为 SAMPLE。 |
 | dirAtCNC | String | 指定目标目录路径。如未补充该参数，则默认为默认根目录路径。各机台系统型号默认根目录路径见[各系统型号默认根目录路径](#default-root-paths)。 |
-| subDir | String | 指定目标子目录路径。如未输入 dirAtCNC，自动将根目录路径与子目录路径拼接为 dirAtCNC。用户可以参考《说明书》[5.3.1.3. 程序传输设置](https://docs.bivrost.cn/usage/machines#add-machine)修改根目录路径，如未修改，默认根目录路径见[各系统型号默认根目录路径](#default-root-paths)。如 dirAtCNC 与 subDir 同时输入，subDir 被忽略。 |
+| subDir | String | 指定目标子目录路径。如未输入 dirAtCNC，自动将根目录路径与子目录路径拼接为 dirAtCNC。用户可以参考《说明书》[5.3.1.3. 程序传输设置](https://gateway.docs.bivrost.cn/usage/machines#add-machine)修改根目录路径，如未修改，默认根目录路径见[各系统型号默认根目录路径](#default-root-paths)。如 dirAtCNC 与 subDir 同时输入，subDir 被忽略。 |
 
 返回示例
 
@@ -335,7 +335,7 @@ POST /api/cnc/sendFile?machineID=MACHINEID&fileName=FILENAME&dirAtCNC=DIRATCNC&s
 | machineID | String | (必需)目标机台标识，详见 [1.1.1. machineID 机台标识](/conventions/identifiers/#machineid) |
 | fileName | String | 目标文件在机台上的文件名，部分系统型号，如 Gsk 广数，Siemens 西门子等，文件名必须包括文件扩展名，可以参考 [2.6.1. readProgramList 读取机台文件列表](#readprogramlist)或 [2.6.15. readAllPrograms 浏览所有文件](#readallprograms)接口返回的文件名。对于 FANUC 系统，fileName 无效，程序名为 Content 中第一个 `\n` 与第二个 `\n` 之间的内容。如 Content 为 `"%\nO3(ROUGH) \nT1M06\nG92X0.Y0.Z0. …"`，则机床上显示的程序名为 O0003，注释为（ROUGH）；如 Content 为 `"%\<SAMPLE>\nT1M06\nG92X0.Y0.Z0. …"`，则机床上显示的程序名为 SAMPLE。 |
 | dirAtCNC | String | 指定目标目录路径。如未补充该参数，则默认为默认根目录路径。各机台系统型号默认根目录路径见[各系统型号默认根目录路径](#default-root-paths)。 |
-| subDir | String | 指定目标子目录路径。如未输入 dirAtCNC，自动将根目录路径与子目录路径拼接为 dirAtCNC。用户可以参考《说明书》[5.3.1.3. 程序传输设置](https://docs.bivrost.cn/usage/machines#add-machine)修改根目录路径，如未修改，默认根目录路径见[各系统型号默认根目录路径](#default-root-paths)。如 dirAtCNC 与 subDir 同时输入，subDir 被忽略。 |
+| subDir | String | 指定目标子目录路径。如未输入 dirAtCNC，自动将根目录路径与子目录路径拼接为 dirAtCNC。用户可以参考《说明书》[5.3.1.3. 程序传输设置](https://gateway.docs.bivrost.cn/usage/machines#add-machine)修改根目录路径，如未修改，默认根目录路径见[各系统型号默认根目录路径](#default-root-paths)。如 dirAtCNC 与 subDir 同时输入，subDir 被忽略。 |
 | content | String | 文件内容。当文件为文本格式时，应使用此参数。当 Content 被定义时，Base64 参数将被忽略。 |
 | encoding | String | 原文件的编码。如果不注明，默认使用机台配置中设定编码。 |
 | base64 | String | 当文件为二进制格式时，应使用此参数。请使用 Base64 编码将二进制内容转换成字符串后写入此参数。 |
@@ -399,7 +399,7 @@ POST /api/cnc/batchSendFile
 | machineID | String | (必需)目标机台标识，详见 [1.1.1. machineID 机台标识](/conventions/identifiers/#machineid) |
 | fileName | String | (必需)目标文件在机台上的文件名，部分系统型号，如 Gsk 广数，Siemens 西门子等，文件名必须包括文件扩展名，可以参考 [2.6.1. readProgramList 读取机台文件列表](#readprogramlist)或 [2.6.15. readAllPrograms 浏览所有文件](#readallprograms)接口返回的文件名。对于 FANUC 系统，fileName 无效，程序名为 Content 中第一个 `\n` 与第二个 `\n` 之间的内容。如 Content 为 `"%\nO3(ROUGH) \nT1M06\nG92X0.Y0.Z0. …"`，则机床上显示的程序名为 O0003，注释为（ROUGH）。 |
 | dirAtCNC | String | 指定目标目录路径。如未补充该参数，则默认为默认根目录路径。各机台系统型号默认根目录路径见[各系统型号默认根目录路径](#default-root-paths)。 |
-| subDir | String | 指定目标子目录路径。如未输入 dirAtCNC，自动将根目录路径与子目录路径拼接为 dirAtCNC。用户可以参考《说明书》[5.3.1.3. 程序传输设置](https://docs.bivrost.cn/usage/machines#add-machine)修改根目录路径，如未修改，默认根目录路径见[各系统型号默认根目录路径](#default-root-paths)。如 dirAtCNC 与 subDir 同时输入，subDir 被忽略。 |
+| subDir | String | 指定目标子目录路径。如未输入 dirAtCNC，自动将根目录路径与子目录路径拼接为 dirAtCNC。用户可以参考《说明书》[5.3.1.3. 程序传输设置](https://gateway.docs.bivrost.cn/usage/machines#add-machine)修改根目录路径，如未修改，默认根目录路径见[各系统型号默认根目录路径](#default-root-paths)。如 dirAtCNC 与 subDir 同时输入，subDir 被忽略。 |
 | content | String | 文件内容。当文件为文本格式时，应使用此参数。当 content 被定义时，Base64 参数将被忽略。 |
 | encoding | String | 原文件的编码。如果不注明，默认使用机台配置中设定编码。 |
 | base64 | String | 当文件为二进制格式时，应使用此参数。请使用 Base64 编码将二进制内容转换成字符串后写入此参数。 |
@@ -443,7 +443,7 @@ GET /api/cnc/deleteFile?machineID=MACHINEID&fileName=FILENAME&dirAtCNC=DIRATCNC&
 | machineID | String | (必需)目标机台标识，详见 [1.1.1. machineID 机台标识](/conventions/identifiers/#machineid) |
 | fileName | String | (必需)目标文件的文件名，参考 [2.6.1. readProgramList 读取机台文件列表](#readprogramlist)或 [2.6.15. readAllPrograms 浏览所有文件](#readallprograms)接口返回的文件名。部分系统型号，如 Gsk 广数，Siemens 西门子等，文件名必须包括文件扩展名。 |
 | dirAtCNC | String | 指定目标目录路径。如未补充该参数，则默认为默认根目录路径。各机台系统型号默认根目录路径见[各系统型号默认根目录路径](#default-root-paths)。 |
-| subDir | String | 指定目标子目录路径。如未输入 dirAtCNC，自动将根目录路径与子目录路径拼接为 dirAtCNC。用户可以参考《说明书》[5.3.1.3. 程序传输设置](https://docs.bivrost.cn/usage/machines#add-machine)修改根目录路径，如未修改，默认根目录路径见[各系统型号默认根目录路径](#default-root-paths)。如 dirAtCNC 与 subDir 同时输入，subDir 被忽略。 |
+| subDir | String | 指定目标子目录路径。如未输入 dirAtCNC，自动将根目录路径与子目录路径拼接为 dirAtCNC。用户可以参考《说明书》[5.3.1.3. 程序传输设置](https://gateway.docs.bivrost.cn/usage/machines#add-machine)修改根目录路径，如未修改，默认根目录路径见[各系统型号默认根目录路径](#default-root-paths)。如 dirAtCNC 与 subDir 同时输入，subDir 被忽略。 |
 
 返回示例
 
@@ -484,7 +484,7 @@ POST /api/cnc/batchDeleteFile
 | machineID | String | (必需)目标机台标识，详见 [1.1.1. machineID 机台标识](/conventions/identifiers/#machineid) |
 | fileName | String | (必需)目标文件的文件名，参考 [2.6.1. readProgramList 读取机台文件列表](#readprogramlist)或 [2.6.15. readAllPrograms 浏览所有文件](#readallprograms)接口返回的文件名。部分系统型号，如 Gsk 广数，Siemens 西门子等，文件名必须包括文件扩展名。 |
 | dirAtCNC | String | 指定目标目录路径。如未补充该参数，则默认为默认根目录路径。各机台系统型号默认根目录路径见[各系统型号默认根目录路径](#default-root-paths)。 |
-| subDir | String | 指定目标子目录路径。如未输入 dirAtCNC，自动将根目录路径与子目录路径拼接为 dirAtCNC。用户可以参考《说明书》[5.3.1.3. 程序传输设置](https://docs.bivrost.cn/usage/machines#add-machine)修改根目录路径，如未修改，默认根目录路径见[各系统型号默认根目录路径](#default-root-paths)。如 dirAtCNC 与 subDir 同时输入，subDir 被忽略。 |
+| subDir | String | 指定目标子目录路径。如未输入 dirAtCNC，自动将根目录路径与子目录路径拼接为 dirAtCNC。用户可以参考《说明书》[5.3.1.3. 程序传输设置](https://gateway.docs.bivrost.cn/usage/machines#add-machine)修改根目录路径，如未修改，默认根目录路径见[各系统型号默认根目录路径](#default-root-paths)。如 dirAtCNC 与 subDir 同时输入，subDir 被忽略。 |
 
 返回示例
 
@@ -552,7 +552,7 @@ GET /api/cnc/createDir?machineID=MACHINEID&dirName=DIRNAME&dirAtCNC=DIRATCNC&sub
 | machineID | String | (必需)目标机台标识，详见 [1.1.1. machineID 机台标识](/conventions/identifiers/#machineid) |
 | dirName | String | (必需)要创建的目录名 |
 | dirAtCNC | String | 指定目标目录路径。如未补充该参数，则默认为默认根目录路径。各机台系统型号默认根目录路径见[各系统型号默认根目录路径](#default-root-paths)。 |
-| subDir | String | 指定目标子目录路径。如未输入 dirAtCNC，自动将根目录路径与子目录路径拼接为 dirAtCNC。用户可以参考《说明书》[5.3.1.3. 程序传输设置](https://docs.bivrost.cn/usage/machines#add-machine)修改根目录路径，如未修改，默认根目录路径见[各系统型号默认根目录路径](#default-root-paths)。如 dirAtCNC 与 subDir 同时输入，subDir 被忽略。 |
+| subDir | String | 指定目标子目录路径。如未输入 dirAtCNC，自动将根目录路径与子目录路径拼接为 dirAtCNC。用户可以参考《说明书》[5.3.1.3. 程序传输设置](https://gateway.docs.bivrost.cn/usage/machines#add-machine)修改根目录路径，如未修改，默认根目录路径见[各系统型号默认根目录路径](#default-root-paths)。如 dirAtCNC 与 subDir 同时输入，subDir 被忽略。 |
 
 返回示例
 
@@ -608,7 +608,7 @@ GET /api/cnc/deleteDir?machineID=MACHINEID&dirName=DIRNAME&dirAtCNC=DIRATCNC&sub
 | machineID | String | (必需)目标机台标识，详见 [1.1.1. machineID 机台标识](/conventions/identifiers/#machineid) |
 | dirName | String | (必需)要删除的目录名 |
 | dirAtCNC | String | 指定目标目录路径。如未补充该参数，则默认为默认根目录路径。各机台系统型号默认根目录路径见[各系统型号默认根目录路径](#default-root-paths)。 |
-| subDir | String | 指定目标子目录路径。如未输入 dirAtCNC，自动将根目录路径与子目录路径拼接为 dirAtCNC。用户可以参考《说明书》[5.3.1.3. 程序传输设置](https://docs.bivrost.cn/usage/machines#add-machine)修改根目录路径，如未修改，默认根目录路径见[各系统型号默认根目录路径](#default-root-paths)。如 dirAtCNC 与 subDir 同时输入，subDir 被忽略。 |
+| subDir | String | 指定目标子目录路径。如未输入 dirAtCNC，自动将根目录路径与子目录路径拼接为 dirAtCNC。用户可以参考《说明书》[5.3.1.3. 程序传输设置](https://gateway.docs.bivrost.cn/usage/machines#add-machine)修改根目录路径，如未修改，默认根目录路径见[各系统型号默认根目录路径](#default-root-paths)。如 dirAtCNC 与 subDir 同时输入，subDir 被忽略。 |
 
 返回示例
 
@@ -649,7 +649,7 @@ POST /api/cnc/backupFiles
 | machineID | String | (必需)目标机台标识，详见 [1.1.1. machineID 机台标识](/conventions/identifiers/#machineid) |
 | fileName | String | (必需)目标文件的文件名，参考 [2.6.1. readProgramList 读取机台文件列表](#readprogramlist)或 [2.6.15. readAllPrograms 浏览所有文件](#readallprograms)接口返回的文件名。部分系统型号，如 Gsk 广数，Siemens 西门子等，文件名必须包括文件扩展名。如果未输入 fileName，将备份 dirAtCNC 或 subDir 指定的目录下所有的文件。 |
 | dirAtCNC | String | 指定目标目录路径。如未补充该参数，则默认为默认根目录路径。各机台系统型号默认根目录路径见[各系统型号默认根目录路径](#default-root-paths)。 |
-| subDir | String | 指定目标子目录路径。如未输入 dirAtCNC，自动将根目录路径与子目录路径拼接为 dirAtCNC。用户可以参考《说明书》[5.3.1.3. 程序传输设置](https://docs.bivrost.cn/usage/machines#add-machine)修改根目录路径，如未修改，默认根目录路径见[各系统型号默认根目录路径](#default-root-paths)。如 dirAtCNC 与 subDir 同时输入，subDir 被忽略。 |
+| subDir | String | 指定目标子目录路径。如未输入 dirAtCNC，自动将根目录路径与子目录路径拼接为 dirAtCNC。用户可以参考《说明书》[5.3.1.3. 程序传输设置](https://gateway.docs.bivrost.cn/usage/machines#add-machine)修改根目录路径，如未修改，默认根目录路径见[各系统型号默认根目录路径](#default-root-paths)。如 dirAtCNC 与 subDir 同时输入，subDir 被忽略。 |
 | includeSubDir | Bool | 未输入 fileName，即下载指定目录下所有文件时，如果此输入量为 true，则下载目录中所有子文件夹下的所有文件。默认为 true。 |
 
 返回体示例 application/octet-stream
@@ -683,7 +683,7 @@ GET /api/cnc/selectProgram?machineID=MACHINEID&fileName=FILENAME&dirAtCNC=DIRATC
 | machineID | String | (必需)目标机台标识，详见 [1.1.1. machineID 机台标识](/conventions/identifiers/#machineid) |
 | fileName | String | (必需)目标文件的文件名，参考 [2.6.1. readProgramList 读取机台文件列表](#readprogramlist)或 [2.6.15. readAllPrograms 浏览所有文件](#readallprograms)接口返回的文件名。部分系统型号，如 Gsk 广数，Siemens 西门子等，文件名必须包括文件扩展名。 |
 | dirAtCNC | String | 指定目标目录路径。如未补充该参数，则默认为默认根目录路径。各机台系统型号默认根目录路径见[各系统型号默认根目录路径](#default-root-paths)。 |
-| subDir | String | 指定目标子目录路径。如未输入 dirAtCNC，自动将根目录路径与子目录路径拼接为 dirAtCNC。用户可以参考《说明书》[5.3.1.3. 程序传输设置](https://docs.bivrost.cn/usage/machines#add-machine)修改根目录路径，如未修改，默认根目录路径见[各系统型号默认根目录路径](#default-root-paths)。如 dirAtCNC 与 subDir 同时输入，subDir 被忽略。 |
+| subDir | String | 指定目标子目录路径。如未输入 dirAtCNC，自动将根目录路径与子目录路径拼接为 dirAtCNC。用户可以参考《说明书》[5.3.1.3. 程序传输设置](https://gateway.docs.bivrost.cn/usage/machines#add-machine)修改根目录路径，如未修改，默认根目录路径见[各系统型号默认根目录路径](#default-root-paths)。如 dirAtCNC 与 subDir 同时输入，subDir 被忽略。 |
 | mode | String | 执行模式。仅限 Okuma 大隈，加工中心支持"A"（A 运行），"B"（B 运行），"S"（S 运行）；车床支持"L"（双主轴中的 L 主轴），"R"（单主轴，或双主轴中的 R 主轴）。 |
 
 返回示例
@@ -723,7 +723,7 @@ GET /api/cnc/readAllPrograms?machineID=MACHINEID&dirAtCNC=DIRATCNC&subDir=SUBDIR
 | --- | --- | --- |
 | machineID | String | (必需)目标机台标识，详见 [1.1.1. machineID 机台标识](/conventions/identifiers/#machineid) |
 | dirAtCNC | String | 指定目标目录路径。如未补充该参数，则默认为默认根目录路径。各机台系统型号默认根目录路径见[各系统型号默认根目录路径](#default-root-paths)。 |
-| subDir | String | 指定目标子目录路径。如未输入 dirAtCNC，自动将根目录路径与子目录路径拼接为 dirAtCNC。用户可以参考《说明书》[5.3.1.3. 程序传输设置](https://docs.bivrost.cn/usage/machines#add-machine)修改根目录路径，如未修改，默认根目录路径见[各系统型号默认根目录路径](#default-root-paths)。如 dirAtCNC 与 subDir 同时输入，subDir 被忽略。 |
+| subDir | String | 指定目标子目录路径。如未输入 dirAtCNC，自动将根目录路径与子目录路径拼接为 dirAtCNC。用户可以参考《说明书》[5.3.1.3. 程序传输设置](https://gateway.docs.bivrost.cn/usage/machines#add-machine)修改根目录路径，如未修改，默认根目录路径见[各系统型号默认根目录路径](#default-root-paths)。如 dirAtCNC 与 subDir 同时输入，subDir 被忽略。 |
 
 返回示例
 
@@ -765,7 +765,7 @@ GET /api/cnc/searchFile?machineID=MACHINEID&fileName=FILENAME&dirAtCNC=DIRATCNC&
 | machineID | String | (必需)目标机台标识，详见 [1.1.1. machineID 机台标识](/conventions/identifiers/#machineid) |
 | fileName | String | (必需)目标文件名，参考 [2.6.1. readProgramList 读取机台文件列表](#readprogramlist)或 [2.6.15. readAllPrograms 浏览所有文件](#readallprograms)接口返回的文件名。部分系统型号，如 Gsk 广数，Siemens 西门子等，文件名必须包括文件扩展名。 |
 | dirAtCNC | String | 指定目标目录路径。如未补充该参数，则默认为默认根目录路径。各机台系统型号默认根目录路径见[各系统型号默认根目录路径](#default-root-paths)。 |
-| subDir | String | 指定目标子目录路径。如未输入 dirAtCNC，自动将根目录路径与子目录路径拼接为 dirAtCNC。用户可以参考《说明书》[5.3.1.3. 程序传输设置](https://docs.bivrost.cn/usage/machines#add-machine)修改根目录路径，如未修改，默认根目录路径见[各系统型号默认根目录路径](#default-root-paths)。如 dirAtCNC 与 subDir 同时输入，subDir 被忽略。 |
+| subDir | String | 指定目标子目录路径。如未输入 dirAtCNC，自动将根目录路径与子目录路径拼接为 dirAtCNC。用户可以参考《说明书》[5.3.1.3. 程序传输设置](https://gateway.docs.bivrost.cn/usage/machines#add-machine)修改根目录路径，如未修改，默认根目录路径见[各系统型号默认根目录路径](#default-root-paths)。如 dirAtCNC 与 subDir 同时输入，subDir 被忽略。 |
 
 返回示例
 

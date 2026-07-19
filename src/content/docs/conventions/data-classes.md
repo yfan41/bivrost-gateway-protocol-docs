@@ -84,7 +84,7 @@ sidebar:
 | alarmStatus | String | 警报状态，见[警报状态](/conventions/variables/#alarm-status)、[警报级别](/conventions/variables/#alarm-level) |
 | alarmLevel | String | 警报级别，如有多个警报，取这些警报中的最高级别。如无警报，则不返回。详见[警报级别](/conventions/variables/#alarm-level) |
 | cncStatus | String | CNC 运行状态，见[运行状态](/conventions/variables/#cnc-status) |
-| adjustedStatus | String | 修正的 CNC 运行状态。如果启用状态修正（详见《说明书》[5.5.8. 机台状态监控设置](https://docs.bivrost.cn/usage/tasks#status-monitor)），根据设定的规则得到修正后的机台状态。如未启用状态修正，此字段数据与 cncStatus 数据一致。在 OEE，状态累计时间等涉及机台状态的计算中，优先使用 adjustedStatus 判断状态。 |
+| adjustedStatus | String | 修正的 CNC 运行状态。如果启用状态修正（详见《说明书》[5.5.8. 机台状态监控设置](https://gateway.docs.bivrost.cn/usage/tasks#status-monitor)），根据设定的规则得到修正后的机台状态。如未启用状态修正，此字段数据与 cncStatus 数据一致。在 OEE，状态累计时间等涉及机台状态的计算中，优先使用 adjustedStatus 判断状态。 |
 | mode | String | \*运行模式，随系统型号 |
 | programStatus | String | \*程序状态，随系统型号 |
 | emergencyStatus | String | \*急停状态，见[急停状态](/conventions/variables/#emergency-status) |
@@ -211,7 +211,7 @@ sidebar:
 
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
-| cumulativeCount | UInt32 | 机组累计加工计数，即自从网关开始自动采集这组设备，累计的加工计数。详见《说明书》[6.1.3. 机组加工计数](https://docs.bivrost.cn/reference/glossary#group-count)。 |
+| cumulativeCount | UInt32 | 机组累计加工计数，即自从网关开始自动采集这组设备，累计的加工计数。详见《说明书》[6.1.3. 机组加工计数](https://gateway.docs.bivrost.cn/reference/glossary#group-count)。 |
 
 ## 1.2.12. GroupCumulativeTime：机组累计状态时间 {#groupcumulativetime}
 
@@ -245,7 +245,7 @@ sidebar:
 | waitCount | Int32 | 当前机组中待机机床数量 |
 | waitTime | Int64 | 机组待机时间[秒] |
 
-此处机组各状态时间是机组中所有激活状态的机台在监控时间内的各状态时间之和。机组开动率是机组在监控时间内的开动率。详见《说明书》[6.1.2. 机组 OEE 数据](https://docs.bivrost.cn/reference/glossary#group-oee)。
+此处机组各状态时间是机组中所有激活状态的机台在监控时间内的各状态时间之和。机组开动率是机组在监控时间内的开动率。详见《说明书》[6.1.2. 机组 OEE 数据](https://gateway.docs.bivrost.cn/reference/glossary#group-oee)。
 
 ## 1.2.14. LaserPower：激光功率 {#laserpower}
 
@@ -293,7 +293,7 @@ sidebar:
 | waitTime | Int64 | 待机时间[秒] |
 
 :::note[注]
-此处机台各状态时间是机台在监控时间内的各状态时间。机台开动率是机台在监控时间内的开动率。详见《说明书》[6.1.1. 机台 OEE 数据](https://docs.bivrost.cn/reference/glossary#machine-oee)。
+此处机台各状态时间是机台在监控时间内的各状态时间。机台开动率是机台在监控时间内的开动率。详见《说明书》[6.1.1. 机台 OEE 数据](https://gateway.docs.bivrost.cn/reference/glossary#machine-oee)。
 :::
 
 ## 1.2.18. Offset：刀补数据 {#offset}
@@ -384,7 +384,7 @@ PLC 数据 `<tag>` 数据标签：
 | 1 | channel | Int32 | C | 通道号，如不存在则代表默认通道 |
 | 2 | tag | String | T | 标签名或顺序号 |
 
-如果在 PLC 任务命令中定义了标签（详见《说明书》[6.2.1. PLC 数据任务](https://docs.bivrost.cn/reference/command-format#plc-task)），则 tag 为命令中定义的标签，如 PLC 命令中标签为 "温度数据 1"，则 tag 为 "T 温度数据 1"。如未在 PLC 任务命令中定义标签，则 tag 为 T+顺序号，顺序号从 0 开始。如第一条 PLC 任务命令中未定义标签，其顺序号为 0，tag 为 T0。如有多条 PLC 采集命令时，顺序号根据每条命令指定的回复数据长度累加。
+如果在 PLC 任务命令中定义了标签（详见《说明书》[6.2.1. PLC 数据任务](https://gateway.docs.bivrost.cn/reference/command-format#plc-task)），则 tag 为命令中定义的标签，如 PLC 命令中标签为 "温度数据 1"，则 tag 为 "T 温度数据 1"。如未在 PLC 任务命令中定义标签，则 tag 为 T+顺序号，顺序号从 0 开始。如第一条 PLC 任务命令中未定义标签，其顺序号为 0，tag 为 T0。如有多条 PLC 采集命令时，顺序号根据每条命令指定的回复数据长度累加。
 
 如前一条 PLC 任务命令的顺序号为 x，则后一条的顺序号为：
 

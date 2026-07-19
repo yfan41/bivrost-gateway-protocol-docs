@@ -1,0 +1,68 @@
+name: Deploy docs
+
+# Builds the Starlight site and rsyncs it over SSH to the web server so it is
+# served at https://protocol.gateway.docs.bivrost.cn.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# One deploy at a time; let an in-flight deploy finish rather than cancel it
+# (a half-synced docs tree is worse than a slightly stale one).
+concurrency:
+  group: deploy-docs
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        # This is the standalone protocol.gateway.docs.bivrost.cn build: astro.config.mjs
+        # defaults to base '/' and site https://protocol.gateway.docs.bivrost.cn, so no env
+        # overrides are needed. pnpm build runs starlight-links-validator; a broken
+        # link fails the build (and the deploy) before anything is uploaded.
+        run: pnpm build
+
+      - name: Deploy over SSH (rsync)
+        env:
+          SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          # Absolute path of the protocol.gateway.docs.bivrost.cn web root
+          # (e.g. /var/www/protocol.gateway.docs.bivrost.cn). It MUST be dedicated to this site —
+          # rsync --delete wipes anything here that is not part of the built dist/.
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$HOME/.ssh"
+          chmod 700 "$HOME/.ssh"
+          printf '%s\n' "$SSH_KEY" > "$HOME/.ssh/deploy_key"
+          chmod 600 "$HOME/.ssh/deploy_key"
+          PORT="${SSH_PORT:-22}"
+          # Pin the host key at runtime (trust-on-first-use) so StrictHostKeyChecking
+          # can stay on without maintaining a SSH_KNOWN_HOSTS secret.
+          ssh-keyscan -p "$PORT" -H "$SSH_HOST" > "$HOME/.ssh/known_hosts" 2>/dev/null
+          chmod 644 "$HOME/.ssh/known_hosts"
+          rsync -avz --delete \
+            -e "ssh -i $HOME/.ssh/deploy_key -p ${PORT} -o UserKnownHostsFile=$HOME/.ssh/known_hosts -o StrictHostKeyChecking=yes" \
+            dist/ "${SSH_USER}@${SSH_HOST}:${DEPLOY_PATH}/"

@@ -5,7 +5,7 @@ sidebar:
 ---
 
 
-网关支持基于 MQTT 协议的 RPC 接口，用户必须在网关管理页面设定 RPC 请求主题和 RPC 回复主题，详见《说明书》[5.6.3. MQTT 配置](https://docs.bivrost.cn/usage/communication#mqtt)。设定完成后网关会监听 RPC 请求主题，并将 RPC 请求的结果发布至 RPC 回复主题。RPC 接口数据编码为 MQTT 配置中设定的编码。
+网关支持基于 MQTT 协议的 RPC 接口，用户必须在网关管理页面设定 RPC 请求主题和 RPC 回复主题，详见《说明书》[5.6.3. MQTT 配置](https://gateway.docs.bivrost.cn/usage/communication#mqtt)。设定完成后网关会监听 RPC 请求主题，并将 RPC 请求的结果发布至 RPC 回复主题。RPC 接口数据编码为 MQTT 配置中设定的编码。
 
 如果需要在主题中嵌入 RPC 请求的标识，可在需要嵌入标识的位置使用通配符 `${request_id}` 表示。
 

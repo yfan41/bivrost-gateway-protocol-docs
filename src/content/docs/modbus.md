@@ -5,7 +5,7 @@ sidebar:
 ---
 
 
-启用 MODBUS 通讯，并开启目标机台/机组的自动采集任务（详见《说明书》[5.3.1.2. 任务设置](https://docs.bivrost.cn/usage/machines#task-settings)，以及 [5.4.1.2. 机组任务设置](https://docs.bivrost.cn/usage/groups#group-tasks)）后，网关会基于 MODBUS 协议，将自动采集任务结果数据存在相应地址位中。MODBUS 通讯地址为`<网关 IP>`，端口为 502。使用 MODBUS 通讯，机床需要设置从站 ID（详见《说明书》[5.3.1.5. 高级设置](https://docs.bivrost.cn/usage/machines#advanced-settings)），默认使用最后一段 IP 作为从站 ID。如机床 IP 为 192.168.100.2，该机床默认从站 ID 为 2。从站 ID 不可设置为 0（0 为网关保留从站），且同一网关下连接的各机床从站 ID（默认为 IP 最后一段）必须各不相同，否则会出现数据识别错误。用户可以参照《说明书》[5.6.2. MODBUS 配置](https://docs.bivrost.cn/usage/communication#modbus)的说明配置 MODBUS 服务。
+启用 MODBUS 通讯，并开启目标机台/机组的自动采集任务（详见《说明书》[5.3.1.2. 任务设置](https://gateway.docs.bivrost.cn/usage/machines#task-settings)，以及 [5.4.1.2. 机组任务设置](https://gateway.docs.bivrost.cn/usage/groups#group-tasks)）后，网关会基于 MODBUS 协议，将自动采集任务结果数据存在相应地址位中。MODBUS 通讯地址为`<网关 IP>`，端口为 502。使用 MODBUS 通讯，机床需要设置从站 ID（详见《说明书》[5.3.1.5. 高级设置](https://gateway.docs.bivrost.cn/usage/machines#advanced-settings)），默认使用最后一段 IP 作为从站 ID。如机床 IP 为 192.168.100.2，该机床默认从站 ID 为 2。从站 ID 不可设置为 0（0 为网关保留从站），且同一网关下连接的各机床从站 ID（默认为 IP 最后一段）必须各不相同，否则会出现数据识别错误。用户可以参照《说明书》[5.6.2. MODBUS 配置](https://gateway.docs.bivrost.cn/usage/communication#modbus)的说明配置 MODBUS 服务。
 
 :::note[注]
 网关 MODBUS 服务端地址位设置基于 0 位，客户端如基于 1 位时相应地址位需要加 1。
@@ -94,11 +94,11 @@ MODBUS 数据地址如下：
 :::
 
 :::note[注 2]
-400502-400510 各机台状态时间是机台在监控时间内的各状态时间。400512 机台开动率是机台在监控时间内的开动率。详见《说明书》[6.1.1. 机台 OEE 数据](https://docs.bivrost.cn/reference/glossary#machine-oee)。
+400502-400510 各机台状态时间是机台在监控时间内的各状态时间。400512 机台开动率是机台在监控时间内的开动率。详见《说明书》[6.1.1. 机台 OEE 数据](https://gateway.docs.bivrost.cn/reference/glossary#machine-oee)。
 :::
 
 :::note[注 3]
-String(200) 表示这个 String 以设置的编码（详见《说明书》[5.6.2. MODBUS 配置](https://docs.bivrost.cn/usage/communication#modbus)）转换为长度为 200 的 Byte 数组，换算成 MODBUS 地址位（UInt16）为 100 个地址位。
+String(200) 表示这个 String 以设置的编码（详见《说明书》[5.6.2. MODBUS 配置](https://gateway.docs.bivrost.cn/usage/communication#modbus)）转换为长度为 200 的 Byte 数组，换算成 MODBUS 地址位（UInt16）为 100 个地址位。
 :::
 
 :::note[注 4]
@@ -133,9 +133,9 @@ String(200) 表示这个 String 以设置的编码（详见《说明书》[5.6.2
 | 401600~401699 | 机组 16（相应地址为组 1 对应名称地址加 1500） | | | |
 
 :::note[注 1]
-400100 机组累计加工计数为自从网关开始自动采集这组设备，累计的加工机数。详见《说明书》[6.1.3. 机组加工计数](https://docs.bivrost.cn/reference/glossary#group-count)。
+400100 机组累计加工计数为自从网关开始自动采集这组设备，累计的加工机数。详见《说明书》[6.1.3. 机组加工计数](https://gateway.docs.bivrost.cn/reference/glossary#group-count)。
 :::
 
 :::note[注 2]
-400110-400118 机组各状态时间是机组中所有激活状态的机台在监控时间内的各状态时间。400120 机组监控开动率是机组在监控时间内的机组开动率。详见《说明书》[6.1.2. 机组 OEE 数据](https://docs.bivrost.cn/reference/glossary#group-oee)。
+400110-400118 机组各状态时间是机组中所有激活状态的机台在监控时间内的各状态时间。400120 机组监控开动率是机组在监控时间内的机组开动率。详见《说明书》[6.1.2. 机组 OEE 数据](https://gateway.docs.bivrost.cn/reference/glossary#group-oee)。
 :::
