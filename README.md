@@ -18,6 +18,28 @@ pnpm build        # 生成静态站点到 dist/（校验所有链接与锚点，
 pnpm serve        # 本地预览 dist/ 产物
 ```
 
+## 部署
+
+推送到 `main` 分支时，`.github/workflows/deploy.yml` 会自动构建并通过 rsync/SSH 部署到
+`https://bivrost.cn/docs/gateway-protocol`（也可在 Actions 页手动触发）。
+
+站点以 `base: /docs/gateway-protocol` 构建；正文中按约定书写的站点绝对路径链接/图片
+（如 `/conventions/identifiers/`）由 `src/markdown/rewrite-base-links.mjs`
+（一个 satteri hast 插件）在构建期自动补上 base 前缀，内容文件本身无需改动。
+
+需要在仓库 Settings → Secrets and variables → Actions 中配置：
+
+| Secret            | 说明                                                              |
+| ------------------ | ----------------------------------------------------------------- |
+| `DEPLOY_HOST`      | 目标服务器主机名/IP                                                |
+| `DEPLOY_USER`      | SSH 用户名                                                        |
+| `DEPLOY_SSH_KEY`   | 有权限登录 `DEPLOY_USER@DEPLOY_HOST` 的 SSH 私钥                   |
+| `DEPLOY_PATH`      | 服务器上对应 `/docs/gateway-protocol` 路径的绝对目录，例如 `/var/www/bivrost.cn/docs/gateway-protocol` |
+| `DEPLOY_PORT`      | 可选，SSH 端口，默认 `22`                                          |
+
+若实际托管方式并非「SSH/rsync 到自有服务器」（例如改用对象存储 + CDN 或 Vercel/Netlify/Cloudflare
+Pages），需要替换 `deploy.yml` 中的部署步骤。
+
 ## 目录结构
 
 - `src/content/docs/conventions/` — 一、重要说明（标识、25 个数据类、变量枚举）

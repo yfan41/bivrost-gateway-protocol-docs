@@ -1,0 +1,71 @@
+name: Deploy docs to bivrost.cn/docs/gateway-protocol
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+concurrency:
+  group: deploy-gateway-protocol-docs
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build site
+        run: pnpm build
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 7
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+
+      # Deploys the built static site to the /docs/gateway-protocol path on
+      # the server behind bivrost.cn via rsync over SSH.
+      #
+      # Required repository secrets:
+      #   DEPLOY_HOST         - server hostname or IP
+      #   DEPLOY_USER         - SSH user
+      #   DEPLOY_SSH_KEY      - private key with access to DEPLOY_USER@DEPLOY_HOST
+      #   DEPLOY_PATH         - absolute path on the server to sync into,
+      #                         e.g. /var/www/bivrost.cn/docs/gateway-protocol
+      # Optional:
+      #   DEPLOY_PORT         - SSH port (defaults to 22)
+      - name: Deploy via rsync over SSH
+        uses: burnett01/rsync-deployments@7.0.2
+        with:
+          switches: -avzr --delete
+          path: dist/
+          remote_path: ${{ secrets.DEPLOY_PATH }}
+          remote_host: ${{ secrets.DEPLOY_HOST }}
+          remote_port: ${{ secrets.DEPLOY_PORT || 22 }}
+          remote_user: ${{ secrets.DEPLOY_USER }}
+          remote_key: ${{ secrets.DEPLOY_SSH_KEY }}

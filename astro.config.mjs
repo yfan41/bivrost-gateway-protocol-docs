@@ -3,13 +3,22 @@ import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import { satteri } from '@astrojs/markdown-satteri';
 import starlightLinksValidator from 'starlight-links-validator';
+import { rewriteBaseLinks } from './src/markdown/rewrite-base-links.mjs';
+
+const base = '/docs/gateway-protocol';
 
 export default defineConfig({
-  site: 'https://protocol.bivrost.cn',
+  site: 'https://bivrost.cn',
+  base,
 
   markdown: {
     // headingAttributes：支持自定义标题锚点语法 ## 标题 {#anchor}
-    processor: satteri({ features: { headingAttributes: true } }),
+    // rewriteBaseLinks：将正文中站点绝对路径链接/图片（如 /conventions/xxx）
+    // 重写为带 base 前缀，使其在 /docs/gateway-protocol 子路径下可用
+    processor: satteri({
+      features: { headingAttributes: true },
+      hastPlugins: [rewriteBaseLinks(base)],
+    }),
   },
 
   integrations: [
