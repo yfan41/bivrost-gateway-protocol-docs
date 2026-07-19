@@ -24,3 +24,20 @@
   border-radius: 8px;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 }
+
+/*
+ * Sidebar: nested collapsible group headings (e.g. 2.5 数据读写接口, 2.7 数据分析接口)
+ * default to Starlight's prominent section-header style (`.large`: bigger, bold,
+ * high-contrast) — the same style as the top-level headers 一、/二、. At the second
+ * level that makes them clash with their plain-link siblings (2.6, 2.8 …), so the
+ * level reads as a jumble of bold and gray. Only top-level group labels live
+ * directly under `.top-level`; every nested group label sits inside a descendant
+ * `ul`, so this selector matches nested groups only and leaves the section headers
+ * bold. Match nested group labels to sibling link typography — same size, weight,
+ * and color — so each level reads uniformly, distinguished only by the caret.
+ */
+.top-level ul .group-label > .large {
+  font-size: var(--sl-text-sm);
+  font-weight: 400;
+  color: var(--sl-color-gray-2);
+}
