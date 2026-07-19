@@ -169,7 +169,43 @@ GET /api/gateway/internet-connection
 | --- | --- | --- |
 | isOnline | Bool | (必需)是否联网，true=已连接，false=未连接。 |
 
-## 2.10.2.8. time 获取网关当前时间 {#time}
+## 2.10.2.8. hardware-resources 获取网关硬件资源 {#hardware-resources}
+
+获取网关的 CPU、内存与磁盘占用情况，用于监控网关运行负载。此接口无请求参数。
+
+```http
+GET /api/gateway/hardware-resources
+```
+
+返回示例
+
+```json
+{
+  "cpuUsage": 12.5,
+  "physicalMemoryUsage": 48.3,
+  "pagingMemoryUsage": 35.1,
+  "virtualMemoryUsage": 22.7,
+  "diskTotalBytes": 500000000000,
+  "diskUsedBytes": 205800000000,
+  "diskUsage": 41.16
+}
+```
+
+| 返回参数 | 类型 | 说明 |
+| --- | --- | --- |
+| cpuUsage | Float | CPU 占用率（百分比，0~100）。 |
+| physicalMemoryUsage | Float | 物理内存占用率（百分比，0~100）。 |
+| pagingMemoryUsage | Float | 分页内存（页面文件）占用率（百分比，0~100）。 |
+| virtualMemoryUsage | Float | 虚拟内存占用率（百分比，0~100）。 |
+| diskTotalBytes | Int64 | 磁盘总容量（字节）。 |
+| diskUsedBytes | Int64 | 磁盘已用容量（字节）。 |
+| diskUsage | Float | 磁盘占用率（百分比，0~100）。 |
+
+:::note[注]
+以上返回参数均为可选。CPU 占用为一项；物理内存、分页内存、虚拟内存三项内存指标为一组；磁盘总容量、已用容量、磁盘占用率三项磁盘指标为一组。如果网关无法获取某一组指标（如所在系统不支持），该组字段会从返回结果中一并省略。
+:::
+
+## 2.10.2.9. time 获取网关当前时间 {#time}
 
 此接口无请求参数。
 
@@ -189,7 +225,7 @@ GET /api/gateway/time
 | --- | --- | --- |
 | localTime | String | (必需)网关本地时间（ISO 8601） |
 
-## 2.10.2.9. sync-time 同步网关时间 {#sync-time}
+## 2.10.2.10. sync-time 同步网关时间 {#sync-time}
 
 ```http
 GET /api/gateway/sync-time
@@ -213,7 +249,7 @@ GET /api/gateway/sync-time
 | errorCode | Int32 | (必需)错误码，0 代表成功。 |
 | errorMsg | String | (必需)错误内容 |
 
-## 2.10.2.10. time-zone 获取网关时区 {#time-zone}
+## 2.10.2.11. time-zone 获取网关时区 {#time-zone}
 
 此接口无请求参数。
 
@@ -233,7 +269,7 @@ GET /api/gateway/time-zone
 | --- | --- | --- |
 | timeZoneID | String | (必需)网关时区（Microsoft Windows 时区 ID） |
 
-## 2.10.2.11. time-zones 获取时区选项 {#time-zones}
+## 2.10.2.12. time-zones 获取时区选项 {#time-zones}
 
 此接口无请求参数。
 
@@ -261,7 +297,7 @@ GET /api/gateway/time-zones
 | --- | --- | --- |
 | timeZoneIDs | String[] | (必需)网关时区选项（Microsoft Windows 时区 ID） |
 
-## 2.10.2.12. update-time-zone 修改网关时区 {#update-time-zone}
+## 2.10.2.13. update-time-zone 修改网关时区 {#update-time-zone}
 
 ```http
 POST /api/gateway/update-time-zone
@@ -277,7 +313,7 @@ POST /api/gateway/update-time-zone
 
 | 请求参数 | 类型 | 说明 |
 | --- | --- | --- |
-| timeZoneID | String | (必需)网关时区（Microsoft Windows 时区 ID），可通过 [2.10.2.11. time-zones 获取时区选项](#time-zones)获得可用选项。 |
+| timeZoneID | String | (必需)网关时区（Microsoft Windows 时区 ID），可通过 [2.10.2.12. time-zones 获取时区选项](#time-zones)获得可用选项。 |
 
 返回示例
 
@@ -293,7 +329,7 @@ POST /api/gateway/update-time-zone
 | errorCode | Int32 | (必需)错误码，0 代表成功。 |
 | errorMsg | String | (必需)错误内容 |
 
-## 2.10.2.13. network-adapters 获取网关网络适配器列表 {#network-adapters}
+## 2.10.2.14. network-adapters 获取网关网络适配器列表 {#network-adapters}
 
 此接口无请求参数。
 
@@ -317,7 +353,7 @@ GET /api/gateway/network-adapters
 | --- | --- | --- |
 | names | String[] | (必需)网络适配器名称 |
 
-## 2.10.2.14. lan 获取有线网设置 {#lan}
+## 2.10.2.15. lan 获取有线网设置 {#lan}
 
 ```http
 GET /api/gateway/lan
@@ -357,7 +393,7 @@ GET /api/gateway/lan
 | dnsServer1 | String | (必需)首选 DNS 服务器 |
 | dnsServer2 | String | (必需)备用 DNS 服务器 |
 
-## 2.10.2.15. update-lan 修改网关有线网设置 {#update-lan}
+## 2.10.2.16. update-lan 修改网关有线网设置 {#update-lan}
 
 ```http
 POST /api/gateway/update-lan
@@ -419,7 +455,7 @@ POST /api/gateway/update-lan
 | dnsServer1 | String | (必需)首选 DNS 服务器 |
 | dnsServer2 | String | (必需)备用 DNS 服务器 |
 
-## 2.10.2.16. wifi 获取无线网设置 {#wifi}
+## 2.10.2.17. wifi 获取无线网设置 {#wifi}
 
 此接口无请求参数。
 
@@ -459,7 +495,7 @@ GET /api/gateway/wifi
 | dnsServer1 | String | (必需)首选 DNS 服务器 |
 | dnsServer2 | String | (必需)备用 DNS 服务器 |
 
-## 2.10.2.17. update-wifi 修改无线网设置 {#update-wifi}
+## 2.10.2.18. update-wifi 修改无线网设置 {#update-wifi}
 
 ```http
 POST /api/gateway/update-wifi
@@ -521,7 +557,7 @@ POST /api/gateway/update-wifi
 | dnsServer1 | String | (必需)首选 DNS 服务器 |
 | dnsServer2 | String | (必需)备用 DNS 服务器 |
 
-## 2.10.2.18. search-wifi 搜索无线网 {#search-wifi}
+## 2.10.2.19. search-wifi 搜索无线网 {#search-wifi}
 
 此接口无请求参数。
 
@@ -552,7 +588,7 @@ GET /api/gateway/search-wifi
 | signalStrength | Int32 | 范围：0-100，越大信号越强 |
 | state | String | (必需)状态，范围：Connected，Disconnected。 |
 
-## 2.10.2.19. connect-wifi 连接无线网 {#connect-wifi}
+## 2.10.2.20. connect-wifi 连接无线网 {#connect-wifi}
 
 ```http
 GET /api/gateway/connect-wifi
@@ -577,7 +613,7 @@ GET /api/gateway/connect-wifi
 | errorCode | Int32 | (必需)错误码，0 代表成功。 |
 | errorMsg | String | (必需)错误内容 |
 
-## 2.10.2.20. disconnect-wifi 断开无线网 {#disconnect-wifi}
+## 2.10.2.21. disconnect-wifi 断开无线网 {#disconnect-wifi}
 
 此接口无请求参数。
 
@@ -599,7 +635,7 @@ GET /api/gateway/disconnect-wifi
 | errorCode | Int32 | (必需)错误码，0 代表成功。 |
 | errorMsg | String | (必需)错误内容 |
 
-## 2.10.2.21. static-routing 获取静态路由设置 {#static-routing}
+## 2.10.2.22. static-routing 获取静态路由设置 {#static-routing}
 
 此接口无请求参数。
 
@@ -619,7 +655,7 @@ GET /api/gateway/static-routing
 | --- | --- | --- |
 | staticRouting | Int32 | (必需)静态路由。 |
 
-## 2.10.2.22. update-static-routing 修改静态路由设置 {#update-static-routing}
+## 2.10.2.23. update-static-routing 修改静态路由设置 {#update-static-routing}
 
 ```http
 POST /api/gateway/update-static-routing
@@ -649,7 +685,7 @@ POST /api/gateway/update-static-routing
 | --- | --- | --- |
 | staticRouting | Int32 | (必需)静态路由。 |
 
-## 2.10.2.23. connect-remote-host 连接远程服务器 {#connect-remote-host}
+## 2.10.2.24. connect-remote-host 连接远程服务器 {#connect-remote-host}
 
 此接口无请求参数。
 
@@ -671,7 +707,7 @@ GET /api/gateway/connect-remote-host
 | errorCode | Int32 | (必需)错误码，0 代表成功。 |
 | errorMsg | String | (必需)错误内容 |
 
-## 2.10.2.24. disconnect-remote-host 断开远程服务器 {#disconnect-remote-host}
+## 2.10.2.25. disconnect-remote-host 断开远程服务器 {#disconnect-remote-host}
 
 此接口无请求参数。
 
@@ -693,7 +729,7 @@ GET /api/gateway/disconnect-remote-host
 | errorCode | Int32 | (必需)错误码，0 代表成功。 |
 | errorMsg | String | (必需)错误内容 |
 
-## 2.10.2.25. file-server-items 获取网关文件服务器列表 {#file-server-items}
+## 2.10.2.26. file-server-items 获取网关文件服务器列表 {#file-server-items}
 
 获取网关文件服务器根目录下的文件与子目录列表。子目录与机台对应，名称为机台的 IP 地址。此接口无请求参数。
 
@@ -743,7 +779,7 @@ GET /api/gateway/file-server-items
 | ip | String | 关联机台 ip |
 | status | String | 状态，范围 Unlinked（未关联），Activated（已激活），Unactivated（未激活）。 |
 
-## 2.10.2.26. delete-file-server-item 删除网关文件服务器项目 {#delete-file-server-item}
+## 2.10.2.27. delete-file-server-item 删除网关文件服务器项目 {#delete-file-server-item}
 
 删除根目录下指定文件或子目录。
 

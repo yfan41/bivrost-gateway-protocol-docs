@@ -4,12 +4,54 @@ import starlight from '@astrojs/starlight';
 import { satteri } from '@astrojs/markdown-satteri';
 import starlightLinksValidator from 'starlight-links-validator';
 
+// Default '/' keeps the standalone protocol.bivrost.cn deploy working; the
+// gateway build sets DOCS_BASE=/app/docs so the site can be served from the
+// gateway's wwwroot/app/docs (mirrors the Angular UI's baseHref=/app/gateway/).
+const docsBase = process.env.DOCS_BASE || '/';
+// Prefix used to rebase hand-authored root-absolute links (see plugin below):
+// '' when serving from root, otherwise the base with any trailing slash removed.
+const basePrefix = docsBase === '/' ? '' : docsBase.replace(/\/+$/, '');
+
+// The docs author internal links and images as root-absolute paths
+// (e.g. [x](/conventions/data-classes/), ![](/img/protocol/...)). Astro/Starlight
+// only rebase their OWN generated URLs (assets, sidebar, relative links) under a
+// non-root `base`; hand-authored absolute paths are left untouched and would 404
+// once served from /app/docs. This hast plugin prefixes them with the base at
+// build time - a no-op for the standalone (base '/') build - so the site works
+// under a subfolder and the links validator stays green.
+const rebaseAbsoluteLinks = {
+  name: 'rebase-absolute-links',
+  element: [
+    {
+      filter: ['a', 'img'],
+      visit(node, ctx) {
+        if (!basePrefix) return;
+        const key = node.tagName === 'img' ? 'src' : 'href';
+        const url = node.properties?.[key];
+        if (
+          typeof url === 'string' &&
+          url.startsWith('/') &&
+          !url.startsWith('//') && // protocol-relative → external, leave alone
+          !url.startsWith(basePrefix + '/') &&
+          url !== basePrefix
+        ) {
+          ctx.setProperty(node, key, basePrefix + url);
+        }
+      },
+    },
+  ],
+};
+
 export default defineConfig({
   site: 'https://protocol.bivrost.cn',
+  base: docsBase,
 
   markdown: {
     // headingAttributes：支持自定义标题锚点语法 ## 标题 {#anchor}
-    processor: satteri({ features: { headingAttributes: true } }),
+    processor: satteri({
+      features: { headingAttributes: true },
+      hastPlugins: [rebaseAbsoluteLinks],
+    }),
   },
 
   integrations: [
@@ -94,7 +136,7 @@ export default defineConfig({
         'database',
         'mock-testing',
         'faq',
-        { slug: 'changelog', badge: { text: 'v1.19.6', variant: 'note' } },
+        { slug: 'changelog', badge: { text: 'v1.19.7', variant: 'note' } },
         {
           label: '《彼络物联网关 说明书》',
           link: 'https://docs.bivrost.cn/',

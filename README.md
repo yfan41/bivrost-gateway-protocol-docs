@@ -1,6 +1,6 @@
 # 彼络物联网关 通讯协议（文档站）
 
-基于 [Astro Starlight](https://starlight.astro.build/) 的《彼络物联网关 通讯协议》在线文档，内容对应通讯协议 **v1.19.6**（完整转录：HTTP ~150 个接口、MODBUS 地址表、MQTT 报文格式与 RPC、数据库通讯、常见问题与全部版本变更历史）。
+基于 [Astro Starlight](https://starlight.astro.build/) 的《彼络物联网关 通讯协议》在线文档，内容对应通讯协议 **v1.19.7**（完整转录：HTTP ~150 个接口、MODBUS 地址表、MQTT 报文格式与 RPC、数据库通讯、常见问题与全部版本变更历史）。
 
 配套的《说明书》文档站位于 `../bivrost-gateway-docs`（线上 https://docs.bivrost.cn ）；本站中所有《说明书》引用均为指向该站的绝对链接。
 

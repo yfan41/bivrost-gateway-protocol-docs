@@ -276,6 +276,7 @@ sidebar:
 | restart-service | 重启 Core 服务 |
 | shut-down | 网关关机 |
 | internet-connection | 获取网关网络状态 |
+| hardware-resources | 获取网关硬件资源 |
 | time | 获取网关当前时间 |
 | sync-time | 同步网关时间 |
 | time-zone | 获取网关时区 |
