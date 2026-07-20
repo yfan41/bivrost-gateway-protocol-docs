@@ -5,7 +5,7 @@ sidebar:
 ---
 
 
-通讯配置接口用于获取或修改任务配置。通讯配置相关说明可以参考《说明书》[5.6. 通讯配置](https://gateway.docs.bivrost.cn/usage/communication)。
+通讯配置接口用于获取或修改任务配置。通讯配置相关说明可以参考《说明书》[5.6. 通讯配置](https://docs.bivrost.cn/gateway/usage/communication)。
 
 ## 2.9.6.1. cloud-settings 获取云平台设置 {#cloud-settings}
 

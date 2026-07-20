@@ -4,9 +4,10 @@ import starlight from '@astrojs/starlight';
 import { satteri } from '@astrojs/markdown-satteri';
 import starlightLinksValidator from 'starlight-links-validator';
 
-// Default '/' keeps the standalone protocol.gateway.docs.bivrost.cn deploy working; the
-// gateway build sets DOCS_BASE=/app/docs so the site can be served from the
-// gateway's wwwroot/app/docs (mirrors the Angular UI's baseHref=/app/gateway/).
+// The standalone web deploy sets DOCS_BASE=/gateway-protocol so the site is served
+// from https://docs.bivrost.cn/gateway-protocol/; the on-device gateway build sets
+// DOCS_BASE=/app/docs so it can be served from the gateway's wwwroot/app/docs
+// (mirrors the Angular UI's baseHref=/app/gateway/). Default '/' for local dev.
 const docsBase = process.env.DOCS_BASE || '/';
 // Prefix used to rebase hand-authored root-absolute links (see plugin below):
 // '' when serving from root, otherwise the base with any trailing slash removed.
@@ -47,7 +48,7 @@ const rebaseAbsoluteLinks = {
 };
 
 export default defineConfig({
-  site: 'https://protocol.gateway.docs.bivrost.cn',
+  site: 'https://docs.bivrost.cn',
   base: docsBase,
 
   markdown: {
@@ -71,7 +72,7 @@ export default defineConfig({
       },
       favicon: '/img/favicon.ico',
       social: [
-        { icon: 'open-book', label: '说明书', href: 'https://gateway.docs.bivrost.cn/' },
+        { icon: 'open-book', label: '说明书', href: 'https://docs.bivrost.cn/gateway/' },
       ],
       tableOfContents: { minHeadingLevel: 2, maxHeadingLevel: 4 },
       customCss: ['./src/styles/custom.css'],
@@ -143,7 +144,7 @@ export default defineConfig({
         { slug: 'changelog', badge: { text: 'v1.19.7', variant: 'note' } },
         {
           label: '《彼络物联网关 说明书》',
-          link: 'https://gateway.docs.bivrost.cn/',
+          link: 'https://docs.bivrost.cn/gateway/',
           attrs: { target: '_blank' },
         },
       ],

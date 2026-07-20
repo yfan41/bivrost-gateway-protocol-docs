@@ -1,7 +1,7 @@
 name: Deploy docs
 
 # Builds the Starlight site and rsyncs it over SSH to the web server so it is
-# served at https://protocol.gateway.docs.bivrost.cn.
+# served at https://docs.bivrost.cn/gateway-protocol/ (base set via DOCS_BASE below).
 
 on:
   push:
@@ -36,10 +36,12 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build
-        # This is the standalone protocol.gateway.docs.bivrost.cn build: astro.config.mjs
-        # defaults to base '/' and site https://protocol.gateway.docs.bivrost.cn, so no env
-        # overrides are needed. pnpm build runs starlight-links-validator; a broken
-        # link fails the build (and the deploy) before anything is uploaded.
+        # Standalone web build served from https://docs.bivrost.cn/gateway-protocol/.
+        # DOCS_BASE sets Astro's base so all URLs are prefixed with /gateway-protocol.
+        # pnpm build runs starlight-links-validator; a broken link fails the build
+        # (and the deploy) before anything is uploaded.
+        env:
+          DOCS_BASE: /gateway-protocol
         run: pnpm build
 
       - name: Deploy over SSH (rsync)
@@ -48,10 +50,10 @@ jobs:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_USER: ${{ secrets.SSH_USER }}
           SSH_PORT: ${{ secrets.SSH_PORT }}
-          # Absolute path of the protocol.gateway.docs.bivrost.cn web root
-          # (e.g. /var/www/protocol.gateway.docs.bivrost.cn). It MUST be dedicated to this site —
-          # rsync --delete wipes anything here that is not part of the built dist/.
-          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+          # Absolute path of the protocol docs' web root, a subdir dedicated to this
+          # site. rsync --delete only wipes within this subdir, not the sibling
+          # gateway/ site under the shared /var/www/docs.bivrost.cn root.
+          DEPLOY_PATH: /var/www/docs.bivrost.cn/gateway-protocol
         run: |
           set -euo pipefail
           mkdir -p "$HOME/.ssh"

@@ -71,7 +71,7 @@ sidebar:
 
 ### 1.3.2.1. AlarmLevel：警报级别 {#alarm-level}
 
-按优先级由高到低分为错误（ERR），警告（WRN），消息（INF）三个级别。用户可参照《说明书》[5.5.7. 警报监控设置](https://gateway.docs.bivrost.cn/usage/tasks#alarm-monitor)，以关键字设置警报级别，过滤低于最低报警级别的警报。未设置级别的警报默认为 WRN 警告级别。
+按优先级由高到低分为错误（ERR），警告（WRN），消息（INF）三个级别。用户可参照《说明书》[5.5.7. 警报监控设置](https://docs.bivrost.cn/gateway/usage/tasks#alarm-monitor)，以关键字设置警报级别，过滤低于最低报警级别的警报。未设置级别的警报默认为 WRN 警告级别。
 
 | 返回 String | 警报级别 |
 | --- | --- |

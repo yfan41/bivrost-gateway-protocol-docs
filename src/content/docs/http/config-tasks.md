@@ -5,7 +5,7 @@ sidebar:
 ---
 
 
-任务配置接口用于获取或修改任务配置。任务配置相关说明可以参考《说明书》[5.5. 任务配置](https://gateway.docs.bivrost.cn/usage/tasks)。
+任务配置接口用于获取或修改任务配置。任务配置相关说明可以参考《说明书》[5.5. 任务配置](https://docs.bivrost.cn/gateway/usage/tasks)。
 
 ## 2.9.5.1. machine-task-interval-settings 获取机台任务间隔设置 {#machine-task-interval-settings}
 

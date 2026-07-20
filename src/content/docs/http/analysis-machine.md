@@ -7,7 +7,7 @@ sidebar:
 
 数据分析接口用于获取目标机台或机组在指定时间范围内的数据分析。
 
-使用数据分析接口前，必须开启网关本地缓存开关（详见《说明书》[5.12.2.3. 本地缓存](https://gateway.docs.bivrost.cn/usage/settings)），以允许在网关本地保存机台状态历史数据。
+使用数据分析接口前，必须开启网关本地缓存开关（详见《说明书》[5.12.2.3. 本地缓存](https://docs.bivrost.cn/gateway/usage/settings)），以允许在网关本地保存机台状态历史数据。
 
 使用数据分析接口需要补充开始时间戳，结束时间戳。两者间最大长度为 31 天。
 
@@ -78,7 +78,7 @@ GET /api/analysis/oee?machineID=MACHINEID&startUnix=STARTUNIX&endUnix=ENDUNIX&in
 | manualTime | Int64 | (必需)调机时间[秒] |
 
 :::note[注]
-机台 OEE 数据说明详见《说明书》[6.1.1. 机台 OEE 数据](https://gateway.docs.bivrost.cn/reference/glossary#machine-oee)。如开始时间和结束时间之间有一段时间缺失状态数据，则该段数据缺失时间的状态默认为关机或离线。
+机台 OEE 数据说明详见《说明书》[6.1.1. 机台 OEE 数据](https://docs.bivrost.cn/gateway/reference/glossary#machine-oee)。如开始时间和结束时间之间有一段时间缺失状态数据，则该段数据缺失时间的状态默认为关机或离线。
 :::
 
 ### 2.7.1.2. alarm 机台警报数据分析 {#alarm}
@@ -129,7 +129,7 @@ GET /api/analysis/alarm?machineID=MACHINEID&startUnix=STARTUNIX&endUnix=ENDUNIX
 | startTime | String | (必需)警报开始时间(UTC) |
 | endTime | String | (必需)警报结束时间(UTC) |
 | alarmMsg | String | (必需)警报内容 |
-| alarmLevel | String | (必需)警报级别。按优先级由高到低分为错误（ERR），警告（WRN），消息（INF）三个级别。用户可以参照《说明书》[5.5.7. 警报监控设置](https://gateway.docs.bivrost.cn/usage/tasks#alarm-monitor)，以关键字设置警报级别，及过滤低于最低报警级别的警报；未设置级别的警报均默认为警告级别。 |
+| alarmLevel | String | (必需)警报级别。按优先级由高到低分为错误（ERR），警告（WRN），消息（INF）三个级别。用户可以参照《说明书》[5.5.7. 警报监控设置](https://docs.bivrost.cn/gateway/usage/tasks#alarm-monitor)，以关键字设置警报级别，及过滤低于最低报警级别的警报；未设置级别的警报均默认为警告级别。 |
 
 :::note[注]
 从警报出现到警报解除作为一次警报，记录其开始时间，结束时间，警报内容，和警报级别。如在开始时间戳之前，警报已经出现，且未解除，则此次警报的开始时间为开始时间戳对应的时间。
