@@ -1,13 +1,19 @@
 // @ts-check
+import { readFileSync } from 'node:fs';
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import { satteri } from '@astrojs/markdown-satteri';
 import starlightLinksValidator from 'starlight-links-validator';
 
-// The standalone web deploy sets DOCS_BASE=/gateway-protocol so the site is served
-// from https://docs.bivrost.cn/gateway-protocol/; the on-device gateway build sets
-// DOCS_BASE=/app/docs so it can be served from the gateway's wwwroot/app/docs
-// (mirrors the Angular UI's baseHref=/app/gateway/). Default '/' for local dev.
+// Single source of truth for the doc version (also drives the CI base path and
+// the deploy subdir). See VERSION at the repo root.
+const version = readFileSync(new URL('./VERSION', import.meta.url), 'utf8').trim();
+
+// The standalone web deploy sets DOCS_BASE=/gateway-protocol (latest, served in
+// place) or /gateway-protocol/v<version> (a frozen snapshot); the on-device gateway
+// build sets DOCS_BASE=/app/docs so it can be served from the gateway's
+// wwwroot/app/docs (mirrors the Angular UI's baseHref=/app/gateway/). Default '/'
+// for local dev.
 const docsBase = process.env.DOCS_BASE || '/';
 // Prefix used to rebase hand-authored root-absolute links (see plugin below):
 // '' when serving from root, otherwise the base with any trailing slash removed.
@@ -141,7 +147,7 @@ export default defineConfig({
         'database',
         'mock-testing',
         'faq',
-        { slug: 'changelog', badge: { text: 'v1.19.7', variant: 'note' } },
+        { slug: 'changelog', badge: { text: `v${version}`, variant: 'note' } },
         {
           label: '《彼络物联网关 说明书》',
           link: 'https://docs.bivrost.cn/gateway/',
