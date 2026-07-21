@@ -31,7 +31,7 @@ pnpm serve        # 本地预览 dist/ 产物
 
 - 全部为 `.md` 文件，**不要**使用 `.mdx`；`<type>`/`<field>` 等尖括号记号必须放在行内代码中
 - 页面标题写在 frontmatter `title` 中（Starlight 自动渲染 H1），侧边栏名称写在 frontmatter `sidebar.label` 中；正文从 `##` 二级标题开始
-- 标题自定义锚点使用 `## 标题 {#anchor}` 语法（由 `remark-heading-id` 支持），锚点 = 接口名小写（如 `{#readalarm}`）
+- 标题自定义锚点使用 `## 标题 {#anchor}` 语法（由 satteri 的 `headingAttributes` 支持），锚点 = 接口名小写（如 `{#readalarm}`）
 - 提示块使用带方括号标题的语法 `:::note[注] … :::`（与 Starlight Aside 语法一致）
 - 站内链接使用站点绝对路径并带尾部斜杠（如 `/conventions/identifiers/#machineid`），不要用相对 `.md` 文件路径
 - 构建时 `starlight-links-validator` 对断链/断锚全部报错，修改后请 `pnpm build` 验证
