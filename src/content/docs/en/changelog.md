@@ -211,7 +211,7 @@ Release date: 2024-03-04
 
 Release date: 2024-02-21
 
-1. Restructured the document content; added the chapter "I. Important Notes" and moved descriptions common to all communication methods into the new chapter. Other chapter numbers were adjusted accordingly.
+1. Restructured the document content; added the chapter "1. Important Notes" and moved descriptions common to all communication methods into the new chapter. Other chapter numbers were adjusted accordingly.
 2. Added data classes AxialLoad (servo axis load), LaserPower (laser power), Offset (tool offset data), and SpindleLoad (spindle load).
 3. Added new tag channel (channel number) to some data classes.
 

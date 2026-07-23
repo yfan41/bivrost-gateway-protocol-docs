@@ -95,7 +95,7 @@ export default defineConfig({
         { label: '简介', translations: { en: 'Introduction' }, link: '/' },
         {
           label: '一、重要说明',
-          translations: { en: 'I. Important Notes' },
+          translations: { en: '1. Important Notes' },
           items: [
             'conventions/identifiers',
             'conventions/data-classes',
@@ -104,7 +104,7 @@ export default defineConfig({
         },
         {
           label: '二、HTTP 通讯',
-          translations: { en: 'II. HTTP Communication' },
+          translations: { en: '2. HTTP Communication' },
           items: [
             'http',
             'http/auth',
@@ -151,7 +151,7 @@ export default defineConfig({
         'modbus',
         {
           label: '四、MQTT 通讯',
-          translations: { en: 'IV. MQTT Communication' },
+          translations: { en: '4. MQTT Communication' },
           collapsed: true,
           items: ['mqtt/upload-format', 'mqtt/rpc'],
         },
