@@ -297,7 +297,7 @@ The gateway currently supports the following RPC commands:
 | file-server-items | Get gateway file server list |
 | delete-file-server-item | Delete gateway file server item |
 
-Except for the authentication interface and some file management interfaces, RPC commands correspond one-to-one with the corresponding interfaces in [II. HTTP Communication](/en/http/); input parameters and return results can be found in the interface descriptions in [II. HTTP Communication](/en/http/).
+Except for the authentication interface and some file management interfaces, RPC commands correspond one-to-one with the corresponding interfaces in [2. HTTP Communication](/en/http/); input parameters and return results can be found in the interface descriptions in [2. HTTP Communication](/en/http/).
 
 ## Examples {#rpc-examples}
 

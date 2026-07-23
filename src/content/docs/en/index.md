@@ -16,7 +16,7 @@ The gateway supports the following communication methods:
 | [MQTT Communication](/en/mqtt/upload-format/) | The gateway publishes automatic data collection task results as JSON messages to the specified MQTT server, and supports an [RPC interface](/en/mqtt/rpc/) |
 | [Database Communication](/en/database/) | The gateway writes automatic data collection task results to the specified database (InfluxDB, MySQL, SQL Server, PostgreSQL, etc.) |
 
-Suggested reading order: first read [I. Important Notes](/en/conventions/identifiers/) for the common identifiers, data classes, and variable definitions, then consult the corresponding section based on the communication method you use. If you don't have an actual machine tool available, you can use the [mock machine](/en/mock-testing/) to quickly test the communication protocol.
+Suggested reading order: first read [1. Important Notes](/en/conventions/identifiers/) for the common identifiers, data classes, and variable definitions, then consult the corresponding section based on the communication method you use. If you don't have an actual machine tool available, you can use the [mock machine](/en/mock-testing/) to quickly test the communication protocol.
 
 :::note[Note]
 MODBUS, MQTT, and database communication all output the results of **automatic data collection tasks**. Before use, you need to enable the automatic data collection task for the target machine/group on the gateway management page (see the Bivrost Gateway Manual [5.3.1.2. Task Settings](https://docs.bivrost.cn/gateway/usage/machines#task-settings), [5.4.1.2. Group Task Settings](https://docs.bivrost.cn/gateway/usage/groups#group-tasks)) and restart the service.
