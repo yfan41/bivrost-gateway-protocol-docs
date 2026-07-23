@@ -4,6 +4,8 @@
 
 配套的《说明书》文档站位于 `../bivrost-gateway-docs`（线上 https://gateway.docs.bivrost.cn ）；本站中所有《说明书》引用均为指向该站的绝对链接。
 
+站点已支持中英双语（Starlight i18n，默认简体中文，`/en/` 下为英文版），语言切换器位于站点右上角导航栏。英文内容位于 `src/content/docs/en/`，与根目录（简体中文）的文件结构一一对应。
+
 ## 开发
 
 ```bash

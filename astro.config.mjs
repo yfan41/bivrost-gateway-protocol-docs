@@ -67,10 +67,14 @@ export default defineConfig({
 
   integrations: [
     starlight({
-      title: '彼络物联网关 通讯协议',
+      title: {
+        'zh-CN': '彼络物联网关 通讯协议',
+        en: 'Bivrost Gateway Protocol',
+      },
       description: '网关 HTTP / MODBUS / MQTT / 数据库通讯协议参考',
       locales: {
         root: { label: '简体中文', lang: 'zh-CN' },
+        en: { label: 'English', lang: 'en' },
       },
       logo: {
         src: './src/assets/logo.png',
@@ -78,7 +82,7 @@ export default defineConfig({
       },
       favicon: '/img/favicon.ico',
       social: [
-        { icon: 'open-book', label: '说明书', href: 'https://docs.bivrost.cn/gateway/' },
+        { icon: 'open-book', label: 'Manual / 说明书', href: 'https://docs.bivrost.cn/gateway/' },
       ],
       tableOfContents: { minHeadingLevel: 2, maxHeadingLevel: 4 },
       customCss: ['./src/styles/custom.css'],
@@ -88,9 +92,10 @@ export default defineConfig({
       // 构建时校验所有内部链接与锚点（对应 Docusaurus 的 onBrokenLinks: 'throw'）
       plugins: [starlightLinksValidator()],
       sidebar: [
-        { label: '简介', link: '/' },
+        { label: '简介', translations: { en: 'Introduction' }, link: '/' },
         {
           label: '一、重要说明',
+          translations: { en: 'I. Important Notes' },
           items: [
             'conventions/identifiers',
             'conventions/data-classes',
@@ -99,11 +104,13 @@ export default defineConfig({
         },
         {
           label: '二、HTTP 通讯',
+          translations: { en: 'II. HTTP Communication' },
           items: [
             'http',
             'http/auth',
             {
               label: '2.5. 数据读写接口',
+              translations: { en: '2.5. Data Read/Write APIs' },
               collapsed: true,
               items: [
                 'http/direct-read',
@@ -115,12 +122,14 @@ export default defineConfig({
             'http/file-management',
             {
               label: '2.7. 数据分析接口',
+              translations: { en: '2.7. Data Analysis APIs' },
               collapsed: true,
               items: ['http/analysis-machine', 'http/analysis-group'],
             },
             'http/history',
             {
               label: '2.9. 网关配置接口',
+              translations: { en: '2.9. Gateway Configuration APIs' },
               collapsed: true,
               items: [
                 'http/config-global',
@@ -133,6 +142,7 @@ export default defineConfig({
             },
             {
               label: '2.10. 网关功能接口',
+              translations: { en: '2.10. Gateway Function APIs' },
               collapsed: true,
               items: ['http/core-functions', 'http/gateway-functions'],
             },
@@ -141,6 +151,7 @@ export default defineConfig({
         'modbus',
         {
           label: '四、MQTT 通讯',
+          translations: { en: 'IV. MQTT Communication' },
           collapsed: true,
           items: ['mqtt/upload-format', 'mqtt/rpc'],
         },
@@ -150,6 +161,7 @@ export default defineConfig({
         { slug: 'changelog', badge: { text: `v${version}`, variant: 'note' } },
         {
           label: '《彼络物联网关 说明书》',
+          translations: { en: 'Bivrost Gateway Manual' },
           link: 'https://docs.bivrost.cn/gateway/',
           attrs: { target: '_blank' },
         },
