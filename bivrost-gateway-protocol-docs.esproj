@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.VisualStudio.JavaScript.SDK/1.0.6165494">
+  <!--
+    Editing-only project: it exists so the Astro protocol-docs sources show up in
+    Solution Explorer when Bivrost.IOT.sln is open in Visual Studio. Nothing in the
+    .NET build depends on this site, so both npm hooks are off and Bivrost.IOT.sln
+    maps this project to a configuration without Build.0 - "Build Solution" never
+    touches it.
+
+    Build the site with `pnpm build` in this folder.
+  -->
+  <PropertyGroup>
+    <ShouldRunNpmInstall>false</ShouldRunNpmInstall>
+    <ShouldRunBuildScript>false</ShouldRunBuildScript>
+    <!-- pnpm, not npm; without these the SDK would silently substitute `npm run ...`. -->
+    <StartupCommand>pnpm dev</StartupCommand>
+    <BuildCommand>pnpm build</BuildCommand>
+    <BuildOutputFolder>$(MSBuildProjectDirectory)\dist</BuildOutputFolder>
+    <!-- node_modules, obj and dot-folders (.astro, .github) are already excluded by
+         the SDK. dist/ is generated. `.git` is a FILE here, not a folder - a
+         submodule checkout stores a gitdir pointer - so the SDK's dot-folder rule
+         misses it and editing it would break the submodule link. -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);dist/**;.git</DefaultItemExcludes>
+  </PropertyGroup>
+</Project>

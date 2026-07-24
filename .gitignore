@@ -7,6 +7,10 @@
 # Generated files
 /.astro
 
+# Visual Studio (bivrost-gateway-protocol-docs.esproj puts these sources in Bivrost.IOT.sln)
+/obj
+*.esproj.user
+
 # Misc
 .DS_Store
 .env.local
