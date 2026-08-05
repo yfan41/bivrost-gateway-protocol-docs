@@ -1,0 +1,502 @@
+---
+// "Ask AI" floating assistant panel. Rendered on every page via the Footer
+// override. Talks to a Bivrost-hosted proxy (contract: specs/ai-assistant-v1.md);
+// when the proxy is unreachable it degrades to a localized error message.
+// Set PUBLIC_AI_ASSISTANT_ENDPOINT to move the endpoint, or to `off` to remove
+// the widget entirely (e.g. for the on-device build).
+const endpoint = import.meta.env.PUBLIC_AI_ASSISTANT_ENDPOINT ?? '/api/assistant/chat';
+const enabled = endpoint !== '' && endpoint !== 'off';
+const isEnglish = Astro.currentLocale === 'en';
+const t = isEnglish
+  ? {
+      open: 'Ask AI',
+      title: 'Protocol Assistant',
+      placeholder: 'Ask about the gateway protocol…',
+      send: 'Send',
+      clear: 'New chat',
+      close: 'Close',
+      thinking: 'Thinking…',
+      unavailable: 'The assistant is currently unavailable. Please try again later.',
+      disclaimer: 'Answers are AI-generated from the protocol docs and may contain mistakes.',
+    }
+  : {
+      open: '问 AI',
+      title: '协议助手',
+      placeholder: '询问网关通讯协议相关问题…',
+      send: '发送',
+      clear: '新对话',
+      close: '关闭',
+      thinking: '思考中…',
+      unavailable: 'AI 助手暂时不可用，请稍后再试。',
+      disclaimer: '回答由 AI 根据协议文档生成，可能存在错误。',
+    };
+---
+
+{
+  enabled && (
+    <div
+      id="ask-ai"
+      data-endpoint={endpoint}
+      data-locale={isEnglish ? 'en' : 'zh-CN'}
+      data-i18n={JSON.stringify(t)}
+    >
+      <button id="ask-ai-toggle" type="button" aria-haspopup="dialog" aria-expanded="false">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path
+            d="M12 3C7.03 3 3 6.58 3 11c0 2.5 1.3 4.73 3.34 6.2-.15.9-.55 2.1-1.4 3.06 1.66-.13 3.1-.75 4.13-1.4.93.28 1.92.44 2.93.44 4.97 0 9-3.58 9-8.3S16.97 3 12 3Z"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linejoin="round"
+          />
+        </svg>
+        {t.open}
+      </button>
+      <aside id="ask-ai-panel" role="dialog" aria-label={t.title} aria-modal="false" hidden>
+        <header>
+          <strong>{t.title}</strong>
+          <div class="ask-ai-actions">
+            <button id="ask-ai-clear" type="button">{t.clear}</button>
+            <button id="ask-ai-close" type="button" aria-label={t.close}>
+              ✕
+            </button>
+          </div>
+        </header>
+        <div id="ask-ai-messages" aria-live="polite" />
+        <p class="ask-ai-disclaimer">{t.disclaimer}</p>
+        <form id="ask-ai-form">
+          <textarea id="ask-ai-input" rows="2" placeholder={t.placeholder} required />
+          <button id="ask-ai-send" type="submit">{t.send}</button>
+        </form>
+      </aside>
+    </div>
+  )
+}
+
+<script>
+  interface ChatMessage {
+    role: 'user' | 'assistant';
+    content: string;
+  }
+
+  const root = document.getElementById('ask-ai');
+  if (root) {
+    const endpoint = root.dataset.endpoint!;
+    const locale = root.dataset.locale!;
+    const t = JSON.parse(root.dataset.i18n!) as Record<string, string>;
+    const storageKey = `bivrost-ai-chat:${locale}`;
+
+    const toggle = document.getElementById('ask-ai-toggle') as HTMLButtonElement;
+    const panel = document.getElementById('ask-ai-panel') as HTMLElement;
+    const messagesEl = document.getElementById('ask-ai-messages') as HTMLElement;
+    const form = document.getElementById('ask-ai-form') as HTMLFormElement;
+    const input = document.getElementById('ask-ai-input') as HTMLTextAreaElement;
+    const sendBtn = document.getElementById('ask-ai-send') as HTMLButtonElement;
+    const clearBtn = document.getElementById('ask-ai-clear') as HTMLButtonElement;
+    const closeBtn = document.getElementById('ask-ai-close') as HTMLButtonElement;
+
+    let history: ChatMessage[] = [];
+    let streaming = false;
+
+    try {
+      const stored = sessionStorage.getItem(storageKey);
+      if (stored) history = JSON.parse(stored) as ChatMessage[];
+    } catch {
+      history = [];
+    }
+
+    function save() {
+      try {
+        sessionStorage.setItem(storageKey, JSON.stringify(history));
+      } catch {
+        /* storage full/blocked — chat still works for this page view */
+      }
+    }
+
+    // Minimal markdown renderer for assistant replies. HTML-escapes everything
+    // first, then re-introduces a small whitelist of markup.
+    function escapeHtml(s: string): string {
+      return s
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function renderInline(s: string): string {
+      return s
+        .replace(/`([^`]+)`/g, '<code>$1</code>')
+        .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+        .replace(
+          /\[([^\]]+)\]\((https?:\/\/[^)\s]+|\/[^)\s]*)\)/g,
+          '<a href="$2" target="_blank" rel="noopener">$1</a>',
+        );
+    }
+
+    function renderMarkdown(md: string): string {
+      const parts = md.split(/```/);
+      let html = '';
+      for (let i = 0; i < parts.length; i++) {
+        if (i % 2 === 1) {
+          // Fenced code block; first line may be a language tag.
+          const code = parts[i].replace(/^[^\n]*\n/, '');
+          html += `<pre><code>${escapeHtml(code)}</code></pre>`;
+          continue;
+        }
+        const blocks = escapeHtml(parts[i])
+          .split(/\n{2,}/)
+          .map((block) => {
+            const lines = block.split('\n').filter((l) => l.trim() !== '');
+            if (lines.length === 0) return '';
+            if (lines.every((l) => /^\s*([-*]|\d+\.)\s+/.test(l))) {
+              const items = lines
+                .map((l) => `<li>${renderInline(l.replace(/^\s*([-*]|\d+\.)\s+/, ''))}</li>`)
+                .join('');
+              return /^\s*\d+\./.test(lines[0]) ? `<ol>${items}</ol>` : `<ul>${items}</ul>`;
+            }
+            if (/^#{1,6}\s+/.test(lines[0]) && lines.length === 1) {
+              return `<p><strong>${renderInline(lines[0].replace(/^#{1,6}\s+/, ''))}</strong></p>`;
+            }
+            return `<p>${lines.map(renderInline).join('<br>')}</p>`;
+          });
+        html += blocks.join('');
+      }
+      return html;
+    }
+
+    function addBubble(role: 'user' | 'assistant' | 'error', content: string): HTMLElement {
+      const el = document.createElement('div');
+      el.className = `ask-ai-msg ask-ai-${role}`;
+      if (role === 'user') el.textContent = content;
+      else if (role === 'error') el.textContent = content;
+      else el.innerHTML = renderMarkdown(content);
+      messagesEl.appendChild(el);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+      return el;
+    }
+
+    function repaint() {
+      messagesEl.innerHTML = '';
+      for (const msg of history) addBubble(msg.role, msg.content);
+    }
+    repaint();
+
+    function openPanel() {
+      panel.hidden = false;
+      toggle.setAttribute('aria-expanded', 'true');
+      requestAnimationFrame(() => panel.classList.add('open'));
+      input.focus();
+    }
+
+    function closePanel() {
+      panel.classList.remove('open');
+      toggle.setAttribute('aria-expanded', 'false');
+      setTimeout(() => {
+        panel.hidden = true;
+      }, 200);
+    }
+
+    toggle.addEventListener('click', () => (panel.hidden ? openPanel() : closePanel()));
+    closeBtn.addEventListener('click', closePanel);
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !panel.hidden) closePanel();
+    });
+
+    clearBtn.addEventListener('click', () => {
+      if (streaming) return;
+      history = [];
+      save();
+      repaint();
+      input.focus();
+    });
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        form.requestSubmit();
+      }
+    });
+
+    async function ask(question: string) {
+      streaming = true;
+      sendBtn.disabled = true;
+      input.disabled = true;
+
+      history.push({ role: 'user', content: question });
+      save();
+      addBubble('user', question);
+
+      const bubble = addBubble('assistant', '');
+      bubble.classList.add('ask-ai-pending');
+      bubble.textContent = t.thinking;
+
+      let answer = '';
+      let failed = false;
+      try {
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            messages: history.slice(-20),
+            page: location.pathname,
+            locale,
+          }),
+        });
+        if (!res.ok || !res.body) throw new Error(`HTTP ${res.status}`);
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buf = '';
+        for (;;) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buf += decoder.decode(value, { stream: true });
+          let idx;
+          while ((idx = buf.indexOf('\n\n')) >= 0) {
+            const frame = buf.slice(0, idx);
+            buf = buf.slice(idx + 2);
+            const data = frame
+              .split('\n')
+              .filter((l) => l.startsWith('data: '))
+              .map((l) => l.slice(6))
+              .join('\n');
+            if (!data) continue;
+            const ev = JSON.parse(data) as { type: string; text?: string; message?: string };
+            if (ev.type === 'text' && ev.text) {
+              answer += ev.text;
+              bubble.classList.remove('ask-ai-pending');
+              bubble.innerHTML = renderMarkdown(answer);
+              messagesEl.scrollTop = messagesEl.scrollHeight;
+            } else if (ev.type === 'error') {
+              failed = true;
+              answer = '';
+              bubble.className = 'ask-ai-msg ask-ai-error';
+              bubble.textContent = ev.message || t.unavailable;
+            }
+          }
+        }
+        if (!failed && answer === '') throw new Error('empty response');
+      } catch {
+        if (!failed) {
+          failed = true;
+          bubble.className = 'ask-ai-msg ask-ai-error';
+          bubble.textContent = t.unavailable;
+        }
+      }
+
+      if (failed) {
+        // Do not keep the failed exchange's assistant turn; keep the user turn
+        // so the question survives a retry after the proxy comes back.
+        history.pop();
+      } else {
+        history.push({ role: 'assistant', content: answer });
+      }
+      save();
+
+      streaming = false;
+      sendBtn.disabled = false;
+      input.disabled = false;
+      input.focus();
+    }
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const question = input.value.trim();
+      if (!question || streaming) return;
+      input.value = '';
+      void ask(question);
+    });
+  }
+</script>
+
+<style>
+  #ask-ai-toggle {
+    position: fixed;
+    right: 1.25rem;
+    bottom: 1.25rem;
+    z-index: 50;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.55rem 0.95rem;
+    border: 1px solid var(--sl-color-accent);
+    border-radius: 999px;
+    background: var(--sl-color-accent);
+    color: var(--sl-color-white);
+    font-size: var(--sl-text-sm);
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 25%);
+  }
+
+  #ask-ai-toggle:hover {
+    background: var(--sl-color-accent-high);
+    border-color: var(--sl-color-accent-high);
+  }
+
+  #ask-ai-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 60;
+    display: flex;
+    flex-direction: column;
+    width: min(400px, 100vw);
+    background: var(--sl-color-bg);
+    border-left: 1px solid var(--sl-color-hairline);
+    box-shadow: -4px 0 16px rgb(0 0 0 / 15%);
+    transform: translateX(100%);
+    transition: transform 0.2s ease;
+  }
+
+  #ask-ai-panel.open {
+    transform: translateX(0);
+  }
+
+  #ask-ai-panel header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--sl-color-hairline);
+    color: var(--sl-color-text);
+  }
+
+  .ask-ai-actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .ask-ai-actions button {
+    border: 1px solid var(--sl-color-hairline);
+    border-radius: 0.4rem;
+    background: transparent;
+    color: var(--sl-color-text);
+    font-size: var(--sl-text-xs);
+    padding: 0.25rem 0.6rem;
+    cursor: pointer;
+  }
+
+  .ask-ai-actions button:hover {
+    border-color: var(--sl-color-accent);
+    color: var(--sl-color-accent);
+  }
+
+  #ask-ai-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  #ask-ai-messages :global(.ask-ai-msg) {
+    max-width: 92%;
+    padding: 0.6rem 0.8rem;
+    border-radius: 0.6rem;
+    font-size: var(--sl-text-sm);
+    line-height: 1.55;
+    color: var(--sl-color-text);
+    overflow-wrap: anywhere;
+  }
+
+  #ask-ai-messages :global(.ask-ai-user) {
+    align-self: flex-end;
+    background: var(--sl-color-accent);
+    color: var(--sl-color-white);
+    white-space: pre-wrap;
+  }
+
+  #ask-ai-messages :global(.ask-ai-assistant) {
+    align-self: flex-start;
+    background: var(--sl-color-gray-6, var(--sl-color-black));
+    border: 1px solid var(--sl-color-hairline);
+  }
+
+  #ask-ai-messages :global(.ask-ai-error) {
+    align-self: flex-start;
+    border: 1px solid var(--sl-color-orange, #b45309);
+    background: transparent;
+    color: var(--sl-color-orange, #b45309);
+  }
+
+  #ask-ai-messages :global(.ask-ai-pending) {
+    opacity: 0.7;
+    font-style: italic;
+  }
+
+  #ask-ai-messages :global(pre) {
+    overflow-x: auto;
+    padding: 0.5rem;
+    border-radius: 0.4rem;
+    background: var(--sl-color-black);
+    font-size: var(--sl-text-xs);
+  }
+
+  #ask-ai-messages :global(code) {
+    font-size: 0.9em;
+  }
+
+  #ask-ai-messages :global(p),
+  #ask-ai-messages :global(ul),
+  #ask-ai-messages :global(ol) {
+    margin: 0 0 0.5rem;
+  }
+
+  #ask-ai-messages :global(ul),
+  #ask-ai-messages :global(ol) {
+    padding-inline-start: 1.2rem;
+  }
+
+  #ask-ai-messages :global(.ask-ai-msg > :last-child) {
+    margin-bottom: 0;
+  }
+
+  .ask-ai-disclaimer {
+    margin: 0;
+    padding: 0.35rem 1rem;
+    font-size: var(--sl-text-xs);
+    color: var(--sl-color-gray-3);
+    border-top: 1px solid var(--sl-color-hairline);
+  }
+
+  #ask-ai-form {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem 1rem;
+  }
+
+  #ask-ai-input {
+    flex: 1;
+    resize: none;
+    padding: 0.5rem 0.65rem;
+    border: 1px solid var(--sl-color-hairline);
+    border-radius: 0.5rem;
+    background: var(--sl-color-bg-nav, var(--sl-color-bg));
+    color: var(--sl-color-text);
+    font: inherit;
+    font-size: var(--sl-text-sm);
+  }
+
+  #ask-ai-input:focus {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: -1px;
+  }
+
+  #ask-ai-send {
+    align-self: flex-end;
+    padding: 0.5rem 0.9rem;
+    border: 1px solid var(--sl-color-accent);
+    border-radius: 0.5rem;
+    background: var(--sl-color-accent);
+    color: var(--sl-color-white);
+    font-size: var(--sl-text-sm);
+    cursor: pointer;
+  }
+
+  #ask-ai-send:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+</style>
