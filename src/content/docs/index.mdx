@@ -1,0 +1,73 @@
+---
+title: "彼络物联网关 通讯协议"
+description: "彼络物联网关 HTTP / MODBUS / MQTT / 数据库通讯协议参考，供需要通过程序对接网关的开发者使用。"
+sidebar:
+  label: "简介"
+---
+
+import { CardGrid, LinkCard, Steps, Aside } from '@astrojs/starlight/components';
+
+export const base = import.meta.env.BASE_URL.replace(/\/+$/, '');
+
+本文档为彼络物联网关的通讯协议参考，版本 v1.19.7.18，供需要通过程序对接网关的开发者使用。网关的安装、配置与网页管理界面的使用说明请参阅[《彼络物联网关 说明书》](https://docs.bivrost.cn/gateway/)（以下简称《说明书》）。
+
+## 通讯方式
+
+<CardGrid>
+  <LinkCard
+    title="HTTP 通讯"
+    href={`${base}/http/`}
+    description="通过 HTTP 接口主动读写机台数据、传输文件、分析数据、配置网关。所有功能均有对应接口。"
+  />
+  <LinkCard
+    title="MODBUS 通讯"
+    href={`${base}/modbus/`}
+    description="网关作为 MODBUS 服务端（端口 502），将自动采集任务结果保存在对应地址位中。"
+  />
+  <LinkCard
+    title="MQTT 通讯"
+    href={`${base}/mqtt/upload-format/`}
+    description="网关将自动采集任务结果以 JSON 报文发布至指定 MQTT 服务器，并支持 RPC 接口。"
+  />
+  <LinkCard
+    title="数据库通讯"
+    href={`${base}/database/`}
+    description="网关将自动采集任务结果写入指定数据库（InfluxDB、MySQL、SQL Server、PostgreSQL 等）。"
+  />
+</CardGrid>
+
+<Aside type="note" title="注">
+  MODBUS、MQTT 与数据库通讯输出的都是**自动采集任务**的结果，使用前需要在网关管理页面开启目标机台/机组的自动采集任务（详见《说明书》[5.3.1.2. 任务设置](https://docs.bivrost.cn/gateway/usage/machines#task-settings)、[5.4.1.2. 机组任务设置](https://docs.bivrost.cn/gateway/usage/groups#group-tasks)）并重启服务。
+</Aside>
+
+## 阅读指引
+
+<Steps>
+
+1. 先阅读[一、重要说明](/conventions/identifiers/)，了解通用的标识、数据类与变量定义。
+
+2. 再根据所用通讯方式查阅对应章节。
+
+3. 没有实际机床时，可使用[模拟机台](/mock-testing/)快速测试通讯协议。
+
+</Steps>
+
+## 更多资源
+
+<CardGrid>
+  <LinkCard
+    title="常见问题"
+    href={`${base}/faq/`}
+    description="对接各通讯方式时的常见报错与排查方法。"
+  />
+  <LinkCard
+    title="版本变更历史记录"
+    href={`${base}/changelog/`}
+    description="各版本网关协议与本文档的变更记录。"
+  />
+  <LinkCard
+    title="《彼络物联网关 说明书》"
+    href="https://docs.bivrost.cn/gateway/"
+    description="网关的安装、配置与网页管理界面使用说明。"
+  />
+</CardGrid>

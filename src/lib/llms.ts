@@ -69,6 +69,37 @@ function normalizeId(id: string): string {
   return id.replace(/(^|\/)index$/, '$1').replace(/\/$/, '');
 }
 
+/**
+ * The landing pages are MDX (card grid / steps components); reduce their JSX
+ * scaffolding to the plain markdown it renders as, so the llms text output
+ * stays prose-only. Applied to .mdx bodies only — .md bodies can legitimately
+ * contain `import`/JSX-looking lines inside code samples.
+ */
+function stripMdxScaffolding(mdx: string): string {
+  return (
+    mdx
+      // Top-level import/export statements (single-line only, which is all we author).
+      .replace(/^(import|export)\s.*\n?/gm, '')
+      // <LinkCard title=… href=… description=… /> → a markdown list item. href is
+      // either {`${base}/…`} (internal, rebased at render) or a plain "https://…".
+      .replace(
+        /^[ \t]*<LinkCard\s+title="([^"]*)"\s+href=(?:\{`\$\{base\}([^`]*)`\}|"([^"]*)")\s+description="([^"]*)"\s*\/>/gm,
+        (_m, title: string, path: string | undefined, url: string | undefined, desc: string) =>
+          `- [${title}](${path || url}): ${desc}`,
+      )
+      // Layout-only wrappers with no text of their own.
+      .replace(/^[ \t]*<\/?(CardGrid|Steps)>\n?/gm, '')
+      // <Aside type=… title=…>…</Aside> → the ::: aside syntax used in .md pages.
+      .replace(
+        /^[ \t]*<Aside type="([a-z]+)" title="([^"]*)">\n([\s\S]*?)^[ \t]*<\/Aside>/gm,
+        (_m, type: string, title: string, content: string) =>
+          `:::${type}[${title}]\n${content.replace(/^ {2}/gm, '')}:::`,
+      )
+      .replace(/\n{3,}/g, '\n\n')
+      .trim()
+  );
+}
+
 export async function getDocs(locale: Locale): Promise<LlmsDoc[]> {
   const entries = await getCollection('docs', (entry: CollectionEntry<'docs'>) => {
     const isEnglish = entry.id === 'en' || entry.id === 'en/index' || entry.id.startsWith('en/');
@@ -78,10 +109,11 @@ export async function getDocs(locale: Locale): Promise<LlmsDoc[]> {
   const docs = entries.map((entry) => {
     const normalized = normalizeId(entry.id);
     const slug = locale === 'en' ? normalized.replace(/^en\/?/, '') : normalized;
+    const rawBody = (entry.body ?? '').trim();
     return {
       slug,
       title: entry.data.title,
-      body: (entry.body ?? '').trim(),
+      body: entry.filePath?.endsWith('.mdx') ? stripMdxScaffolding(rawBody) : rawBody,
       path: locale === 'en' ? (slug === '' ? '/en/' : `/en/${slug}/`) : slug === '' ? '/' : `/${slug}/`,
     };
   });
