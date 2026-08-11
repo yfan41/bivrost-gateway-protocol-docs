@@ -30,7 +30,7 @@ pnpm serve        # 本地预览 dist/ 产物
 - `astro.config.mjs` — 站点配置与侧边栏结构（对应原 Docusaurus 的 `docusaurus.config.ts` + `sidebars.ts`）
 - `src/lib/llms.ts` + `src/pages/**/llms*.txt.ts` — llms.txt 生成（见下文「AI 支持」）
 - `src/components/AskAI.astro` — 「问 AI」侧边栏面板（见下文「AI 支持」）
-- `specs/` — 产品/功能规格（`ai-assistant-v1.md` 为 AI 助手的接口契约）
+- `specs/` — 产品/功能规格
 - `server/ai-proxy/` — AI 助手后端代理参考实现（独立包，不属于站点 workspace）
 
 ## AI 支持
@@ -47,7 +47,7 @@ pnpm serve        # 本地预览 dist/ 产物
 
 ### 「问 AI」面板
 
-每个页面右下角的「问 AI / Ask AI」按钮打开侧边栏问答面板，前端为零依赖的 `src/components/AskAI.astro`（经 `Footer.astro` 挂载）。面板调用同源代理接口（默认 `POST /api/assistant/chat`，SSE 流式返回），接口契约见 `specs/ai-assistant-v1.md`，后端参考实现见 `server/ai-proxy/`（需单独部署，静态站点本身不含任何密钥）。代理不可用时面板显示本地化的「暂时不可用」提示，不影响站点其他功能。
+每个页面右下角的「问 AI / Ask AI」按钮打开侧边栏问答面板，前端为零依赖的 `src/components/AskAI.astro`（经 `Footer.astro` 挂载）。面板调用同源代理接口（默认 `POST /api/assistant/chat`，SSE 流式返回），接口契约与后端参考实现见 `server/ai-proxy/`（需单独部署，静态站点本身不含任何密钥）。代理不可用时面板显示本地化的「暂时不可用」提示，不影响站点其他功能。
 
 - 构建期环境变量 `PUBLIC_AI_ASSISTANT_ENDPOINT` 可改写接口地址；设为 `off` 则完全移除面板（如网关本机 `/app/docs` 构建）。
 - 本地联调：先启动 `server/ai-proxy`（见其 README），再 `pnpm dev` —— Vite 已将 `/api/assistant` 代理到 `:8787`。

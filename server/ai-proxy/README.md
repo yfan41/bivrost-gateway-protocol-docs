@@ -1,9 +1,43 @@
 # Docs AI Proxy（参考实现）
 
-文档站「问 AI / Ask AI」面板的后端参考实现。完整契约（请求/响应格式、部署要求）见
-[`specs/ai-assistant-v1.md`](../../specs/ai-assistant-v1.md)。
+文档站「问 AI / Ask AI」面板（`src/components/AskAI.astro`）的后端参考实现。
+下方「接口契约」一节即前后端之间的唯一约定：只要遵守它，代理可以换任意实现与上游，
+前端无需改动。
 
 本目录是**独立包**，不属于仓库根目录的 pnpm workspace —— 文档站构建与 CI 不受它影响。
+
+## 接口契约
+
+**请求** —— `POST /api/assistant/chat`，`Content-Type: application/json`：
+
+```json
+{
+  "messages": [{ "role": "user", "content": "..." }],
+  "page": "/gateway-protocol/http/auth/",
+  "locale": "zh-CN"
+}
+```
+
+- `messages`：对话历史，每条 `role` ∈ `user` | `assistant`；最多 20 条；每条 `content`
+  最长 4000 字符；最后一条必须为 `user`。违反任一条 → `400` + JSON `{"error": "..."}`。
+- `page`：当前文档页路径（供模型参考的上下文）。
+- `locale`：`zh-CN` 或 `en`，模型以该语言作答。
+
+**响应** —— `200`，`Content-Type: text/event-stream; charset=utf-8`。SSE 帧（每个
+`data:` 行以空行结束；以 `:` 开头的注释行可用作心跳）：
+
+```
+data: {"type":"text","text":"<答案增量>"}
+
+data: {"type":"error","message":"<本地化提示>"}
+
+data: {"type":"done"}
+```
+
+- `text` 帧按序携带答案增量；`error` 取代答案（前端丢弃已累积文本）；每条流均以 `done` 结束。
+- 流开始前的失败：`429`（限流）或 `503`（上游不可用），返回 JSON `{"error": "..."}`。
+- 代理固定发送 `Cache-Control: no-store` 与 `X-Accel-Buffering: no`。
+- 生产环境同源部署，无需 CORS；开发时用 `ALLOWED_ORIGIN` 放开跨域。
 
 ## 运行
 

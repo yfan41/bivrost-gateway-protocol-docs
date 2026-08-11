@@ -1,5 +1,5 @@
 // Reference proxy for the docs "Ask AI" panel.
-// Wire contract: specs/ai-assistant-v1.md. The static site never holds a key;
+// Wire contract: see "接口契约" in ./README.md. The static site never holds a key;
 // this service owns the upstream API key and the docs corpus (llms-full.txt).
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
 import { readFileSync } from 'node:fs';
