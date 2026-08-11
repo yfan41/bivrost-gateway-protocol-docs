@@ -55,7 +55,7 @@ The message content structure for each mode is as follows:
 
 ```json
 {
-    "<machineID>": [
+    "<entityID>": [
         {
             "ts": <time>,
             "values": {
@@ -93,7 +93,7 @@ The message content structure for each mode is as follows:
                 {
                     "service_id": <type>,
                     "properties": {
-                        "<tagField>_<field>": <value>
+                        "<tagField…>_<field>": <value>
                     },
                     "event_time": <time>
                 }
@@ -102,6 +102,10 @@ The message content structure for each mode is as follows:
     ]
 }
 ```
+
+:::note[Note]
+In IoTDA mode the prefix of the property name is determined by the **tags** of the data class: if the data class contains no **tags**, the property name is just `<field>`; if the data class contains several **tags**, all **tag field forms** are joined by underscores before being used as the prefix, in the order of the tag's sequence number in the data class's **tag** table (the same rule as `<fieldID>` in key concept 5 below).
+:::
 
 ### WisIoT Mode {#mode-wisiot}
 
@@ -117,6 +121,10 @@ The message content structure for each mode is as follows:
     ]
 }
 ```
+
+:::note[Note]
+If the gateway has custom attribute reporting enabled (off by default), the JSON object configured in the machine's `customAttributes` is merged into the top level of the published message in all of the modes above. This only applies to machine data; group data is unaffected. See [2.9.3. Machine Configuration Parameters](/en/http/config-machines/#machine-params) for `customAttributes`.
+:::
 
 ### Key Concepts {#key-concepts}
 
@@ -181,7 +189,7 @@ The content of line 8 indicates that the data in this message comes from the mac
   "data": {
     "cumulativeCount": 233
   },
-  "groupID": 1
+  "groupID": "g1"
 }
 ```
 
@@ -203,11 +211,11 @@ Lines 4 to 6,
 
 `<data>` Data content: you can look up the explanation of the corresponding content through the data class declared by `<type>`. Here, looking up [1.2.11. GroupCount: Group Machining Count Data](/en/conventions/data-classes/#groupcount), "cumulativeCount" is a `<field>` data field under the GroupCount data, representing the group's cumulative machining count.
 
-Line 7, `"groupID": 1`
+Line 7, `"groupID": "g1"`
 
 `<entityID>` Machine or group identifier: here it is the group identifier groupID.
 
-The content of line 7 indicates that the data in this message comes from group 1.
+The content of line 7 indicates that the data in this message comes from the group with group identifier g1.
 
 #### Example 3 {#example-3}
 
@@ -263,9 +271,9 @@ The content of line 11 indicates that the data in this message comes from the ma
 ```json
 {
   "unixtimestamp": 1698908397751,
-  "10_ToolLife_T9_02_timeLimit": 1800,
-  "10_ToolLife_T9_02_currentTime": 1620,
-  "10_ToolLife_T9_02_prewarningTime": 1680
+  "10_ToolLife_T9_O2_timeLimit": 1800,
+  "10_ToolLife_T9_O2_currentTime": 1620,
+  "10_ToolLife_T9_O2_prewarningTime": 1680
 }
 ```
 
@@ -273,23 +281,23 @@ Line 2, `"unixtimestamp": 1698908397751,`
 
 `<unixtimestamp>` Timestamp: the value 1698908397751 is the timestamp of this message.
 
-Line 3, `"10_ToolLife_T9_02_timeLimit": 1800,`
+Line 3, `"10_ToolLife_T9_O2_timeLimit": 1800,`
 
 Its format is `"<entityID>_<fieldID>_<field>": <value>`,
 
 where 10 is the `<entityID>` machine or group identifier: here it is the machine identifier machineID, representing the machine that the current data belongs to.
 
-ToolLife_T9_02 is the `<fieldID>` data field identifier, where ToolLife is the `<type>` data class; using "ToolLife" as the keyword, you can find it in the `<type>` data class table in [1.2. Data Description](/en/conventions/data-classes/), which leads to [1.2.27. ToolLife: Tool Life Data](/en/conventions/data-classes/#toollife), identifying the data in this message as tool life data. T9 and 02 are combinations of `<tag>` data tag abbreviations and tag values; looking up the `<tag>` data tags in [1.2.27. ToolLife: Tool Life Data](/en/conventions/data-classes/#toollife), T is the abbreviation for toolNum (tool number) and 0 is the abbreviation for toolOffsetNum (tool offset number), indicating that the tool offset data in this message belongs to tool 9, offset 2.
+ToolLife_T9_O2 is the `<fieldID>` data field identifier, where ToolLife is the `<type>` data class; using "ToolLife" as the keyword, you can find it in the `<type>` data class table in [1.2. Data Description](/en/conventions/data-classes/), which leads to [1.2.27. ToolLife: Tool Life Data](/en/conventions/data-classes/#toollife), identifying the data in this message as tool life data. T9 and O2 are combinations of `<tag>` data tag abbreviations and tag values; looking up the `<tag>` data tags in [1.2.27. ToolLife: Tool Life Data](/en/conventions/data-classes/#toollife), T is the abbreviation for toolNum (tool number) and O is the abbreviation for toolOffsetNum (tool offset number), indicating that the tool offset data in this message belongs to tool 9, offset 2.
 
 timeLimit is the `<field>` data field; looking up the `<field>` data fields in [1.2.27. ToolLife: Tool Life Data](/en/conventions/data-classes/#toollife), "timeLimit" is the life limit [seconds].
 
 Summary of this line: tool life data for tool 9, offset 2, from the machine with machine identifier 10; the life limit is 1800 seconds.
 
-Line 4, `"10_ToolLife_T9_02_currentTime": 1620,`
+Line 4, `"10_ToolLife_T9_O2_currentTime": 1620,`
 
 Similar to line 3; summary of this line: tool life data for tool 9, offset 2, from the machine with machine identifier 10; the current life is 1620 seconds.
 
-Line 5, `"10_ToolLife_T9_02_prewarningTime": 1680`
+Line 5, `"10_ToolLife_T9_O2_prewarningTime": 1680`
 
 Similar to line 3; summary of this line: tool life data for tool 9, offset 2, from the machine with machine identifier 10; the pre-warning life is 1680 seconds.
 
@@ -300,9 +308,9 @@ Similar to line 3; summary of this line: tool life data for tool 9, offset 2, fr
   "机台10": [ {
     "ts": 1698908397751,
     "values": {
-      "ToolLife_T9_02_timeLimit": 1800,
-      "ToolLife_T9_02_currentTime": 1620,
-      "ToolLife_T9_02_prewarningTime": 1680
+      "ToolLife_T9_O2_timeLimit": 1800,
+      "ToolLife_T9_O2_currentTime": 1620,
+      "ToolLife_T9_O2_prewarningTime": 1680
     }
   } ]
 }
@@ -322,19 +330,19 @@ Lines 4 to 8,
 
 ```json
 "values": {
-    "ToolLife_T9_02_timeLimit": 1800,
-    "ToolLife_T9_02_currentTime": 1620,
-    "ToolLife_T9_02_prewarningTime": 1680
+    "ToolLife_T9_O2_timeLimit": 1800,
+    "ToolLife_T9_O2_currentTime": 1620,
+    "ToolLife_T9_O2_prewarningTime": 1680
 }
 ```
 
 `<values>` Data content. Taking line 5 as an example:
 
-`"ToolLife_T9_02_timeLimit": 1800,`
+`"ToolLife_T9_O2_timeLimit": 1800,`
 
 Its format is `"<fieldID>_<field>": <value>`,
 
-ToolLife_T9_02 is the `<fieldID>` data field identifier, where ToolLife is the `<type>` data class; using "ToolLife" as the keyword, you can find it in the `<type>` data class table in [1.2. Data Description](/en/conventions/data-classes/), which leads to [1.2.27. ToolLife: Tool Life Data](/en/conventions/data-classes/#toollife), identifying the data in this message as tool life data. T9 and 02 are combinations of `<tag>` data tag abbreviations and tag values; looking up `<tag>` in [1.2.27. ToolLife: Tool Life Data](/en/conventions/data-classes/#toollife), you can find that T is the abbreviation for toolNum (tool number) and 0 is the abbreviation for toolOffsetNum (tool offset number), indicating that the tool offset data in this message belongs to tool 9, offset 2.
+ToolLife_T9_O2 is the `<fieldID>` data field identifier, where ToolLife is the `<type>` data class; using "ToolLife" as the keyword, you can find it in the `<type>` data class table in [1.2. Data Description](/en/conventions/data-classes/), which leads to [1.2.27. ToolLife: Tool Life Data](/en/conventions/data-classes/#toollife), identifying the data in this message as tool life data. T9 and O2 are combinations of `<tag>` data tag abbreviations and tag values; looking up `<tag>` in [1.2.27. ToolLife: Tool Life Data](/en/conventions/data-classes/#toollife), you can find that T is the abbreviation for toolNum (tool number) and O is the abbreviation for toolOffsetNum (tool offset number), indicating that the tool offset data in this message belongs to tool 9, offset 2.
 
 timeLimit is the `<field>` data field; looking up the `<field>` data fields in [1.2.27. ToolLife: Tool Life Data](/en/conventions/data-classes/#toollife), "timeLimit" is the life limit [seconds].
 
@@ -353,9 +361,9 @@ Similarly, the content of line 6: tool life data for tool 9, offset 2; the curre
         {
           "service_id": "ToolLife",
           "properties": {
-            "T9_02_timeLimit": 1800,
-            "T9_02_currentTime": 1620,
-            "T9_02_prewarningTime": 1680},
+            "T9_O2_timeLimit": 1800,
+            "T9_O2_currentTime": 1620,
+            "T9_O2_prewarningTime": 1680},
           "event_time": 1698908397751
         }
       ]
@@ -378,12 +386,12 @@ Lines 8 to 11,
 
 ```json
 "properties": {
-    "T9_02_timeLimit": 1800,
-    "T9_02_currentTime": 1620,
-    "T9_02_prewarningTime": 1680},
+    "T9_O2_timeLimit": 1800,
+    "T9_O2_currentTime": 1620,
+    "T9_O2_prewarningTime": 1680},
 ```
 
-T9_02 is the `<tagField>` field form of the tags; T9 and 02 are combinations of `<tag>` data tag abbreviations and tag values. Looking up the `<tag>` data tags in [1.2.27. ToolLife: Tool Life Data](/en/conventions/data-classes/#toollife), T is the abbreviation for toolNum (tool number) and 0 is the abbreviation for toolOffsetNum (tool offset number), indicating that the tool offset data in this message belongs to tool 9, offset 2.
+T9_O2 is the `<tagField>` field form of the tags; T9 and O2 are combinations of `<tag>` data tag abbreviations and tag values. Looking up the `<tag>` data tags in [1.2.27. ToolLife: Tool Life Data](/en/conventions/data-classes/#toollife), T is the abbreviation for toolNum (tool number) and O is the abbreviation for toolOffsetNum (tool offset number), indicating that the tool offset data in this message belongs to tool 9, offset 2.
 
 timeLimit is the `<field>` data field; looking up the `<field>` data fields in [1.2.27. ToolLife: Tool Life Data](/en/conventions/data-classes/#toollife), "timeLimit" is the life limit [seconds], "currentTime" is the current life [seconds], and "prewarningTime" is the pre-warning life [seconds].
 

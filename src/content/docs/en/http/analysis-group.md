@@ -19,7 +19,7 @@ GET /api/group-analysis/oee?groupID=GROUPID&startUnix=STARTUNIX&endUnix=ENDUNIX&
 | --- | --- | --- |
 | groupID | String | (Required) Target group identifier. See [1.1.2. groupID Group Identifier](/en/conventions/identifiers/#groupid) |
 | startUnix | Int64 | (Required) Start timestamp [seconds] |
-| endUnix | Int64 | (Required) End timestamp [seconds] |
+| endUnix | Int64 | End timestamp [seconds]. If undefined, the current time is used; a value later than the current time is truncated to the current time. |
 | interval | Int32 | Grouping interval [seconds]. If undefined, there is only a single grouping interval. |
 
 Response example
@@ -102,7 +102,7 @@ GET /api/group-analysis/alarm?groupID=GROUPID&startUnix=STARTUNIX&endUnix=ENDUNI
 | --- | --- | --- |
 | groupID | String | (Required) Target group identifier. See [1.1.2. groupID Group Identifier](/en/conventions/identifiers/#groupid) |
 | startUnix | Int64 | (Required) Start timestamp [seconds] |
-| endUnix | Int64 | (Required) End timestamp [seconds] |
+| endUnix | Int64 | End timestamp [seconds]. If undefined, the current time is used; a value later than the current time is truncated to the current time. |
 
 Response example
 
@@ -172,8 +172,9 @@ GET /api/group-analysis/count?groupID=GROUPID&startUnix=STARTUNIX&endUnix=ENDUNI
 | --- | --- | --- |
 | groupID | String | (Required) Target group identifier. See [1.1.2. groupID Group Identifier](/en/conventions/identifiers/#groupid) |
 | startUnix | Int64 | (Required) Start timestamp [seconds] |
-| endUnix | Int64 | (Required) End timestamp [seconds] |
+| endUnix | Int64 | End timestamp [seconds]. If undefined, the current time is used; a value later than the current time is truncated to the current time. |
 | interval | Int32 | Grouping interval [seconds]. If undefined, there is only a single grouping interval. |
+| enableCountPerProgram | Bool | Whether to count separately by main program. Defaults to false. When true, each grouping interval returns multiple records grouped by main program mainPrgmName, and count is the sum of the cycle counts deltaCount of that main program; if there is no cycle data within the time range, it falls back to counting by the difference of the cumulative count. |
 
 Response example
 
@@ -191,23 +192,20 @@ Response example
     "machineName": "模拟机台 1",
     "startTime": "2022-04-28T15:30:00Z",
     "endTime": "2022-04-28T16:30:00Z",
-    "machineName": "模拟机台 1",
     "count": 0
   },
   {
-    "machineID": "1010",
-    "machineName": "模拟机台 1",
+    "machineID": "1011",
+    "machineName": "模拟机台 2",
     "startTime": "2022-04-28T14:30:00Z",
     "endTime": "2022-04-28T15:30:00Z",
-    "machineName": "模拟机台 2",
     "count": 52
   },
   {
-    "machineID": "1010",
-    "machineName": "模拟机台 1",
+    "machineID": "1011",
+    "machineName": "模拟机台 2",
     "startTime": "2022-04-28T15:30:00Z",
     "endTime": "2022-04-28T16:30:00Z",
-    "machineName": "模拟机台 2",
     "count": 0
   }
 ]
@@ -220,6 +218,7 @@ Response example
 | startTime | String | (Required) Start time of the grouping interval |
 | endTime | String | (Required) End time of the grouping interval |
 | count | Int32 | (Required) Cumulative machining count, the difference between the machine's cumulative machining count `cumulativeCount` at the start and end of the specified time range |
+| mainPrgmName | String | Main program name. Returned only when the request parameter enableCountPerProgram is true; in that case each grouping interval returns multiple records, one per main program. |
 
 ## 2.7.2.4. overall Machine Group Overall Data Analysis {#overall}
 
@@ -233,7 +232,7 @@ GET /api/group-analysis/overall?groupID=GROUPID&startUnix=STARTUNIX&endUnix=ENDU
 | --- | --- | --- |
 | groupID | String | (Required) Target group identifier. See [1.1.2. groupID Group Identifier](/en/conventions/identifiers/#groupid) |
 | startUnix | Int64 | (Required) Start timestamp [seconds] |
-| endUnix | Int64 | (Required) End timestamp [seconds] |
+| endUnix | Int64 | End timestamp [seconds]. If undefined, the current time is used; a value later than the current time is truncated to the current time. |
 | interval | Int32 | Grouping interval [seconds]. If undefined, there is only a single grouping interval. |
 
 Response example
@@ -311,7 +310,7 @@ Response example
 
 ## 2.7.2.5. cycle Machine Group Cycle Time Data Analysis {#cycle}
 
-Retrieves the overall data of all machines in the machine group, for each grouping interval, within the specified time range.
+Retrieves the cycle data of all machines in the machine group within the specified time range.
 
 ```http
 GET /api/group-analysis/cycle?groupID=GROUPID&startUnix=STARTUNIX&endUnix=ENDUNIX
@@ -321,7 +320,7 @@ GET /api/group-analysis/cycle?groupID=GROUPID&startUnix=STARTUNIX&endUnix=ENDUNI
 | --- | --- | --- |
 | groupID | String | (Required) Target group identifier. See [1.1.2. groupID Group Identifier](/en/conventions/identifiers/#groupid) |
 | startUnix | Int64 | (Required) Start timestamp [seconds] |
-| endUnix | Int64 | (Required) End timestamp [seconds] |
+| endUnix | Int64 | End timestamp [seconds]. If undefined, the current time is used; a value later than the current time is truncated to the current time. |
 
 Response example
 
@@ -368,5 +367,5 @@ Response example
 | machineName | String | (Required) Machine name, configured in the "Add/Edit Device" dialog on the "Machine Configuration" page. |
 | startTime | String | (Required) Cycle start time (UTC) |
 | endTime | String | (Required) Cycle end time (UTC) |
-| lastCycleTime | Int32 | (Required) Cycle duration [seconds]; only auto-run time is counted. |
+| lastCycleTime | Int64 | (Required) Cycle duration [seconds]; only auto-run time is counted. |
 | mainPrgmName | String | (Required) Name of the main program executed during the cycle |

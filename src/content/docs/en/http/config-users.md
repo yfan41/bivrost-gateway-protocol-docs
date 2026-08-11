@@ -7,11 +7,13 @@ sidebar:
 
 ## 2.9.2.1. user — Get user settings {#user}
 
-This API has no request parameters.
-
 ```http
 GET /api/config/user
 ```
+
+| Request Parameter | Type | Description |
+| --- | --- | --- |
+| id | Int32 | (Required) Database identifier, see [1.1.4. ID Database Identifier](/en/conventions/identifiers/#db-id) |
 
 Response example
 
@@ -28,6 +30,11 @@ Response example
 | id | Int32 | (Required) Database identifier, see [1.1.4. ID Database Identifier](/en/conventions/identifiers/#db-id) |
 | username | String | (Required) Username |
 | isAdmin | Bool | (Required) Whether the user has administrator privileges |
+| roles | String[] | Functional role list (page permissions) for non-administrator users. Not returned if not set. |
+
+:::note[Note]
+Administrator users implicitly have the admin role; `roles` only takes effect for non-administrator users.
+:::
 
 ## 2.9.2.2. users — Get all user settings {#users}
 
@@ -59,10 +66,11 @@ Response example
 | id | Int32 | (Required) Database identifier, see [1.1.4. ID Database Identifier](/en/conventions/identifiers/#db-id) |
 | username | String | (Required) Username |
 | isAdmin | Bool | (Required) Whether the user has administrator privileges |
+| roles | String[] | Functional role list (page permissions) for non-administrator users. Not returned if not set. |
 
 ## 2.9.2.3. create-user — Create a new user {#create-user}
 
-The new user's initial password is the same as the username.
+When no password is provided, the new user's initial password is the same as the username.
 
 ```http
 POST /api/config/create-user
@@ -81,6 +89,8 @@ Request body example application/json
 | --- | --- | --- |
 | username | String | (Required) Username |
 | isAdmin | Bool | Whether the user has administrator privileges. Defaults to true. |
+| roles | String[] | Functional role list (page permissions) for non-administrator users. Not set if omitted. |
+| password | String | Initial password. Defaults to the username when omitted. The password is never returned in the response. |
 
 Response example
 
@@ -97,6 +107,7 @@ Response example
 | id | Int32 | (Required) Database identifier, see [1.1.4. ID Database Identifier](/en/conventions/identifiers/#db-id) |
 | username | String | (Required) Username |
 | isAdmin | Bool | (Required) Whether the user has administrator privileges |
+| roles | String[] | Functional role list (page permissions) for non-administrator users. Not returned if not set. |
 
 ## 2.9.2.4. update-user — Update user settings {#update-user}
 
@@ -120,7 +131,8 @@ Request body example application/json
 | --- | --- | --- |
 | id | Int32 | (Required) Database identifier, see [1.1.4. ID Database Identifier](/en/conventions/identifiers/#db-id) |
 | username | String | Username. Not changed by default. |
-| isAdmin | Bool | Whether the user has administrator privileges. Not changed by default. |
+| isAdmin | Bool | Whether the user has administrator privileges. Not changed by default; however, when this user is the last remaining administrator in the system, `isAdmin: true` must be sent explicitly, otherwise INVALID_CONFIG_SETTING (At least one admin.) is returned. |
+| roles | String[] | Functional role list (page permissions) for non-administrator users. Not changed by default. |
 
 Response example
 
@@ -137,6 +149,7 @@ Response example
 | id | Int32 | (Required) Database identifier, see [1.1.4. ID Database Identifier](/en/conventions/identifiers/#db-id) |
 | username | String | (Required) Username |
 | isAdmin | Bool | (Required) Whether the user has administrator privileges |
+| roles | String[] | Functional role list (page permissions) for non-administrator users. Not returned if not set. |
 
 ## 2.9.2.5. delete-user — Delete a user {#delete-user}
 
@@ -199,7 +212,7 @@ Request body example application/json
 ```json
 {
   "id": 2,
-  "secretKey": "Token",
+  "secretKey": "sk-XXXXXXXXXX",
   "authorizedApis": "prefix,/cnc;prefix,/db;prefix,/analysis;prefix,/group-analysis;prefix,/config;prefix,/core;prefix,/gateway;prefix,/auth;"
 }
 ```
@@ -207,7 +220,7 @@ Request body example application/json
 | Request Parameter | Type | Description |
 | --- | --- | --- |
 | id | Int32 | (Required) Database identifier, see [1.1.4. ID Database Identifier](/en/conventions/identifiers/#db-id) |
-| secretKey | String | The secret key, prefixed with "sk-". |
+| secretKey | String | The secret key, prefixed with "sk-". The key must be unique across all users; a duplicate returns GENERAL_CONFIG_DUPLICATE_VALUE (Secret key already exists.). |
 | authorizedApis | String | Authorized APIs, i.e. the APIs the user is allowed to use. Not returned if not set. For the API command format, see [API Command Format](/en/http/config-global/#api-command-format). |
 
 Response example
@@ -215,7 +228,7 @@ Response example
 ```json
 {
   "id": 2,
-  "secretKey": "Token",
+  "secretKey": "sk-XXXXXXXXXX",
   "authorizedApis": "prefix,/cnc;prefix,/db;prefix,/analysis;prefix,/group-analysis;prefix,/config;prefix,/core;prefix,/gateway;prefix,/auth;"
 }
 ```

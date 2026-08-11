@@ -43,11 +43,11 @@ Alarm history `<field>` data fields:
 
 | Field | Type | Description |
 | --- | --- | --- |
-| alarmActive | Bool | true: alarm active; false: alarm cleared |
 | alarmLevel | String | Alarm level |
 | alarmMsg | String | Alarm message |
+| alarmTime | String | Time the alarm occurred (started) |
 
-The cumulative alarm count is the number of alarms accumulated since the gateway began automatically collecting data from this device. This value is stored in the gateway, bound to the machineID machine identifier, and is never reset.
+An AlarmHistory record is produced only when an alarm is cleared, so there is no active/cleared distinction. The alarmTime in the record is the time the alarm occurred (started), while the record's own timestamp is the time the alarm was cleared.
 
 ## 1.2.2. AlarmLog: Current Alarm {#alarmlog}
 
@@ -74,6 +74,7 @@ Servo axis overload data `<tag>` data tags:
 | No. | Tag | Type | Abbreviation | Description |
 | --- | --- | --- | --- | --- |
 | 1 | axisNo | Int32 | A | Axis number |
+| 2 | channel | Int32 | C | Channel number; if absent, the default channel is implied |
 
 ## 1.2.4. CNCStatus: Machine Status {#cncstatus}
 
@@ -89,11 +90,11 @@ Machine status `<field>` data fields:
 | programStatus | String | \*Program status, varies by system model |
 | emergencyStatus | String | \*Emergency stop status, see [Emergency Stop Status](/en/conventions/variables/#emergency-status) |
 | dryRunStatus | String | \*Dry run status, see [Dry Run Status](/en/conventions/variables/#dryrun-status) |
-| OffTime | UInt32 | Cumulative off time [s] |
-| WaitTime | UInt32 | Cumulative wait time [s] |
-| EmergencyTime | UInt32 | Cumulative emergency stop time [s] |
-| AutoRunTime | UInt32 | Cumulative auto run time [s] |
-| ManualTime | UInt32 | Cumulative manual (setup) time [s] |
+| offTime | Int64 | Cumulative off time [s] |
+| waitTime | Int64 | Cumulative wait time [s] |
+| emergencyTime | Int64 | Cumulative emergency stop time [s] |
+| autoRunTime | Int64 | Cumulative auto run time [s] |
+| manualTime | Int64 | Cumulative manual (setup) time [s] |
 
 The cumulative status times are the times accumulated for each status since the gateway began automatically collecting data from this device. These values are stored in the gateway, bound to the machineID machine identifier, and are never reset.
 
@@ -115,7 +116,7 @@ Machining count `<field>` data fields:
 | Field | Type | Description |
 | --- | --- | --- |
 | count | Int32 | Current number of workpieces machined, as recorded by the machine system |
-| cumulativeCount | UInt32 | Cumulative machining count |
+| cumulativeCount | Int32 | Cumulative machining count |
 | currentCount | Int32 | Current production output |
 
 The cumulative machining count is the machining count accumulated since the gateway began automatically collecting data from this device. This value is stored in the gateway, bound to the machineID machine identifier, and is never reset. Current production output is the production count for the machine within the monitoring period.
@@ -166,7 +167,7 @@ Energy consumption data `<field>` data fields:
 | spindleCoolingFan | Double | Spindle cooling fan [Wh] |
 | servoControl | Double | Servo control [Wh] |
 
-Currently, this data class is only supported on some newer Brother machine models.
+Currently, this data class is only supported on some newer Brother machine models and the Mock simulated machine.
 
 ## 1.2.9. Feed: Feed Data {#feed}
 
@@ -211,7 +212,7 @@ Group machining count `<field>` data fields:
 
 | Field | Type | Description |
 | --- | --- | --- |
-| cumulativeCount | UInt32 | Group cumulative machining count, i.e., the machining count accumulated since the gateway began automatically collecting data from this group of devices. See the Bivrost Gateway Manual [6.1.3. Group Machining Count](https://docs.bivrost.cn/gateway/reference/glossary#group-count) for details. |
+| cumulativeCount | Int32 | Group cumulative machining count, i.e., the machining count accumulated since the gateway began automatically collecting data from this group of devices. See the Bivrost Gateway Manual [6.1.3. Group Machining Count](https://docs.bivrost.cn/gateway/reference/glossary#group-count) for details. |
 
 ## 1.2.12. GroupCumulativeTime: Group Cumulative Status Time {#groupcumulativetime}
 
@@ -219,11 +220,11 @@ Group cumulative status time `<field>` data fields:
 
 | Field | Type | Description |
 | --- | --- | --- |
-| OffTime | UInt32 | Cumulative off time [s] |
-| WaitTime | UInt32 | Cumulative wait time [s] |
-| EmergencyTime | UInt32 | Cumulative emergency stop time [s] |
-| AutoRunTime | UInt32 | Cumulative auto run time [s] |
-| ManualTime | UInt32 | Cumulative manual (setup) time [s] |
+| offTime | Int64 | Cumulative off time [s] |
+| waitTime | Int64 | Cumulative wait time [s] |
+| emergencyTime | Int64 | Cumulative emergency stop time [s] |
+| autoRunTime | Int64 | Cumulative auto run time [s] |
+| manualTime | Int64 | Cumulative manual (setup) time [s] |
 
 The cumulative status times are the sums of each status time, accumulated since the gateway began automatically collecting data from this group, across all devices in the group.
 
@@ -307,7 +308,7 @@ Tool offset data `<field>` data fields:
 | lengthUnit | String | Tool offset length unit |
 | toolNose | Int32 | (Imaginary) tool nose position / tool edge type |
 | lengthWear | Double | Length wear |
-| radiuWear | Double | Radius wear |
+| radiusWear | Double | Radius wear |
 | lengthGeom | Double | Length geometry |
 | radiusGeom | Double | Radius geometry |
 | wearX | Double | Length X wear |
@@ -336,14 +337,15 @@ The combination of data tags depends on the machine's control system; the tag co
 | System Model | toolNum (tool number) | offsetNum (offset number) |
 | --- | --- | --- |
 | Bosunman 博尚 | X | O |
-| Brother 兄弟 | X | O |
+| Brother 兄弟 [General] | X | O |
+| Brother 兄弟 [S series, A00] | O | X |
 | Delta 台达 | X | O |
 | Fagor 法格 | X | O |
 | Fanuc 发那科 | X | O |
 | GSK 广数 | X | O |
 | Heidenhain 海德汉 | O; "T" column in tool table | X |
 | Haas 哈斯 | X | O |
-| Kede 科德 | X | O |
+| Kede 科德 | O | X |
 | Knd 凯恩帝 | X | O |
 | Lynuc 铼纳克 | X | O |
 | Mazak 马扎克 [Smart, Smooth] | X | O |
@@ -376,6 +378,7 @@ PLC data `<field>` data fields:
 | pDouble | Double | Double data obtained through post-processing |
 | pString | String | String data obtained through post-processing |
 | pBool | Bool | Bool data obtained through post-processing |
+| pTime | String | Time data obtained through post-processing |
 
 PLC data `<tag>` data tags:
 
@@ -436,6 +439,10 @@ Position data `<field>` data fields:
 | mach | Float[] | Machine coordinates, corresponding in order to the axis names in axisName |
 | rel | Float[] | Relative coordinates, corresponding in order to the axis names in axisName |
 | unit | String[] | Axis coordinate unit |
+| jointCoor | Float[] | Joint coordinates; returned for robot devices only |
+| robotCoor | Float[] | Robot (base) coordinates; returned for robot devices only |
+| userCoor | Float[] | User coordinates; returned for robot devices only |
+| worldCoor | Float[] | World coordinates; returned for robot devices only |
 
 Position data `<tag>` data tags:
 
@@ -466,7 +473,7 @@ Current program `<field>` data fields:
 | mainPrgmName | String | Current main program name |
 | programSeqNum | String | Sequence number of the currently executing subprogram block |
 | runningPrgName | String | Name of the currently executing subprogram |
-| programStack | String | Program stack, only supported on Siemens 西门子 [OPC UA] |
+| programStack | String | Program stack; supported on Siemens 西门子 only ([OPC UA], [General] (840D sl / 828D, S7 protocol), [810D/840D]) |
 
 Current program `<tag>` data tags:
 
@@ -515,6 +522,8 @@ Machine time data `<field>` data fields:
 | currentCycleTimeMs | Int32 | Current cycle time 2 [ms] |
 | currentCuttingTimeMin | Int32 | Current cutting time 1 [minutes] |
 | currentCuttingTimeMs | Int32 | Current cutting time 2 [ms] |
+| remainingCycleTimeMin | Int32 | Remaining cycle time 1 [minutes] |
+| remainingCycleTimeMs | Int32 | Remaining cycle time 2 [ms] |
 
 The time data supported by each system model is shown in the table below, where:
 
@@ -560,7 +569,7 @@ Time data supported by each system model (✅ = supported, blank = not supported
 | Mazak 马扎克 [MT-CONNECT] | ✅ |  | ✅ |  | ✅ |  |  |  |  |  |
 | Mazak 马扎克 [Smart, Smooth] | ✅ | ✅ | ✅ | ✅ | ✅ |  |  |  |  |  |
 | Mitsubishi 三菱 | ✅ |  | ✅ |  | ✅ |  |  | ✅ |  |  |
-| Mock 模拟机台 | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |  |
+| Mock 模拟机台 | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Okuma 大隈 | ✅ |  | ✅ |  | ✅ |  |  |  |  |  |
 | Rexroth 力士乐 [OPC UA] |  |  |  | ✅ |  |  |  | ✅ |  |  |
 | Siemens 西门子 | ✅ | ✅ |  | ✅ | ✅ |  |  | ✅ |  |  |
@@ -580,9 +589,9 @@ Tool life data `<field>` data fields:
 | countLimit | Int32 | Life limit [count], maximum available count |
 | currentCount | Int32 | Current life [count], count already used |
 | prewarningCount | Int32 | Prewarning life [count]; an alarm is raised when the current life reaches this value |
-| wearLimit | Int32 | Life limit [machine's default length unit], maximum allowable wear |
-| currentWear | Int32 | Current life [machine's default length unit], current wear amount |
-| prewarningWear | Int32 | Prewarning life [machine's default length unit]; an alarm is raised when the current life reaches this value |
+| wearLimit | Double | Life limit [machine's default length unit], maximum allowable wear |
+| currentWear | Double | Current life [machine's default length unit], current wear amount |
+| prewarningWear | Double | Prewarning life [machine's default length unit]; an alarm is raised when the current life reaches this value |
 
 **Raw Data**
 
@@ -593,9 +602,11 @@ Tool life data `<field>` data fields:
 | rawToolLifeStatus | String | Tool life status |
 | rawTimeLimit | Double | Life limit [time] |
 | rawTimeLimit1 | Double | Maximum tool life [time], Heidenhain only |
-| rawTimeLimit1 | Double | Maximum life of the called tool [time], Heidenhain only |
+| rawTimeLimit2 | Double | Maximum life of the called tool [time], Heidenhain only |
 | rawCurrentTime | Double | Current life [time] |
 | rawOverTime | Double | Tool life exceeded [time], Heidenhain only |
+| rawOverCount | Int32 | Tool life exceeded [count], Siemens only (user-defined module) |
+| rawPrewarningTime | Double | Prewarning life [time], Brother only |
 | rawRemainingTime | Double | Remaining life [time] |
 | rawPrewarningRemainingTime | Double | Prewarning remaining life [time] |
 | rawRemainingCount | Int32 | Remaining life [count] |

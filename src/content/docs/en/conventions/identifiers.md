@@ -9,7 +9,7 @@ While reading this documentation, some explanations may refer to the Bivrost Gat
 
 The content explained in this chapter applies to later chapters. Users can look up the explanations in this chapter based on the reference hints in specific use cases.
 
-The identifiers used in communication include machineID (machine identifier), groupID (group identifier), slaveID (slave identifier), ID (database identifier), and ID (file identifier).
+The identifiers used in communication include machineID (machine identifier), groupID (group identifier), slaveID (slave identifier), ID (database identifier), and uid (gateway identifier).
 
 ## 1.1.1. machineID (Machine Identifier) {#machineid}
 
@@ -26,3 +26,12 @@ The slaveID is used as the machine data identifier for MODBUS communication, wit
 ## 1.1.4. ID (Database Identifier) {#db-id}
 
 The ID (database identifier) is the identifier for a user, machine, or group in the local database. The ID is automatically generated in the database when a user, machine, or group is created, and cannot be created or modified by the user.
+
+## 1.1.5. uid (Gateway Identifier) {#uid}
+
+The uid (gateway identifier) is the gateway's own identifier. It defaults to the gateway's hardware ID and can be viewed via [2.9.1.1. gateway-info Get Gateway Information](/en/http/config-global/#gateway-info).
+
+Data collected by the gateway itself has an empty uid. In a cascaded (gatewayLinks) setup, data from a downstream gateway carries that gateway's uid, therefore:
+
+- The machine/group data and historical data APIs all accept an optional uid parameter that selects the gateway the data came from. When uid is omitted, only this gateway's own data is returned.
+- MQTT payloads and database output also emit uid as a data tag / data column.

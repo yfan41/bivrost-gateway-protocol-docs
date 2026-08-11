@@ -29,6 +29,10 @@ Data formats for RPC requests in the different modes:
 }
 ```
 
+:::note[Note]
+In Default/MKT/Brm mode, the `params` field must be present and must be a JSON object (or a string containing a JSON object); a request whose `params` is missing, null, an array or a scalar is discarded by the gateway, which only logs a `GENERAL_API_INVALID_REQUEST` error and publishes no reply message. Commands that take no input parameters (such as `settings`, `users`, `time`, and `service-status`) must still send `"params": {}`. In TB mode, a missing or null `params` is replaced with an empty object, and TB2 mode accepts JSON null.
+:::
+
 ### TB/TB2 Mode {#request-tb}
 
 ```json
@@ -44,12 +48,12 @@ Data formats for RPC requests in the different modes:
 
 ### WisIoT/IoTDA Mode {#request-wisiot-iotda}
 
-Not yet supported.
+WisIoT/IoTDA mode uses the same request message format as [Default/MKT/Brm mode](/en/mqtt/rpc/#request-default).
 
 Where `<request_id>` is the request identifier; `<method>` is the RPC command; `<params>` is the input parameters of the RPC command; `<deviceName>` is the machine name.
 
 :::note[Note]
-In TB mode, the parameter "machineID" in `<params>` does not need to be provided; the machine is instead specified by `<deviceName>`.
+In TB/TB2 mode, the parameters "machineID" and "groupID" in `<params>` do not need to be provided; the gateway overrides both from `<deviceName>`, so the machine and the machine group are instead specified by `<deviceName>`. In TB2 mode, `<deviceName>` is used directly as the entity ID, and a request whose `<deviceName>` is not a known machine or machine group entity ID is discarded: the gateway only logs a `GENERAL_API_INVALID_REQUEST` error and publishes no reply message.
 :::
 
 ## RPC Reply Message Format {#reply-format}
@@ -77,7 +81,7 @@ Message formats for RPC replies in the different modes:
 
 ### WisIoT/IoTDA Mode {#reply-wisiot-iotda}
 
-Not yet supported.
+WisIoT/IoTDA mode uses the same reply message format as [Default/MKT/Brm mode](/en/mqtt/rpc/#reply-default).
 
 Where `<response>` is the return result of the RPC command; `<deviceName>` is the machine name; `<request_id>` is the custom request identifier.
 
@@ -94,7 +98,7 @@ The gateway currently supports the following RPC commands:
 | readCNCStatusDetails | Read machine status details |
 | readCount | Read machining count |
 | readCurrentToolNumber | Read current tool number |
-| readEnergyConsumption | Read energy consumption data |
+| readEnergyConsum | Read energy consumption data |
 | readFeed | Read feed rate data |
 | readFeedAndSpindle | Read feed rate and spindle speed data |
 | readLaserPower | Read laser power |
@@ -135,6 +139,7 @@ The gateway currently supports the following RPC commands:
 | sendFile | Send file to machine |
 | batchSendFile | Batch send files to machine |
 | deleteFile | Delete machine file |
+| batchDeleteFile | Batch delete machine files |
 | lockFileByRange | Lock/unlock machine program editing |
 | createDir | Create machine directory |
 | deleteDir | Delete machine directory |
@@ -179,6 +184,9 @@ The gateway currently supports the following RPC commands:
 | update-settings | Modify gateway global settings |
 | security | Get gateway global security settings |
 | update-security | Modify gateway global security settings |
+| backup | Back up gateway configuration |
+| restore | Restore gateway configuration |
+| reset | Reset gateway configuration |
 
 ### User Configuration Interface, Prefix /config/ {#commands-config-users}
 
@@ -201,7 +209,7 @@ The gateway currently supports the following RPC commands:
 | create-machine | Add machine configuration |
 | update-machine | Modify machine configuration |
 | delete-machine | Delete machine configuration |
-| batch-delete-machine | Batch delete machine configurations |
+| batch-delete-machines | Batch delete machine configurations |
 
 ### Machine Group Configuration Interface, Prefix /config/ {#commands-config-groups}
 
@@ -212,12 +220,14 @@ The gateway currently supports the following RPC commands:
 | create-group | Add machine group configuration |
 | update-group | Modify machine group configuration |
 | delete-group | Delete machine group configuration |
-| batch-delete-group | Batch delete machine group configurations |
+| batch-delete-groups | Batch delete machine group configurations |
 
 ### Task Configuration Interface, Prefix /config/ {#commands-config-tasks}
 
 | RPC Command | Description |
 | --- | --- |
+| task-manager-settings | Get task manager settings |
+| update-task-manager-settings | Modify task manager settings |
 | machine-task-interval-settings | Get machine task interval settings |
 | update-machine-task-interval-settings | Modify machine task interval settings |
 | group-task-interval-settings | Get machine group task interval settings |
@@ -264,6 +274,9 @@ The gateway currently supports the following RPC commands:
 | license-info | Get license information |
 | service-status | Get service status |
 | upload-license | Upload gateway license |
+| settings | Get Core service settings |
+| log-level | Switch log level |
+| need-restart | Check whether the Core service needs to be restarted |
 
 ### Gateway Service Function Interface, Prefix /gateway/ {#commands-gateway}
 
@@ -283,6 +296,11 @@ The gateway currently supports the following RPC commands:
 | time-zones | Get time zone options |
 | update-time-zone | Modify gateway time zone |
 | network-adapters | Get gateway network adapter list |
+| ping | Ping network diagnostic |
+| telnet | Telnet port connectivity diagnostic |
+| traceroute | Traceroute diagnostic |
+| scan-ports | Scan ports |
+| lookup-dns | DNS lookup |
 | lan | Get wired network settings |
 | update-lan | Modify gateway wired network settings |
 | wifi | Get wireless network settings |
@@ -297,7 +315,14 @@ The gateway currently supports the following RPC commands:
 | file-server-items | Get gateway file server list |
 | delete-file-server-item | Delete gateway file server item |
 
-Except for the authentication interface and some file management interfaces, RPC commands correspond one-to-one with the corresponding interfaces in [2. HTTP Communication](/en/http/); input parameters and return results can be found in the interface descriptions in [2. HTTP Communication](/en/http/).
+### Log Interface, Prefix /log/ {#commands-log}
+
+| RPC Command | Description |
+| --- | --- |
+| access | Read access log |
+| error | Read error log |
+
+Except for the authentication interface and the stream-returning interfaces (`sendFileStream`, `receiveFileStream`, `backupFiles`, `/log/core`, `/log/gateway`), which are not available over RPC, RPC commands correspond one-to-one with the corresponding interfaces in [2. HTTP Communication](/en/http/); input parameters and return results can be found in the interface descriptions in [2. HTTP Communication](/en/http/).
 
 ## Examples {#rpc-examples}
 
@@ -326,8 +351,10 @@ Reply topic "response/1"; the reply message is as follows:
 
 ```json
 {
-  "errorCode": 0,
-  "errorMsg": "Success"
+  "data": {
+    "errorCode": 0,
+    "errorMsg": "Success"
+  }
 }
 ```
 
@@ -358,7 +385,9 @@ Reply topic "response/2"; the reply message is as follows:
 
 ```json
 {
-  "errorCode": 0,
-  "errorMsg": "Success"
+  "data": {
+    "errorCode": 0,
+    "errorMsg": "Success"
+  }
 }
 ```

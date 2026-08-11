@@ -29,7 +29,7 @@ GET /api/gateway/alias
 
 ## 2.10.2.2. update-alias 修改网关名称 {#update-alias}
 
-此接口无请求参数。注：此修改在硬件重启后生效。
+注：此修改在硬件重启后生效。
 
 ```http
 POST /api/gateway/update-alias
@@ -217,13 +217,13 @@ GET /api/gateway/time
 
 ```json
 {
-  "localTime": "2025-06-30T13:51:19.2864043+08:00"
+  "localTime": "2025-06-30T05:51:19.286Z"
 }
 ```
 
 | 返回参数 | 类型 | 说明 |
 | --- | --- | --- |
-| localTime | String | (必需)网关本地时间（ISO 8601） |
+| localTime | String | (必需)网关当前时间，按 UTC 输出（ISO 8601，格式 yyyy-MM-ddTHH:mm:ss.fffZ）。 |
 
 ## 2.10.2.10. sync-time 同步网关时间 {#sync-time}
 
@@ -282,9 +282,8 @@ GET /api/gateway/time-zones
 ```json
 {
   "timeZoneIDs": [
-  "Dateline Standard Time",
-  "UTC-11",
-  "Hawaiian Standard Time",
+  "Afghanistan Standard Time",
+  "Alaskan Standard Time",
   "Aleutian Standard Time",
   "…",
   "China Standard Time",
@@ -295,7 +294,7 @@ GET /api/gateway/time-zones
 
 | 返回参数 | 类型 | 说明 |
 | --- | --- | --- |
-| timeZoneIDs | String[] | (必需)网关时区选项（Microsoft Windows 时区 ID） |
+| timeZoneIDs | String[] | (必需)网关时区选项（Microsoft Windows 时区 ID），列表按时区 ID 字母序排序。 |
 
 ## 2.10.2.13. update-time-zone 修改网关时区 {#update-time-zone}
 
@@ -483,7 +482,7 @@ GET /api/gateway/wifi
 
 | 返回参数 | 类型 | 说明 |
 | --- | --- | --- |
-| wifiName | String | (必需)无线网络 SSID |
+| wifiName | String | 无线网络 SSID |
 | signalStrength | Int32 | 范围：0-100，越大信号越强 |
 | macAddress | String | (必需)物理地址 |
 | state | String | (必需)状态，范围：Connected，Disconnected。 |
@@ -494,6 +493,10 @@ GET /api/gateway/wifi
 | isDNSServerDHCPEnabled | Bool | (必需)自动获得 DNS 服务器地址 |
 | dnsServer1 | String | (必需)首选 DNS 服务器 |
 | dnsServer2 | String | (必需)备用 DNS 服务器 |
+
+:::note[注]
+仅当 state 为 Connected 时才返回 wifiName 与 signalStrength；未连接时这两个字段不会出现在返回结果中。
+:::
 
 ## 2.10.2.18. update-wifi 修改无线网设置 {#update-wifi}
 
@@ -545,7 +548,7 @@ POST /api/gateway/update-wifi
 
 | 返回参数 | 类型 | 说明 |
 | --- | --- | --- |
-| wifiName | String | (必需)无线网络 SSID |
+| wifiName | String | 无线网络 SSID |
 | signalStrength | Int32 | 范围：0-100，越大信号越强 |
 | macAddress | String | (必需)物理地址 |
 | state | String | (必需)状态，范围：Connected，Disconnected。 |
@@ -556,6 +559,10 @@ POST /api/gateway/update-wifi
 | isDNSServerDHCPEnabled | Bool | (必需)自动获得 DNS 服务器地址 |
 | dnsServer1 | String | (必需)首选 DNS 服务器 |
 | dnsServer2 | String | (必需)备用 DNS 服务器 |
+
+:::note[注]
+仅当 state 为 Connected 时才返回 wifiName 与 signalStrength；未连接时这两个字段不会出现在返回结果中。
+:::
 
 ## 2.10.2.19. search-wifi 搜索无线网 {#search-wifi}
 
@@ -653,7 +660,7 @@ GET /api/gateway/static-routing
 
 | 返回参数 | 类型 | 说明 |
 | --- | --- | --- |
-| staticRouting | Int32 | (必需)静态路由。 |
+| staticRouting | String | (必需)静态路由。多条路由以“;”分隔，每条格式为“IP, 子网掩码, 网关”。 |
 
 ## 2.10.2.23. update-static-routing 修改静态路由设置 {#update-static-routing}
 
@@ -671,7 +678,7 @@ POST /api/gateway/update-static-routing
 
 | 请求参数 | 类型 | 说明 |
 | --- | --- | --- |
-| staticRouting | Int32 | (必需)静态路由。 |
+| staticRouting | String | (必需)静态路由。多条路由以“;”分隔，每条格式为“IP, 子网掩码, 网关”；传空字符串表示清空全部持久路由；格式非法时返回错误代码 10012（IP 地址无效）。 |
 
 返回示例
 
@@ -683,7 +690,7 @@ POST /api/gateway/update-static-routing
 
 | 返回参数 | 类型 | 说明 |
 | --- | --- | --- |
-| staticRouting | Int32 | (必需)静态路由。 |
+| staticRouting | String | (必需)静态路由。多条路由以“;”分隔，每条格式为“IP, 子网掩码, 网关”。 |
 
 ## 2.10.2.24. connect-remote-host 连接远程服务器 {#connect-remote-host}
 
@@ -805,3 +812,183 @@ GET /api/gateway/delete-file-server-item
 | --- | --- | --- |
 | errorCode | Int32 | (必需)错误码，0 代表成功。 |
 | errorMsg | String | (必需)错误内容 |
+
+## 2.10.2.28. ping 网络连通性测试 {#ping}
+
+从网关向目标主机发送 ICMP 回显请求，用于测试网关到目标主机的连通性。单次探测超时为 1000 毫秒。
+
+```http
+GET /api/gateway/ping
+```
+
+| 请求参数 | 类型 | 说明 |
+| --- | --- | --- |
+| host | String | (必需)目标 IP 地址或主机名 |
+| count | Int32 | 探测次数，默认 4，最大 10，超出最大值返回错误。 |
+
+返回示例
+
+```json
+{
+  "isReachable": true,
+  "repliesMs": [
+    12,
+    11,
+    null,
+    13
+  ]
+}
+```
+
+| 返回参数 | 类型 | 说明 |
+| --- | --- | --- |
+| isReachable | Bool | (必需)目标是否可达，任一次探测收到回复即为 true。 |
+| repliesMs | Int64[] | (必需)每次探测的往返耗时（毫秒），该次探测超时未收到回复时为 null。 |
+
+## 2.10.2.29. telnet 端口连通性测试 {#telnet}
+
+从网关向目标主机的指定端口发起 TCP 连接，用于测试端口是否可达。连接超时为 3000 毫秒。
+
+```http
+GET /api/gateway/telnet
+```
+
+| 请求参数 | 类型 | 说明 |
+| --- | --- | --- |
+| host | String | (必需)目标 IP 地址或主机名 |
+| port | Int32 | (必需)目标端口，范围：1~65535。 |
+
+返回示例
+
+```json
+{
+  "isConnected": true
+}
+```
+
+| 返回参数 | 类型 | 说明 |
+| --- | --- | --- |
+| isConnected | Bool | (必需)是否能在 3 秒内建立 TCP 连接。 |
+
+## 2.10.2.30. traceroute 路由追踪 {#traceroute}
+
+从网关逐跳追踪到目标主机的网络路径。逐跳超时为 3000 毫秒。
+
+```http
+GET /api/gateway/traceroute
+```
+
+| 请求参数 | 类型 | 说明 |
+| --- | --- | --- |
+| host | String | (必需)目标 IP 地址或主机名 |
+| maxHops | Int32 | 最大跳数，默认 30，最大 64，超出最大值返回错误。 |
+
+返回示例
+
+```json
+{
+  "reachedTarget": true,
+  "hops": [
+    {
+      "hop": 1,
+      "address": "192.168.1.1",
+      "rttMs": 1
+    },
+    {
+      "hop": 2,
+      "address": null,
+      "rttMs": null
+    }
+  ]
+}
+```
+
+| 返回参数 | 类型 | 说明 |
+| --- | --- | --- |
+| reachedTarget | Bool | (必需)是否追踪到目标主机。 |
+| hops | Object[] | (必需)逐跳结果列表。 |
+| hop | Int32 | 跳数（TTL），从 1 开始。 |
+| address | String | 该跳响应节点的 IP 地址，该跳未响应时为 null。 |
+| rttMs | Int64 | 该跳往返耗时（毫秒），该跳未响应时为 null。 |
+
+## 2.10.2.31. scan-ports 端口扫描 {#scan-ports}
+
+对目标主机的一组端口逐个发起 TCP 连接，检测端口是否开放。单端口连接超时为 1000 毫秒。
+
+```http
+POST /api/gateway/scan-ports
+```
+
+请求体示例 application/json
+
+```json
+{
+  "host": "192.168.1.1",
+  "startPort": 80,
+  "endPort": 88,
+  "ports": [
+    443,
+    8080
+  ]
+}
+```
+
+| 请求参数 | 类型 | 说明 |
+| --- | --- | --- |
+| host | String | (必需)目标 IP 地址或主机名 |
+| startPort | Int32 | 端口区间起始值（闭区间），不得大于 endPort。 |
+| endPort | Int32 | 端口区间结束值（闭区间）。 |
+| ports | Int32[] | 需扫描的端口列表，与端口区间合并去重。 |
+
+:::note[注]
+端口区间与 ports 至少需给出一项，合并去重后为空时返回错误。端口取值范围为 1~65535，合并去重后的端口总数不得超过 1024。
+:::
+
+返回示例
+
+```json
+{
+  "ports": [
+    {
+      "port": 80,
+      "isOpen": true
+    },
+    {
+      "port": 443,
+      "isOpen": false
+    }
+  ]
+}
+```
+
+| 返回参数 | 类型 | 说明 |
+| --- | --- | --- |
+| ports | Object[] | (必需)端口扫描结果列表。 |
+| port | Int32 | 端口号 |
+| isOpen | Bool | 端口是否开放 |
+
+## 2.10.2.32. lookup-dns DNS 解析 {#lookup-dns}
+
+在网关上解析指定主机名，返回对应的 IP 地址列表。
+
+```http
+GET /api/gateway/lookup-dns
+```
+
+| 请求参数 | 类型 | 说明 |
+| --- | --- | --- |
+| host | String | (必需)待解析的主机名 |
+
+返回示例
+
+```json
+{
+  "addresses": [
+    "142.250.196.238"
+  ]
+}
+```
+
+| 返回参数 | 类型 | 说明 |
+| --- | --- | --- |
+| addresses | String[] | (必需)解析到的 IP 地址列表；无法解析时为空数组，不返回错误码。 |

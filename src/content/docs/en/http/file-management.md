@@ -18,18 +18,21 @@ Most file management interfaces accept an additional request parameter, dirAtCNC
 | Machine storage | Brother [TC series] | X | `/` |
 | Machine storage | Brother [S series] | O | `/` |
 | Machine storage | Delta [general] | O | `B:\` |
-| Machine storage | Fagor [all models] | O | `MEMORY` |
+| Machine storage | Fagor [8035M/T, 8040M/T, 8055M/T]\*\*\* | O | `MEMORY` |
 | Machine storage | Fanuc [0i-D, 0i-F, 30i, 31i, 32i, 35i, Power Motion i-A]\* | O | `//CNC_MEM/` |
 | Machine storage | Fanuc [models other than 0i-D, 0i-F, 30i, 31i, 32i, 35i, Power Motion i-A] | X | The current foreground directory configured on the machine, not fixed, e.g. `//CNC_MEM/` |
 | Machine storage | Gsk [980, 988] | O | `/user/NCPROG` |
-| Machine storage | Haas [general, MT-CONNECT] | O | None |
-| Machine storage | Heidenhain [TNC640, TNC640 DNC] | O | `TNC:\nc_prog` |
-| Machine storage | Heidenhain [iTNC530] | O | `TNC:\` |
+| Machine storage | Haas [general, MT-CONNECT] | X | None |
+| Machine storage | Heidenhain [TNC640, TNC640 DNC] | O | `TNC:/nc_prog` |
+| Machine storage | Heidenhain [iTNC530] | O | `TNC:/` |
+| Machine storage | HNC [1.24, 1.26.02] | O | `h/lnc8/` |
+| Machine storage | Jingdiao [JD50] | O | `E:\存储文件夹` |
+| Machine storage | Lanhao | O | `昊折\menudir\menu` |
 | Machine storage | Lynuc [all models] | O | `/home/Lynuc/Users/NCFiles` |
 | Machine storage | Mitsubishi [all models]\*\* | O | `PRG\USER\` |
 | Machine storage | Mock machine | O | `/` |
 | Machine storage | Okuma [all models] | O | `MD1` |
-| Machine storage | Rexroth [OPC UA] | O | `Filesystem/prog` |
+| Machine storage | Rexroth [OPC UA] | O | `/prog` |
 | Machine storage | Siemens [general] | O | `/nckfs` |
 | Machine storage | Siemens [OPC UA] | O | `Sinumerik/FileSystem/Part Program` |
 | Machine storage | Siemens [810D/840D] | O | `mpf.dir` |
@@ -47,6 +50,8 @@ X: Not supported
 
 \*\*: For Mitsubishi [M700 series, M800 series], the target directory path can be changed to an external CF card (M700 series) or SD card (M800 series), e.g. IC1.
 
+\*\*\*: Fagor [8060M/T/L, 8065M/T, 8070M/T/L] does not support program transfer, and does not support specifying a target directory path.
+
 ## 2.6.1. readProgramList — Read Machine File List {#readprogramlist}
 
 ```http
@@ -58,6 +63,7 @@ GET /api/cnc/readProgramList?machineID=MACHINEID&dirAtCNC=DIRATCNC&subDir=SUBDIR
 | machineID | String | (Required) Target machine identifier, see [1.1.1. machineID Machine Identifier](/en/conventions/identifiers/#machineid) |
 | dirAtCNC | String | Specifies the target directory path. If this parameter is not supplied, the default root directory path is used. See [Default Root Directory Paths by System Model](#default-root-paths) for each system model's default root directory path. |
 | subDir | String | Specifies the target subdirectory path. If dirAtCNC is not provided, the root directory path and subdirectory path are automatically concatenated to form dirAtCNC. Users can refer to the Bivrost Gateway Manual [5.3.1.3. Program Transfer Settings](https://docs.bivrost.cn/gateway/usage/machines#add-machine) to modify the root directory path; if it has not been modified, see [Default Root Directory Paths by System Model](#default-root-paths) for the default root directory path. If dirAtCNC and subDir are both supplied, subDir is ignored. |
+| startPrgNo | Int32 | Effective only for Fanuc [models other than 0i-D, 0i-F, 30i, 31i, 32i, 35i, Power Motion i-A]: reading starts from this program number; 0 (the default) means read all programs. Other system models ignore this parameter. |
 
 Response example
 
@@ -87,12 +93,12 @@ Response example
 | File Server Type | System [Model] | Retrieve File List | Retrieve Subfolder List |
 | --- | --- | --- | --- |
 | Machine storage | Brother [all models] | O | O |
-| Machine storage | Fagor [all models] | O | X |
+| Machine storage | Fagor [8035M/T, 8040M/T, 8055M/T] | O | X |
 | Machine storage | Fanuc [0i-D, 0i-F, 30i, 31i, 32i, 35i, Power Motion i-A] | \* | O |
 | Machine storage | Fanuc [models other than 0i-D, 0i-F, 30i, 31i, 32i, 35i, Power Motion i-A] | O | X |
 | Machine storage | Heidenhain [all models] | O | O |
 | Machine storage | Lynuc [all models] | O | O |
-| Machine storage | Mitsubishi [all models] | O | X |
+| Machine storage | Mitsubishi [all models] | O | O |
 | Machine storage | Mock machine | O | O |
 | Machine storage | Okuma [all models] | O | O |
 | Machine storage | Rexroth [OPC UA] | O | O |
@@ -196,6 +202,7 @@ GET /api/cnc/readCurrentProgram?machineID=MACHINEID&dirAtCNC=DIRATCNC&subDir=SUB
 | Request Parameter | Type | Description |
 | --- | --- | --- |
 | machineID | String | (Required) Target machine identifier, see [1.1. Basic Description](/en/conventions/identifiers/#machineid) for an explanation of machineID. |
+| channel | Int32 | Machine channel number. If not specified, it defaults to 0, i.e. the main channel |
 | dirAtCNC | String | Specifies the target directory path. If this parameter is not supplied, the default root directory path is used. See [Default Root Directory Paths by System Model](#default-root-paths) for each system model's default root directory path. |
 | subDir | String | Specifies the target subdirectory path. If dirAtCNC is not provided, the root directory path and subdirectory path are automatically concatenated to form dirAtCNC. Users can refer to the Bivrost Gateway Manual [5.3.1.3. Program Transfer Settings](https://docs.bivrost.cn/gateway/usage/machines#add-machine) to modify the root directory path; if it has not been modified, see [Default Root Directory Paths by System Model](#default-root-paths) for the default root directory path. If dirAtCNC and subDir are both supplied, subDir is ignored. |
 
@@ -226,9 +233,8 @@ When there is no file currently running:
 
 ```json
 {
-  "errorCode": 158,
-  "errorMsg": "Path is not found.",
-  "statusMsg": "No content."
+  "errorCode": 196,
+  "errorMsg": "Program not selected."
 }
 ```
 
@@ -239,6 +245,7 @@ When there is no file currently running:
 | content | String | File content |
 | encoding | String | Original file encoding |
 | base64 | String | When the file is in binary format, the gateway uses Base64 encoding to convert the binary content into a string. Users can decode it themselves to obtain the binary file. |
+| channel | Int32 | Machine channel number, present only when `channel` is included in the request and is not 0 |
 | errorCode | Int32 | Error code, 0 indicates success. |
 | errorMsg | String | Error message |
 | statusMsg | String | Error details |
@@ -514,7 +521,7 @@ The response body contains the execution results for each request in the request
 
 ## 2.6.10. lockFileByRange — Lock/Unlock Machine Program Editing {#lockfilebyrange}
 
-Currently, this only supports Mitsubishi and Fanuc systems, for locking/unlocking editing of program numbers within the ranges 8000-8999, 9000-9999, and 8000-9999. On some systems, a locked program cannot be edited but can still be deleted from the machine.
+Currently, this only supports Fanuc systems, for locking/unlocking editing of program numbers within the ranges 8000-8999, 9000-9999, and 8000-9999 (any other range returns 10017 Invalid API request.), as well as the Mock machine. On some systems, a locked program cannot be edited but can still be deleted from the machine.
 
 ```http
 GET /api/cnc/lockFileByRange?machineID=MACHINEID&isLock=ISLOCK&lockStart=LOCKSTART&lockEnd=LOCKEND
@@ -578,8 +585,10 @@ The system models that currently support creating machine directories are listed
 | Machine storage | Delta [general] | O |
 | Machine storage | Fanuc [0i-D, 0i-F, 30i, 31i, 32i, 35i, Power Motion i-A] | O |
 | Machine storage | GSK [all models] | X |
-| Machine storage | Haas [general, MT-CONNECT] | O |
+| Machine storage | Haas [general, MT-CONNECT] | X |
 | Machine storage | Heidenhain [all models] | O |
+| Machine storage | Jingdiao [JD50] | O |
+| Machine storage | Lanhao | O |
 | Machine storage | Mitsubishi [M70/M700 L, M70/M700 M, M80/M800 L, M80/M800 M] | \*CF card and SD card only (path: IC1) |
 | Machine storage | Mock machine | O |
 | Machine storage | Okuma [all models] | O |
@@ -681,6 +690,7 @@ GET /api/cnc/selectProgram?machineID=MACHINEID&fileName=FILENAME&dirAtCNC=DIRATC
 | Request Parameter | Type | Description |
 | --- | --- | --- |
 | machineID | String | (Required) Target machine identifier, see [1.1.1. machineID Machine Identifier](/en/conventions/identifiers/#machineid) |
+| channel | Int32 | Machine channel number. If not specified, it defaults to 0, i.e. the main channel |
 | fileName | String | (Required) File name of the target file, refer to the file name returned by [2.6.1. readProgramList — Read Machine File List](#readprogramlist) or [2.6.15. readAllPrograms — Browse All Files](#readallprograms). For some system models, such as Gsk and Siemens, the file name must include the file extension. |
 | dirAtCNC | String | Specifies the target directory path. If this parameter is not supplied, the default root directory path is used. See [Default Root Directory Paths by System Model](#default-root-paths) for each system model's default root directory path. |
 | subDir | String | Specifies the target subdirectory path. If dirAtCNC is not provided, the root directory path and subdirectory path are automatically concatenated to form dirAtCNC. Users can refer to the Bivrost Gateway Manual [5.3.1.3. Program Transfer Settings](https://docs.bivrost.cn/gateway/usage/machines#add-machine) to modify the root directory path; if it has not been modified, see [Default Root Directory Paths by System Model](#default-root-paths) for the default root directory path. If dirAtCNC and subDir are both supplied, subDir is ignored. |
@@ -704,9 +714,15 @@ Devices currently supported by this interface:
 
 | System [Model] | Notes |
 | --- | --- |
+| Bosunman [DF Series Ethernet, DF Series Serial over Ethernet] | |
 | Brother [all models] | Must be in automatic run mode or background edit mode; no program may currently be running. |
+| Delta [general] | |
 | Fanuc [0i-D, 0i-F, 30i, 31i, 32i, 35i, Power Motion i-A] | Must be in Auto or Edit mode. |
-| Gsk [980, 988] | Supported on some versions. |
+| Gsk [980, 988, 25i] | Supported on some versions. |
+| HNC [1.26.02] | |
+| Jingdiao [JD50] | |
+| KND [V4.3.00b, V5.1.00c] | |
+| Lynuc [general] | |
 | Mock machine | Always returns SUCCESS, but does not change the current program. |
 | Okuma [all models] | The mode execution mode parameter must be supplied. |
 | Syntec | |
@@ -724,6 +740,7 @@ GET /api/cnc/readAllPrograms?machineID=MACHINEID&dirAtCNC=DIRATCNC&subDir=SUBDIR
 | machineID | String | (Required) Target machine identifier, see [1.1.1. machineID Machine Identifier](/en/conventions/identifiers/#machineid) |
 | dirAtCNC | String | Specifies the target directory path. If this parameter is not supplied, the default root directory path is used. See [Default Root Directory Paths by System Model](#default-root-paths) for each system model's default root directory path. |
 | subDir | String | Specifies the target subdirectory path. If dirAtCNC is not provided, the root directory path and subdirectory path are automatically concatenated to form dirAtCNC. Users can refer to the Bivrost Gateway Manual [5.3.1.3. Program Transfer Settings](https://docs.bivrost.cn/gateway/usage/machines#add-machine) to modify the root directory path; if it has not been modified, see [Default Root Directory Paths by System Model](#default-root-paths) for the default root directory path. If dirAtCNC and subDir are both supplied, subDir is ignored. |
+| startPrgNo | Int32 | Effective only for Fanuc [models other than 0i-D, 0i-F, 30i, 31i, 32i, 35i, Power Motion i-A]: reading starts from this program number; 0 (the default) means read all programs. Other system models ignore this parameter. |
 
 Response example
 
@@ -766,6 +783,7 @@ GET /api/cnc/searchFile?machineID=MACHINEID&fileName=FILENAME&dirAtCNC=DIRATCNC&
 | fileName | String | (Required) Target file name, refer to the file name returned by [2.6.1. readProgramList — Read Machine File List](#readprogramlist) or [2.6.15. readAllPrograms — Browse All Files](#readallprograms). For some system models, such as Gsk and Siemens, the file name must include the file extension. |
 | dirAtCNC | String | Specifies the target directory path. If this parameter is not supplied, the default root directory path is used. See [Default Root Directory Paths by System Model](#default-root-paths) for each system model's default root directory path. |
 | subDir | String | Specifies the target subdirectory path. If dirAtCNC is not provided, the root directory path and subdirectory path are automatically concatenated to form dirAtCNC. Users can refer to the Bivrost Gateway Manual [5.3.1.3. Program Transfer Settings](https://docs.bivrost.cn/gateway/usage/machines#add-machine) to modify the root directory path; if it has not been modified, see [Default Root Directory Paths by System Model](#default-root-paths) for the default root directory path. If dirAtCNC and subDir are both supplied, subDir is ignored. |
+| startPrgNo | Int32 | Effective only for Fanuc [models other than 0i-D, 0i-F, 30i, 31i, 32i, 35i, Power Motion i-A]: reading starts from this program number; 0 (the default) means read all programs. Other system models ignore this parameter. |
 
 Response example
 

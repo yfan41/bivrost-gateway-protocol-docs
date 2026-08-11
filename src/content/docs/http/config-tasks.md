@@ -253,9 +253,9 @@ POST /api/config/update-oee-monitoring-settings
 {
   "monitorMode": "Time Window",
   "windowSize": 6000,
-  "resetTime": "00:00;01:00;2:00;22:00;",
+  "resetTime": "00:00;22:00;01:00;2:00",
   "availabilityMode": "Autorun Time / (Total Time - Break Time)",
-  "breakTimeInterval": "08:00-09:00;11:30-12:30;"
+  "breakTimeInterval": "08:00-09:00;11:30-12:30"
 }
 ```
 
@@ -339,7 +339,7 @@ GET /api/config/count-monitoring-settings
 | --- | --- | --- |
 | monitorMode | String | 监控模式，详见 [monitorMode 监控模式](#monitor-mode)。 |
 | windowSize | Int32 | 窗口时间(秒)，实时窗口模式下生效。 |
-| resetTime | String[] | 重置时刻(小时:分钟)，到点重置模式下生效。 |
+| resetTime | String | 重置时刻(小时:分钟)，到点重置模式下生效。多个时刻用 `;` 分隔。 |
 
 ## 2.9.5.10. update-count-monitoring-settings 修改加工计数监控设置 {#update-count-monitoring-settings}
 
@@ -367,7 +367,7 @@ POST /api/config/update-count-monitoring-settings
 {
   "monitorMode": "Scheduled Reset",
   "windowSize": 36000,
-  "resetTime": "3:24;12:22;15:28;23:00;"
+  "resetTime": "23:00;3:24;15:28;12:22"
 }
 ```
 
@@ -437,7 +437,8 @@ GET /api/config/alarm-monitoring-settings
 
 ```json
 {
-  "mininumAlarmLevel": "Warning"
+  "mininumAlarmLevel": "Warning",
+  "alarmMappingFileNames": "a.csv;b.csv;"
 }
 ```
 
@@ -450,6 +451,7 @@ GET /api/config/alarm-monitoring-settings
 | mininumAlarmLevel | String | 最低报警级别，详见 [mininumAlarmLevel 最低报警级别](#minimum-alarm-level)。 |
 | infoLevel | String | 消息级别关键词，不返回代表未设置 |
 | errorLevel | String | 错误级别关键词，不返回代表未设置 |
+| alarmMappingFileNames | String | 已上传的警报映射文件名列表，以 `;` 分隔（非空时以 `;` 结尾）。只读，请求中提供会被忽略。文件的上传、下载与删除见 [2.9.5.19. upload-alarm-mapping-file 上传警报映射文件](#upload-alarm-mapping-file)、[2.9.5.20. download-alarm-mapping-file 下载警报映射文件](#download-alarm-mapping-file)与 [2.9.5.21. delete-alarm-mapping-file 删除警报映射文件](#delete-alarm-mapping-file)。 |
 
 ### mininumAlarmLevel 最低报警级别 {#minimum-alarm-level}
 
@@ -458,6 +460,7 @@ GET /api/config/alarm-monitoring-settings
 | Information | 消息 |
 | Warning | 警告 |
 | Error | 错误 |
+| None | 无 |
 
 ## 2.9.5.14. update-alarm-monitoring-settings 修改警报监控设置 {#update-alarm-monitoring-settings}
 
@@ -479,13 +482,18 @@ POST /api/config/update-alarm-monitoring-settings
 
 请求参数见[警报监控设置参数](#alarm-params)。
 
+:::note[注]
+与本页其他修改接口不同，`infoLevel` 与 `errorLevel` 未在请求体中提供时会被清空，须每次完整提交；`mininumAlarmLevel` 未提供时保持原值。
+:::
+
 返回示例
 
 ```json
 {
   "mininumAlarmLevel": "Error",
   "infoLevel": "消息;提示;Inf",
-  "errorLevel": "错误;錯誤;Err"
+  "errorLevel": "错误;錯誤;Err",
+  "alarmMappingFileNames": "a.csv;b.csv;"
 }
 ```
 
@@ -557,3 +565,125 @@ POST /api/config/update-machine-status-monitoring-settings
 ```
 
 返回参数见[机台状态监控设置参数](#status-params)。
+
+## 2.9.5.17. task-manager-settings 获取任务管理器设置 {#task-manager-settings}
+
+此接口无请求参数。
+
+```http
+GET /api/config/task-manager-settings
+```
+
+返回示例
+
+```json
+{
+  "maxTaskManagers": 255
+}
+```
+
+返回参数如下表：
+
+### 任务管理器设置参数 {#task-manager-params}
+
+| 参数 | 类型 | 说明 |
+| --- | --- | --- |
+| maxTaskManagers | Int32 | 最大任务管理器数量，默认 255 |
+
+## 2.9.5.18. update-task-manager-settings 修改任务管理器设置 {#update-task-manager-settings}
+
+修改任务管理器设置并返回修改后的设置。
+
+```http
+POST /api/config/update-task-manager-settings
+```
+
+请求体示例
+
+```json
+{
+  "maxTaskManagers": 128
+}
+```
+
+请求参数见[任务管理器设置参数](#task-manager-params)。
+
+返回示例
+
+```json
+{
+  "maxTaskManagers": 128
+}
+```
+
+返回参数见[任务管理器设置参数](#task-manager-params)。
+
+## 2.9.5.19. upload-alarm-mapping-file 上传警报映射文件 {#upload-alarm-mapping-file}
+
+上传警报映射文件。文件名以查询参数提供，文件内容以二进制形式放在请求体中（Content-Type 为 application/octet-stream）。
+
+```http
+POST /api/config/upload-alarm-mapping-file?fileName=FILENAME
+```
+
+| 请求参数 | 类型 | 说明 |
+| --- | --- | --- |
+| fileName | String | (必需)警报映射文件名。为空时返回 GENERAL_API_INVALID_REQUEST（Invalid fileName.）。 |
+
+同名文件已存在时，网关不会覆盖，返回 GENERAL_INVALID_PATH（file already exists.）。如需替换，请先调用 [2.9.5.21. delete-alarm-mapping-file 删除警报映射文件](#delete-alarm-mapping-file)。
+
+返回示例
+
+```json
+{
+  "errorCode": 0,
+  "errorMsg": "Success"
+}
+```
+
+| 返回参数 | 类型 | 说明 |
+| --- | --- | --- |
+| errorCode | Int32 | (必需)错误码，0 代表成功。 |
+| errorMsg | String | (必需)错误内容 |
+
+## 2.9.5.20. download-alarm-mapping-file 下载警报映射文件 {#download-alarm-mapping-file}
+
+下载已上传的警报映射文件，返回体为文件流。
+
+```http
+GET /api/config/download-alarm-mapping-file?fileName=FILENAME
+```
+
+| 请求参数 | 类型 | 说明 |
+| --- | --- | --- |
+| fileName | String | (必需)警报映射文件名，可从[警报监控设置参数](#alarm-params)的 alarmMappingFileNames 获取。为空时返回 GENERAL_API_INVALID_REQUEST（Invalid fileName.）。 |
+
+文件不存在时返回 GENERAL_INVALID_PATH（file not found.）。
+
+## 2.9.5.21. delete-alarm-mapping-file 删除警报映射文件 {#delete-alarm-mapping-file}
+
+删除已上传的警报映射文件。
+
+```http
+GET /api/config/delete-alarm-mapping-file?fileName=FILENAME
+```
+
+| 请求参数 | 类型 | 说明 |
+| --- | --- | --- |
+| fileName | String | (必需)警报映射文件名，可从[警报监控设置参数](#alarm-params)的 alarmMappingFileNames 获取。为空时返回 GENERAL_API_INVALID_REQUEST（Invalid fileName.）。 |
+
+文件不存在时返回 GENERAL_INVALID_PATH（file not found.）。
+
+返回示例
+
+```json
+{
+  "errorCode": 0,
+  "errorMsg": "Success"
+}
+```
+
+| 返回参数 | 类型 | 说明 |
+| --- | --- | --- |
+| errorCode | Int32 | (必需)错误码，0 代表成功。 |
+| errorMsg | String | (必需)错误内容 |

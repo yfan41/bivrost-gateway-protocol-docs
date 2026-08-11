@@ -171,3 +171,95 @@ POST /api/config/update-security
 | --- | --- | --- |
 | enable | Bool | (必需)启用全局安全控制 |
 | protectedApi | String | 受保护 API，即禁止任何用户使用的 API。未返回代表未设置。API 命令格式参考 [API 命令格式](#api-command-format)。 |
+
+### 2.9.1.6. backup 备份网关配置 {#backup}
+
+导出当前网关配置文件。返回的字符串即 [2.9.1.7. restore 恢复网关配置](#restore) 接口的输入。
+
+此接口无请求参数。
+
+```http
+GET /api/config/backup
+```
+
+返回示例
+
+```json
+{
+  "base64": "XXXXXXXXXXXXXXXXXXXX"
+}
+```
+
+| 返回参数 | 类型 | 说明 |
+| --- | --- | --- |
+| base64 | String | (必需)加密后的网关配置文件内容，Base64 编码。 |
+
+读取配置文件失败时返回 GENERAL_CANNOT_ACCESS_CONFIG。
+
+### 2.9.1.7. restore 恢复网关配置 {#restore}
+
+```http
+POST /api/config/restore
+```
+
+请求体示例 application/json
+
+```json
+{
+  "base64": "XXXXXXXXXXXXXXXXXXXX"
+}
+```
+
+| 请求参数 | 类型 | 说明 |
+| --- | --- | --- |
+| base64 | String | (必需)备份的网关配置文件内容，即 [2.9.1.6. backup 备份网关配置](#backup) 接口返回的内容。 |
+
+成功时返回空内容。
+
+返回示例
+
+```json
+{
+  "errorCode": 0,
+  "errorMsg": "Success"
+}
+```
+
+| 返回参数 | 类型 | 说明 |
+| --- | --- | --- |
+| errorCode | Int32 | (必需)错误码，0 代表成功。 |
+| errorMsg | String | (必需)错误内容 |
+
+:::note[注]
+恢复成功后网关会自动重启以应用新配置。
+:::
+
+内容为空或无法解密时返回 GENERAL_API_INVALID_REQUEST，配置文件不可访问时返回 GENERAL_CANNOT_ACCESS_CONFIG。
+
+### 2.9.1.8. reset 重置网关配置 {#reset}
+
+此接口无请求参数。
+
+```http
+GET /api/config/reset
+```
+
+成功时返回空内容。
+
+返回示例
+
+```json
+{
+  "errorCode": 0,
+  "errorMsg": "Success"
+}
+```
+
+| 返回参数 | 类型 | 说明 |
+| --- | --- | --- |
+| errorCode | Int32 | (必需)错误码，0 代表成功。 |
+| errorMsg | String | (必需)错误内容 |
+
+:::note[注]
+此接口会清空所有网关配置（机台、分组、用户、通讯等）并恢复出厂默认设置（仅保留默认账号），操作不可撤销，建议先调用 [2.9.1.6. backup 备份网关配置](#backup) 接口备份配置。
+:::

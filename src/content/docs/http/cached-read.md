@@ -5,7 +5,7 @@ sidebar:
 ---
 
 
-使用缓存读写类接口，网关会返回缓存中对应的自动采集任务数据。使用此类接口，必须启用网关的本地缓存功能（出厂设置默认开启），并且开启对应的自动采集任务。
+使用缓存读写类接口，网关会返回缓存中对应的自动采集任务数据。使用此类接口，必须开启对应的自动采集任务。
 
 ## 2.5.2.1. readTaskData 读取机台任务数据 {#readtaskdata}
 
@@ -191,12 +191,12 @@ POST /api/cnc/batchReadGroupTaskData
 ]
 ```
 
-请求参数与 [2.5.2.1. readTaskData 读取机台任务数据](#readtaskdata)一致。
+请求参数与 [2.5.2.3. readGroupTaskData 读取机组任务数据](#readgrouptaskdata)一致。
 
 | 请求参数 | 类型 | 说明 |
 | --- | --- | --- |
-| groupID | String | 目标机组标识，详见 [1.1.2. groupID 机组标识](/conventions/identifiers/#groupid) |
-| type | String | 数据类，目前仅支持 [1.2.11. GroupCount：机组加工计数数据](/conventions/data-classes/#groupcount)，[1.2.12. GroupCumulativeTime：机组累计状态时间](/conventions/data-classes/#groupcumulativetime)，和 [1.2.13. GroupOEE：机组 OEE](/conventions/data-classes/#groupoee) |
+| groupID | String | (必需)目标机组标识，详见 [1.1.2. groupID 机组标识](/conventions/identifiers/#groupid) |
+| type | String | (必需)数据类，目前仅支持 [1.2.11. GroupCount：机组加工计数数据](/conventions/data-classes/#groupcount)，[1.2.12. GroupCumulativeTime：机组累计状态时间](/conventions/data-classes/#groupcumulativetime)，和 [1.2.13. GroupOEE：机组 OEE](/conventions/data-classes/#groupoee) |
 | tag | String | 标签的字段形式，详见 [1.2. 数据说明](/conventions/data-classes/) |
 
 返回示例
@@ -292,8 +292,6 @@ GET /api/cnc/readErrorSummary
   "error": 0
 }
 ```
-
-返回结果顺序与请求顺序一致。
 
 | 返回参数 | 类型 | 说明 |
 | --- | --- | --- |

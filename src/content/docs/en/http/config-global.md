@@ -171,3 +171,95 @@ Response example
 | --- | --- | --- |
 | enable | Bool | (Required) Enable global security control |
 | protectedApi | String | Protected APIs, i.e. APIs forbidden to all users. Not returned means not set. For the API command format, see [API Command Format](#api-command-format). |
+
+### 2.9.1.6. backup Back Up Gateway Configuration {#backup}
+
+Exports the current gateway configuration file. The returned string is the input of the [2.9.1.7. restore Restore Gateway Configuration](#restore) interface.
+
+This interface has no request parameters.
+
+```http
+GET /api/config/backup
+```
+
+Response example
+
+```json
+{
+  "base64": "XXXXXXXXXXXXXXXXXXXX"
+}
+```
+
+| Response Parameter | Type | Description |
+| --- | --- | --- |
+| base64 | String | (Required) Encrypted gateway configuration file content, Base64 encoded. |
+
+When the configuration file cannot be read, GENERAL_CANNOT_ACCESS_CONFIG is returned.
+
+### 2.9.1.7. restore Restore Gateway Configuration {#restore}
+
+```http
+POST /api/config/restore
+```
+
+Request body example application/json
+
+```json
+{
+  "base64": "XXXXXXXXXXXXXXXXXXXX"
+}
+```
+
+| Request Parameter | Type | Description |
+| --- | --- | --- |
+| base64 | String | (Required) Backed-up gateway configuration file content, i.e. the content returned by the [2.9.1.6. backup Back Up Gateway Configuration](#backup) interface. |
+
+On success, no content is returned.
+
+Response example
+
+```json
+{
+  "errorCode": 0,
+  "errorMsg": "Success"
+}
+```
+
+| Response Parameter | Type | Description |
+| --- | --- | --- |
+| errorCode | Int32 | (Required) Error code, 0 indicates success. |
+| errorMsg | String | (Required) Error message |
+
+:::note[Note]
+After a successful restore, the gateway restarts automatically to apply the new configuration.
+:::
+
+When the content is empty or cannot be decrypted, GENERAL_API_INVALID_REQUEST is returned; when the configuration file is not accessible, GENERAL_CANNOT_ACCESS_CONFIG is returned.
+
+### 2.9.1.8. reset Reset Gateway Configuration {#reset}
+
+This interface has no request parameters.
+
+```http
+GET /api/config/reset
+```
+
+On success, no content is returned.
+
+Response example
+
+```json
+{
+  "errorCode": 0,
+  "errorMsg": "Success"
+}
+```
+
+| Response Parameter | Type | Description |
+| --- | --- | --- |
+| errorCode | Int32 | (Required) Error code, 0 indicates success. |
+| errorMsg | String | (Required) Error message |
+
+:::note[Note]
+This interface clears all gateway configuration (machines, groups, users, communication, etc.) and restores the factory default settings (only the default account is kept). The operation cannot be undone; it is recommended to back up the configuration with the [2.9.1.6. backup Back Up Gateway Configuration](#backup) interface first.
+:::

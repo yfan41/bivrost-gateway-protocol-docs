@@ -72,7 +72,7 @@ Response Example
 | alarmLevel | String | Alarm level. If there are multiple alarms, the highest level among them is taken. If there is no alarm, this field is not returned. See [Alarm Level](/en/conventions/variables/#alarm-level) |
 | channel | Int32 | Machine channel number, present only when `channel` is included in the request and is not 0 |
 
-The adjusted running status `adjustedStatus`, cumulative shutdown time `offTime`, cumulative standby time `waitTime`, cumulative emergency-stop time `emergencyTime`, cumulative auto-run time `autoRunTime`, cumulative manual-adjustment time `ManualTime`, and other values derived by the gateway's post-processing are not currently supported over HTTP. Once an automatic collection task has been enabled, these can be obtained through the interface [2.5.2.1. readTaskData - Read Machine Task Data](/en/http/cached-read/#readtaskdata) or [2.5.2.2. batchReadTaskData - Batch Read Machine Task Data](/en/http/cached-read/#batchreadtaskdata), or via MODBUS, MQTT, database, or other means.
+The adjusted running status `adjustedStatus`, cumulative shutdown time `offTime`, cumulative standby time `waitTime`, cumulative emergency-stop time `emergencyTime`, cumulative auto-run time `autoRunTime`, cumulative manual-adjustment time `manualTime`, and other values derived by the gateway's post-processing are not currently supported over HTTP. Once an automatic collection task has been enabled, these can be obtained through the interface [2.5.2.1. readTaskData - Read Machine Task Data](/en/http/cached-read/#readtaskdata) or [2.5.2.2. batchReadTaskData - Batch Read Machine Task Data](/en/http/cached-read/#batchreadtaskdata), or via MODBUS, MQTT, database, or other means.
 
 ### 2.5.1.3. readCNCStatusDetails - Read Machine Status Details {#readcncstatusdetails}
 
@@ -113,7 +113,7 @@ Response Example
 | alarmLevel | String | Alarm level. If there are multiple alarms, the highest level among them is taken. If there is no alarm, this field is not returned. See [Alarm Level](/en/conventions/variables/#alarm-level) |
 | channel | Int32 | Machine channel number, present only when `channel` is included in the request and is not 0 |
 
-The adjusted running status `adjustedStatus`, cumulative shutdown time `offTime`, cumulative standby time `waitTime`, cumulative emergency-stop time `emergencyTime`, cumulative auto-run time `autoRunTime`, cumulative manual-adjustment time `ManualTime`, and other values derived by the gateway's post-processing are not currently supported over HTTP. Once an automatic collection task has been enabled, these can be obtained through the interface [2.5.2.1. readTaskData - Read Machine Task Data](/en/http/cached-read/#readtaskdata) or [2.5.2.2. batchReadTaskData - Batch Read Machine Task Data](/en/http/cached-read/#batchreadtaskdata), or via MODBUS, MQTT, database, or other means.
+The adjusted running status `adjustedStatus`, cumulative shutdown time `offTime`, cumulative standby time `waitTime`, cumulative emergency-stop time `emergencyTime`, cumulative auto-run time `autoRunTime`, cumulative manual-adjustment time `manualTime`, and other values derived by the gateway's post-processing are not currently supported over HTTP. Once an automatic collection task has been enabled, these can be obtained through the interface [2.5.2.1. readTaskData - Read Machine Task Data](/en/http/cached-read/#readtaskdata) or [2.5.2.2. batchReadTaskData - Batch Read Machine Task Data](/en/http/cached-read/#batchreadtaskdata), or via MODBUS, MQTT, database, or other means.
 
 ### 2.5.1.4. readCount - Read Machining Count {#readcount}
 
@@ -361,8 +361,9 @@ GET /api/cnc/readLog?machineID=MACHINEID
 | Request Parameter | Type | Description |
 | --- | --- | --- |
 | machineID | String | (Required) Target machine identifier, see [1.1.1. machineID Machine Identifier](/en/conventions/identifiers/#machineid) |
-| type | String | Type, possible values: Alarm (alarm log), Operation (operation log), Default (default), defaults to Default. ABB robots support Operation; Fanuc robots support Alarm; simulated machines support all types, and Default is equivalent to Operation. |
+| type | String | Type, possible values: Alarm (alarm log), Operation (operation log), Default (default), defaults to Default. ABB robots support Operation; Fanuc robots support Alarm; simulated machines support all types, and Default is equivalent to Operation. Multiple types can be specified separated by a semicolon `;` (e.g. `type=Alarm;Operation`), in which case the returned msgs is the logs of each type merged in order; an invalid value returns the error code CNCWRAPPER_INVALID_COMMAND. |
 | count | Int32 | Number of log entries. Retrieves the specified number of most recent log entries; defaults to 0, meaning all logs are retrieved. |
+| path | String | Log file path. Supported by ABB robots only; if specified, the entire content of that file is returned as the only element of msgs, and the type parameter is ignored. |
 
 Response Example (ABB robot, Operation)
 
@@ -408,3 +409,88 @@ Response Example (simulated machine, Alarm)
 | Response Parameter | Type | Description |
 | --- | --- | --- |
 | msgs | String[] | (Required) Log content. Note: the log content format differs between machine types. |
+
+### 2.5.1.25. readCNCCommonStatus - Read Machine Common Status {#readcnccommonstatus}
+
+In addition to the same machine status data returned by [2.5.1.3. readCNCStatusDetails - Read Machine Status Details](#readcncstatusdetails), this interface also returns status data specific to certain control systems.
+
+```http
+GET /api/cnc/readCNCCommonStatus?machineID=MACHINEID&channel=CHANNEL
+```
+
+| Request Parameter | Type | Description |
+| --- | --- | --- |
+| machineID | String | (Required) Target machine identifier, see [1.1.1. machineID Machine Identifier](/en/conventions/identifiers/#machineid) |
+| channel | Int32 | Machine channel number. If not specified, it defaults to 0, i.e. the main channel |
+
+Response Example
+
+```json
+{
+  "mode": "AUTO_RUN",
+  "programStatus": "RUNNING",
+  "emergencyStatus": "NOT_EMG",
+  "dryRunStatus": "DRY_RUN",
+  "cncStatus": "AUTO_RUN",
+  "alarmStatus": "ALARM",
+  "alarmLevel": "WRN",
+  "channel": 2
+}
+```
+
+| Response Parameter | Type | Description |
+| --- | --- | --- |
+| mode | String | Operating mode |
+| programStatus | String | Program status |
+| emergencyStatus | String | Emergency-stop status, see [Emergency-Stop Status](/en/conventions/variables/#emergency-status) |
+| dryRunStatus | String | Dry-run status, see [Dry-Run Status](/en/conventions/variables/#dryrun-status) |
+| cncStatus | String | (Required) Running status, see [Running Status](/en/conventions/variables/#cnc-status) |
+| alarmStatus | String | (Required) Alarm status, see [Alarm Status](/en/conventions/variables/#alarm-status) |
+| alarmLevel | String | Alarm level. If there are multiple alarms, the highest level among them is taken. If there is no alarm, this field is not returned. See [Alarm Level](/en/conventions/variables/#alarm-level) |
+| channel | Int32 | Machine channel number, present only when `channel` is included in the request and is not 0 |
+| mode2 | String | Manual mode selection on Fanuc [15, 15i]; secondary mode on Rexroth [OPC UA] |
+| readyStatus | String | Ready status, KND only |
+| alarmOnlyStatus | String | Alarm status (excluding warnings), LNC only |
+| emergencySetStatus | String | Emergency-stop setting status; LNC, Lanhao and Mazak [640] only |
+| lightColor1 | String | Color of signal light 1, Dmg Mori only |
+| lightStatus1 | String | Status of signal light 1, Dmg Mori only |
+| lightColor2 | String | Color of signal light 2, Dmg Mori only |
+| lightStatus2 | String | Status of signal light 2, Dmg Mori only |
+| lightColor3 | String | Color of signal light 3, Dmg Mori only |
+| lightStatus3 | String | Status of signal light 3, Dmg Mori only |
+| lightColor4 | String | Color of signal light 4, Dmg Mori only |
+| lightStatus4 | String | Status of signal light 4, Dmg Mori only |
+
+:::note[Note]
+The system-specific parameters in the table are returned only on machines running the corresponding control system; other machines do not return them.
+:::
+
+### 2.5.1.26. init Initialize Machine Connection {#init}
+
+This interface performs a connection initialization (preprocessing) for the target machine, used to establish or validate communication with the machine before reading or writing data. The interface returns no data, only the execution result.
+
+```http
+GET /api/cnc/init?machineID=MACHINEID
+```
+
+| Request Parameter | Type | Description |
+| --- | --- | --- |
+| machineID | String | (Required) Target machine identifier. See [1.1.1. machineID Machine Identifier](/en/conventions/identifiers/#machineid) |
+
+Example response
+
+```json
+{
+  "errorCode": 0,
+  "errorMsg": "Success"
+}
+```
+
+| Response Parameter | Type | Description |
+| --- | --- | --- |
+| errorCode | Int32 | (Required) Error code, 0 indicates success. |
+| errorMsg | String | (Required) Error message |
+
+:::note[Note]
+When initialization fails, error code 3 (machine off or offline) is returned, meaning communication with the machine could not be established.
+:::

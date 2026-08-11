@@ -13,15 +13,18 @@ Database table names take the form [table prefix][data class], where the table p
 | --- | --- |
 | alarmhistory | [AlarmHistory](/en/conventions/data-classes/#alarmhistory) |
 | alarmlog | [AlarmLog](/en/conventions/data-classes/#alarmlog) |
+| axialoverload | [AxialOverload](/en/conventions/data-classes/#axialoverload) |
 | cncstatus | [CNCStatus](/en/conventions/data-classes/#cncstatus) |
 | count | [Count](/en/conventions/data-classes/#count) |
 | currenttoolnumber | [CurrentToolNumber](/en/conventions/data-classes/#currenttoolnumber) |
 | cycle | [Cycle](/en/conventions/data-classes/#cycle) |
 | energyconsum | [EnergyConsum](/en/conventions/data-classes/#energyconsum) |
+| feed | [Feed](/en/conventions/data-classes/#feed) |
 | feedandspindle | [FeedAndSpindle](/en/conventions/data-classes/#feedandspindle) |
 | groupcount | [GroupCount](/en/conventions/data-classes/#groupcount) |
 | groupcumulativetime | [GroupCumulativeTime](/en/conventions/data-classes/#groupcumulativetime) |
 | groupoee | [GroupOEE](/en/conventions/data-classes/#groupoee) |
+| laserpower | [LaserPower](/en/conventions/data-classes/#laserpower) |
 | load | [Load](/en/conventions/data-classes/#load) |
 | loghistory | [LogHistory](/en/conventions/data-classes/#loghistory) |
 | machine | — (Machine information table) |
@@ -31,6 +34,7 @@ Database table names take the form [table prefix][data class], where the table p
 | position | [Position](/en/conventions/data-classes/#position) |
 | programblock | [ProgramBlock](/en/conventions/data-classes/#programblock) |
 | programinfo | [ProgramInfo](/en/conventions/data-classes/#programinfo) |
+| spindleoverload | [SpindleOverload](/en/conventions/data-classes/#spindleoverload) |
 | timedata | [TimeData](/en/conventions/data-classes/#timedata) |
 | toollife | [ToolLife](/en/conventions/data-classes/#toollife) |
 
@@ -38,17 +42,20 @@ The fields in each database table are the same as the tags and fields of the cor
 
 | # | Name | Data Type | Length/Decimal Point |
 | --- | --- | --- | --- |
-| 1 | id | BIGINT | 20 |
-| 2 | cncStatus | TEXT | |
-| 3 | adjustedStatus | TEXT | |
-| 4 | alarmStatus | TEXT | |
-| 5 | alarmLevel | TEXT | |
-| 6 | offTime | BIGINT | 20 |
-| 7 | waitTime | BIGINT | 20 |
-| 8 | emergencyTime | BIGINT | 20 |
-| 9 | autoRunTime | BIGINT | 20 |
-| 10 | manualTime | BIGINT | 20 |
-| 11 | channel | VARCHAR | 128 |
-| 12 | machineID | VARCHAR | 128 |
-| 13 | time | DATETIME | 3 |
-| 14 | uid | VARCHAR | 128 |
+| 1 | cncStatus | TEXT | |
+| 2 | adjustedStatus | TEXT | |
+| 3 | alarmStatus | TEXT | |
+| 4 | alarmLevel | TEXT | |
+| 5 | offTime | BIGINT | 20 |
+| 6 | waitTime | BIGINT | 20 |
+| 7 | emergencyTime | BIGINT | 20 |
+| 8 | autoRunTime | BIGINT | 20 |
+| 9 | manualTime | BIGINT | 20 |
+| 10 | channel | VARCHAR | 128 |
+| 11 | machineID | VARCHAR | 128 |
+| 12 | time | DATETIME | 3 |
+| 13 | uid | VARCHAR | 128 |
+
+:::note[Note]
+The table above does not include an `id` primary key column. An auto-increment `id` primary key column is created as the first column only when the "Enable primary key" option is switched on in the database configuration (off by default); its SQL data type depends on the database type: `bigint` for MySQL and SQL Server, `bigserial` for PostgreSQL, and `integer` for SQLite.
+:::

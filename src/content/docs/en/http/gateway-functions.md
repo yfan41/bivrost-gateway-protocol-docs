@@ -29,7 +29,7 @@ Response example
 
 ## 2.10.2.2. update-alias - Update gateway name {#update-alias}
 
-This interface takes no request parameters. Note: this change takes effect after the hardware is rebooted.
+Note: this change takes effect after the hardware is rebooted.
 
 ```http
 POST /api/gateway/update-alias
@@ -217,13 +217,13 @@ Response example
 
 ```json
 {
-  "localTime": "2025-06-30T13:51:19.2864043+08:00"
+  "localTime": "2025-06-30T05:51:19.286Z"
 }
 ```
 
 | Response Parameter | Type | Description |
 | --- | --- | --- |
-| localTime | String | (Required) Gateway local time (ISO 8601) |
+| localTime | String | (Required) The gateway's current time, output in UTC (ISO 8601, format yyyy-MM-ddTHH:mm:ss.fffZ). |
 
 ## 2.10.2.10. sync-time - Synchronize gateway time {#sync-time}
 
@@ -282,9 +282,8 @@ Response example
 ```json
 {
   "timeZoneIDs": [
-  "Dateline Standard Time",
-  "UTC-11",
-  "Hawaiian Standard Time",
+  "Afghanistan Standard Time",
+  "Alaskan Standard Time",
   "Aleutian Standard Time",
   "…",
   "China Standard Time",
@@ -295,7 +294,7 @@ Response example
 
 | Response Parameter | Type | Description |
 | --- | --- | --- |
-| timeZoneIDs | String[] | (Required) Available gateway time zone options (Microsoft Windows time zone IDs) |
+| timeZoneIDs | String[] | (Required) Available gateway time zone options (Microsoft Windows time zone IDs). The list is sorted alphabetically by time zone ID. |
 
 ## 2.10.2.13. update-time-zone - Update gateway time zone {#update-time-zone}
 
@@ -483,7 +482,7 @@ Response example
 
 | Response Parameter | Type | Description |
 | --- | --- | --- |
-| wifiName | String | (Required) Wireless network SSID |
+| wifiName | String | Wireless network SSID |
 | signalStrength | Int32 | Range: 0-100, the higher the value the stronger the signal |
 | macAddress | String | (Required) MAC address |
 | state | String | (Required) State, valid range: Connected, Disconnected. |
@@ -494,6 +493,10 @@ Response example
 | isDNSServerDHCPEnabled | Bool | (Required) Obtain DNS server address automatically |
 | dnsServer1 | String | (Required) Preferred DNS server |
 | dnsServer2 | String | (Required) Alternate DNS server |
+
+:::note[Note]
+wifiName and signalStrength are returned only when state is Connected; when the gateway is not connected to a wireless network, these two fields are omitted from the response.
+:::
 
 ## 2.10.2.18. update-wifi - Update wireless network settings {#update-wifi}
 
@@ -545,7 +548,7 @@ Response example
 
 | Response Parameter | Type | Description |
 | --- | --- | --- |
-| wifiName | String | (Required) Wireless network SSID |
+| wifiName | String | Wireless network SSID |
 | signalStrength | Int32 | Range: 0-100, the higher the value the stronger the signal |
 | macAddress | String | (Required) MAC address |
 | state | String | (Required) State, valid range: Connected, Disconnected. |
@@ -556,6 +559,10 @@ Response example
 | isDNSServerDHCPEnabled | Bool | (Required) Obtain DNS server address automatically |
 | dnsServer1 | String | (Required) Preferred DNS server |
 | dnsServer2 | String | (Required) Alternate DNS server |
+
+:::note[Note]
+wifiName and signalStrength are returned only when state is Connected; when the gateway is not connected to a wireless network, these two fields are omitted from the response.
+:::
 
 ## 2.10.2.19. search-wifi - Search for wireless networks {#search-wifi}
 
@@ -653,7 +660,7 @@ Response example
 
 | Response Parameter | Type | Description |
 | --- | --- | --- |
-| staticRouting | Int32 | (Required) Static routing. |
+| staticRouting | String | (Required) Static routing. Multiple routes are separated by ";", and each route has the format "IP, subnet mask, gateway". |
 
 ## 2.10.2.23. update-static-routing - Update static routing settings {#update-static-routing}
 
@@ -671,7 +678,7 @@ Request body example application/json
 
 | Request Parameter | Type | Description |
 | --- | --- | --- |
-| staticRouting | Int32 | (Required) Static routing. |
+| staticRouting | String | (Required) Static routing. Multiple routes are separated by ";", and each route has the format "IP, subnet mask, gateway". Passing an empty string clears all persistent routes. An invalid format returns error code 10012 (invalid IP address). |
 
 Response example
 
@@ -683,7 +690,7 @@ Response example
 
 | Response Parameter | Type | Description |
 | --- | --- | --- |
-| staticRouting | Int32 | (Required) Static routing. |
+| staticRouting | String | (Required) Static routing. Multiple routes are separated by ";", and each route has the format "IP, subnet mask, gateway". |
 
 ## 2.10.2.24. connect-remote-host - Connect to remote server {#connect-remote-host}
 
@@ -805,3 +812,183 @@ Response example
 | --- | --- | --- |
 | errorCode | Int32 | (Required) Error code, 0 indicates success. |
 | errorMsg | String | (Required) Error message |
+
+## 2.10.2.28. ping - Test network reachability {#ping}
+
+Sends ICMP echo requests from the gateway to a target host, to test reachability from the gateway to that host. Each attempt times out after 1000 ms.
+
+```http
+GET /api/gateway/ping
+```
+
+| Request Parameter | Type | Description |
+| --- | --- | --- |
+| host | String | (Required) Target IP address or host name |
+| count | Int32 | Number of attempts, default 4, maximum 10; exceeding the maximum returns an error. |
+
+Response example
+
+```json
+{
+  "isReachable": true,
+  "repliesMs": [
+    12,
+    11,
+    null,
+    13
+  ]
+}
+```
+
+| Response Parameter | Type | Description |
+| --- | --- | --- |
+| isReachable | Bool | (Required) Whether the target is reachable; true if any attempt received a reply. |
+| repliesMs | Int64[] | (Required) Round-trip time of each attempt (milliseconds); null when that attempt timed out without a reply. |
+
+## 2.10.2.29. telnet - Test port connectivity {#telnet}
+
+Opens a TCP connection from the gateway to the specified port on a target host, to test whether the port is reachable. The connection times out after 3000 ms.
+
+```http
+GET /api/gateway/telnet
+```
+
+| Request Parameter | Type | Description |
+| --- | --- | --- |
+| host | String | (Required) Target IP address or host name |
+| port | Int32 | (Required) Target port, valid range: 1-65535. |
+
+Response example
+
+```json
+{
+  "isConnected": true
+}
+```
+
+| Response Parameter | Type | Description |
+| --- | --- | --- |
+| isConnected | Bool | (Required) Whether a TCP connection can be established within 3 seconds. |
+
+## 2.10.2.30. traceroute - Trace network route {#traceroute}
+
+Traces the network path from the gateway to a target host hop by hop. Each hop times out after 3000 ms.
+
+```http
+GET /api/gateway/traceroute
+```
+
+| Request Parameter | Type | Description |
+| --- | --- | --- |
+| host | String | (Required) Target IP address or host name |
+| maxHops | Int32 | Maximum number of hops, default 30, maximum 64; exceeding the maximum returns an error. |
+
+Response example
+
+```json
+{
+  "reachedTarget": true,
+  "hops": [
+    {
+      "hop": 1,
+      "address": "192.168.1.1",
+      "rttMs": 1
+    },
+    {
+      "hop": 2,
+      "address": null,
+      "rttMs": null
+    }
+  ]
+}
+```
+
+| Response Parameter | Type | Description |
+| --- | --- | --- |
+| reachedTarget | Bool | (Required) Whether the target host was reached. |
+| hops | Object[] | (Required) List of per-hop results. |
+| hop | Int32 | Hop number (TTL), starting from 1. |
+| address | String | IP address of the node that responded at this hop; null when the hop did not respond. |
+| rttMs | Int64 | Round-trip time of this hop (milliseconds); null when the hop did not respond. |
+
+## 2.10.2.31. scan-ports - Scan ports {#scan-ports}
+
+Opens a TCP connection to each port in a set of ports on the target host, to detect whether the ports are open. Each port connection times out after 1000 ms.
+
+```http
+POST /api/gateway/scan-ports
+```
+
+Request body example application/json
+
+```json
+{
+  "host": "192.168.1.1",
+  "startPort": 80,
+  "endPort": 88,
+  "ports": [
+    443,
+    8080
+  ]
+}
+```
+
+| Request Parameter | Type | Description |
+| --- | --- | --- |
+| host | String | (Required) Target IP address or host name |
+| startPort | Int32 | Start of the port range (inclusive); must not be greater than endPort. |
+| endPort | Int32 | End of the port range (inclusive). |
+| ports | Int32[] | List of ports to scan; merged with the port range and deduplicated. |
+
+:::note[Note]
+At least one of the port range and ports must be provided; an error is returned when the merged, deduplicated set is empty. Ports must be between 1 and 65535, and the merged, deduplicated set must not exceed 1024 ports.
+:::
+
+Response example
+
+```json
+{
+  "ports": [
+    {
+      "port": 80,
+      "isOpen": true
+    },
+    {
+      "port": 443,
+      "isOpen": false
+    }
+  ]
+}
+```
+
+| Response Parameter | Type | Description |
+| --- | --- | --- |
+| ports | Object[] | (Required) List of port scan results. |
+| port | Int32 | Port number |
+| isOpen | Bool | Whether the port is open |
+
+## 2.10.2.32. lookup-dns - Resolve a host name {#lookup-dns}
+
+Resolves the specified host name on the gateway and returns the corresponding list of IP addresses.
+
+```http
+GET /api/gateway/lookup-dns
+```
+
+| Request Parameter | Type | Description |
+| --- | --- | --- |
+| host | String | (Required) Host name to resolve |
+
+Response example
+
+```json
+{
+  "addresses": [
+    "142.250.196.238"
+  ]
+}
+```
+
+| Response Parameter | Type | Description |
+| --- | --- | --- |
+| addresses | String[] | (Required) List of resolved IP addresses; an empty array is returned when the host name cannot be resolved, with no error code. |

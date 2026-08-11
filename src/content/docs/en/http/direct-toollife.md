@@ -135,9 +135,9 @@ toolNum is the position shown above; toolOffsetNum is the D shown above; wearLim
 | countLimit | Int32 | Life limit [counts], the maximum usable count |
 | currentCount | Int32 | Current life [counts], the count already used |
 | prewarningCount | Int32 | Warning life [counts], an alarm is raised when the current life reaches this value |
-| wearLimit | Int32 | Life limit [machine's default length unit], the maximum allowable wear |
-| currentWear | Int32 | Current life [machine's default length unit], the current wear amount |
-| prewarningWear | Int32 | Warning life [machine's default length unit], an alarm is raised when the current life reaches this value |
+| wearLimit | Double | Life limit [machine's default length unit], the maximum allowable wear |
+| currentWear | Double | Current life [machine's default length unit], the current wear amount |
+| prewarningWear | Double | Warning life [machine's default length unit], an alarm is raised when the current life reaches this value |
 
 :::note[Note]
 This table lists the generic tool life data. To standardize across all machine systems, some parameters are converted from the raw data. To obtain the raw data, use [2.5.1.23. readToolLifeDetails: Read Tool Life Details](#readtoollifedetails).
@@ -213,9 +213,9 @@ The response parameters are the same as [2.5.1.21. readToolLife: Read Tool Life]
 | countLimit | Int32 | Life limit [counts], the maximum usable count |
 | currentCount | Int32 | Current life [counts], the count already used |
 | prewarningCount | Int32 | Warning life [counts], an alarm is raised when the current life reaches this value |
-| wearLimit | Int32 | Life limit [machine's default length unit], the maximum allowable wear |
-| currentWear | Int32 | Current life [machine's default length unit], the current wear amount |
-| prewarningWear | Int32 | Warning life [machine's default length unit], an alarm is raised when the current life reaches this value |
+| wearLimit | Double | Life limit [machine's default length unit], the maximum allowable wear |
+| currentWear | Double | Current life [machine's default length unit], the current wear amount |
+| prewarningWear | Double | Warning life [machine's default length unit], an alarm is raised when the current life reaches this value |
 
 :::note[Note]
 This table lists the generic tool life data. To standardize across all machine systems, some data is converted from the raw data.
@@ -361,7 +361,7 @@ toolNum is the position shown above; toolOffsetNum is the D shown above; wearLim
 | Response Parameter | Type | Description |
 | --- | --- | --- |
 | **Generic Data** | | |
-| groupNum | Int32 | Tool group number |
+| toolGroupNum | Int32 | Tool group number |
 | toolIndex | Int32 | Index within the group |
 | toolNum | Int32 | Tool number |
 | toolOffsetNum | Int32 | Offset number |
@@ -371,9 +371,9 @@ toolNum is the position shown above; toolOffsetNum is the D shown above; wearLim
 | countLimit | Int32 | Life limit [counts], the maximum usable count |
 | currentCount | Int32 | Current life [counts], the count already used |
 | prewarningCount | Int32 | Warning life [counts], an alarm is raised when the current life reaches this value |
-| wearLimit | Int32 | Life limit [machine's default length unit], the maximum allowable wear |
-| currentWear | Int32 | Current life [machine's default length unit], the current wear amount |
-| prewarningWear | Int32 | Warning life [machine's default length unit], an alarm is raised when the current life reaches this value |
+| wearLimit | Double | Life limit [machine's default length unit], the maximum allowable wear |
+| currentWear | Double | Current life [machine's default length unit], the current wear amount |
+| prewarningWear | Double | Warning life [machine's default length unit], an alarm is raised when the current life reaches this value |
 | **Raw Data** | | |
 | rawToolLifeType | String | Tool life type |
 | rawToolLifeUnit | String | Time unit, hereafter abbreviated as [Time] |
@@ -383,12 +383,14 @@ toolNum is the position shown above; toolOffsetNum is the D shown above; wearLim
 | rawTimeLimit2 | Double | Maximum life of the invoked tool [Time], Heidenhain only |
 | rawCurrentTime | Double | Current life [Time] |
 | rawOverTime | Double | Time exceeding tool life [Time], Heidenhain only |
-| rawRemainingTime | Double | Remaining life [Time], Siemens only |
-| rawPrewarningRemainingTime | Double | Warning remaining life [Time], Siemens only |
-| rawRemainingCount | Int32 | Remaining life [counts], Siemens only |
-| rawPrewarningRemainingCount | Int32 | Warning remaining life [counts], Siemens only |
-| rawRemainingWear | Double | Remaining life [machine's default length unit], Siemens only |
-| rawPrewarningRemainingWear | Double | Warning remaining life [machine's default length unit], Siemens only |
+| rawOverCount | Int32 | Count exceeding tool life [counts], Siemens only (user-defined module) |
+| rawRemainingTime | Double | Remaining life [Time] |
+| rawPrewarningRemainingTime | Double | Warning remaining life [Time] |
+| rawPrewarningTime | Double | Warning life [Time], Brother only |
+| rawRemainingCount | Int32 | Remaining life [counts] |
+| rawPrewarningRemainingCount | Int32 | Warning remaining life [counts] |
+| rawRemainingWear | Double | Remaining life [machine's default length unit] |
+| rawPrewarningRemainingWear | Double | Warning remaining life [machine's default length unit] |
 | inventoryNum | String | Tool identification code, Heidenhain only |
 
 :::note[Note]
@@ -456,7 +458,7 @@ The response parameters are the same as [2.5.1.23. readToolLifeDetails: Read Too
 | Response Parameter | Type | Description |
 | --- | --- | --- |
 | **Generic Data** | | |
-| groupNum | Int32 | Tool group number |
+| toolGroupNum | Int32 | Tool group number |
 | toolIndex | Int32 | Index within the group |
 | toolNum | Int32 | Tool number |
 | toolOffsetNum | Int32 | Offset number |
@@ -466,9 +468,9 @@ The response parameters are the same as [2.5.1.23. readToolLifeDetails: Read Too
 | countLimit | Int32 | Life limit [counts], the maximum usable count |
 | currentCount | Int32 | Current life [counts], the count already used |
 | prewarningCount | Int32 | Warning life [counts], an alarm is raised when the current life reaches this value |
-| wearLimit | Int32 | Life limit [machine's default length unit], the maximum allowable wear |
-| currentWear | Int32 | Current life [machine's default length unit], the current wear amount |
-| prewarningWear | Int32 | Warning life [machine's default length unit], an alarm is raised when the current life reaches this value |
+| wearLimit | Double | Life limit [machine's default length unit], the maximum allowable wear |
+| currentWear | Double | Current life [machine's default length unit], the current wear amount |
+| prewarningWear | Double | Warning life [machine's default length unit], an alarm is raised when the current life reaches this value |
 | **Raw Data** | | |
 | rawToolLifeType | String | Tool life type |
 | rawToolLifeUnit | String | Time unit, hereafter abbreviated as [Time] |
@@ -478,12 +480,14 @@ The response parameters are the same as [2.5.1.23. readToolLifeDetails: Read Too
 | rawTimeLimit2 | Double | Maximum life of the invoked tool [Time], Heidenhain only |
 | rawCurrentTime | Double | Current life [Time] |
 | rawOverTime | Double | Time exceeding tool life [Time], Heidenhain only |
-| rawRemainingTime | Double | Remaining life [Time], Siemens only |
-| rawPrewarningRemainingTime | Double | Warning remaining life [Time], Siemens only |
-| rawRemainingCount | Int32 | Remaining life [counts], Siemens only |
-| rawPrewarningRemainingCount | Int32 | Warning remaining life [counts], Siemens only |
-| rawRemainingWear | Double | Remaining life [machine's default length unit], Siemens only |
-| rawPrewarningRemainingWear | Double | Warning remaining life [machine's default length unit], Siemens only |
+| rawOverCount | Int32 | Count exceeding tool life [counts], Siemens only (user-defined module) |
+| rawRemainingTime | Double | Remaining life [Time] |
+| rawPrewarningRemainingTime | Double | Warning remaining life [Time] |
+| rawPrewarningTime | Double | Warning life [Time], Brother only |
+| rawRemainingCount | Int32 | Remaining life [counts] |
+| rawPrewarningRemainingCount | Int32 | Warning remaining life [counts] |
+| rawRemainingWear | Double | Remaining life [machine's default length unit] |
+| rawPrewarningRemainingWear | Double | Warning remaining life [machine's default length unit] |
 | inventoryNum | String | Tool identification code, Heidenhain only |
 
 :::note[Note]

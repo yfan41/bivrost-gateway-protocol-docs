@@ -52,6 +52,7 @@ The status code is used only for MODBUS communication.
 | --- | --- |
 | ALARM | Alarm present |
 | NO_ALARM | No alarm |
+| UNKNOWN | Unknown (alarm status not obtained; not supported on some models) |
 
 ### 1.3.1.3. EmergencyStatus: Emergency Stop Status {#emergency-status}
 
@@ -59,6 +60,9 @@ The status code is used only for MODBUS communication.
 | --- | --- |
 | EMG | Emergency stop |
 | NOT_EMG | Not emergency stop |
+| RESET | Emergency stop reset |
+| WAIT | Wait (FANUC FS35i only) |
+| UNKNOWN | Unknown (emergency stop status not obtained; the device or model does not support reading it) |
 
 ### 1.3.1.4. DryRunStatus: Dry Run Status {#dryrun-status}
 

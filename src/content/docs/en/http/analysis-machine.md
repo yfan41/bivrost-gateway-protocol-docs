@@ -9,7 +9,7 @@ The data analysis interface is used to retrieve data analysis for a target machi
 
 Before using the data analysis interface, the gateway's local cache switch must be enabled (see the Bivrost Gateway Manual [5.12.2.3. Local Cache](https://docs.bivrost.cn/gateway/usage/settings)), to allow historical machine status data to be saved locally on the gateway.
 
-Using the data analysis interface requires supplying a start timestamp and an end timestamp. The maximum span between the two is 31 days.
+Using the data analysis interface requires supplying a start timestamp and an end timestamp. When interval is not set, the span between the start and end timestamps must be less than 31 days (exactly 31 days is rejected); when interval is set, this limit applies to each grouping interval rather than to the entire time range.
 
 The maximum local retention period is 365 days. Therefore, the start time cannot be earlier than 365 days before the current time.
 
@@ -132,9 +132,9 @@ Response example
 | alarmLevel | String | (Required) Alarm level. In descending order of priority: Error (ERR), Warning (WRN), and Info (INF). Users can refer to the Bivrost Gateway Manual [5.5.7. Alarm Monitoring Settings](https://docs.bivrost.cn/gateway/usage/tasks#alarm-monitor) to set alarm levels by keyword and filter out alarms below the minimum alarm level; alarms without a configured level default to the Warning level. |
 
 :::note[Note]
-An alarm is recorded from the moment it appears until it is cleared, with its start time, end time, alarm message, and alarm level. If an alarm had already appeared and had not yet been cleared before the start timestamp, the start time of this alarm is taken as the time corresponding to the start timestamp.
+An alarm is recorded from the moment it appears until it is cleared, with its start time, end time, alarm message, and alarm level. The alarm start time is the time at which the alarm actually appeared, which may be earlier than the requested start timestamp (it is not clamped to the start timestamp). The query filters on whether the alarm's clear time falls within the time range.
 
-If, at the time corresponding to the end timestamp, the alarm has not yet been cleared, the end time of this alarm is taken as the time corresponding to the end timestamp.
+Only cleared alarms are counted; an alarm that has not yet been cleared at the end timestamp does not appear in the response (its record is written only once the alarm is cleared).
 
 If alarm data is missing between the start time and end time, no alarms are assumed to have occurred during that missing period.
 :::
@@ -144,7 +144,7 @@ If alarm data is missing between the start time and end time, no alarms are assu
 Retrieves the cumulative machining count for each grouping interval within a specified time range.
 
 ```http
-GET /api/analysis/count?machineID=MACHINEID&startUnix=STARTUNIX&endUnix=ENDUNIX&interval=INTERVAL
+GET /api/analysis/count?machineID=MACHINEID&startUnix=STARTUNIX&endUnix=ENDUNIX&interval=INTERVAL&enableCountPerProgram=ENABLECOUNTPERPROGRAM
 ```
 
 | Request Parameter | Type | Description |
@@ -153,6 +153,7 @@ GET /api/analysis/count?machineID=MACHINEID&startUnix=STARTUNIX&endUnix=ENDUNIX&
 | startUnix | Int64 | (Required) Start timestamp [seconds] |
 | endUnix | Int64 | (Required) End timestamp [seconds] |
 | interval | Int32 | Grouping interval [seconds]. If undefined, there is only a single grouping interval. |
+| enableCountPerProgram | Bool | Groups the machining count by main program. Defaults to false. When true, the response is grouped by main program mainPrgmName, with one record per main program, and count is the sum of the cycle counts deltaCount for that main program; if there is no cycle data within the time range, it is handled as false and a single record is returned (the difference in cumulativeCount). |
 
 Response example
 
@@ -179,6 +180,28 @@ Response example
 | startTime | String | (Required) Grouping interval start time (UTC) |
 | endTime | String | (Required) Grouping interval end time (UTC) |
 | count | Int32 | (Required) Cumulative machining count, the difference between the machine's cumulative machining count `cumulativeCount` at the start and end of the grouping interval |
+| mainPrgmName | String | Main program name. Returned only when the request parameter enableCountPerProgram is true and cycle data exists within the time range, in which case one record is returned per main program (cycles without a main program name are grouped under the empty string). |
+
+Response example grouped by main program (enableCountPerProgram is true)
+
+```json
+[
+  {
+    "machineName": "模拟机台 1",
+    "startTime": "2022-04-28T14:30:00Z",
+    "endTime": "2022-04-28T15:30:00Z",
+    "count": 60,
+    "mainPrgmName": "O6495"
+  },
+  {
+    "machineName": "模拟机台 1",
+    "startTime": "2022-04-28T14:30:00Z",
+    "endTime": "2022-04-28T15:30:00Z",
+    "count": 36,
+    "mainPrgmName": "O6496"
+  }
+]
+```
 
 ### 2.7.1.4. overall — Machine Overall Data Analysis {#overall}
 
@@ -249,16 +272,14 @@ Response example
     "startTime": "2025-05-23T06:35:44.046Z",
     "endTime": "2025-05-23T06:36:25.046Z",
     "lastCycleTime": 41,
-    "mainPrgmName": "O6495",
-    "machineID": "1"
+    "mainPrgmName": "O6495"
   },
   {
     "machineName": "模拟机台 1",
     "startTime": "2025-05-23T06:36:25.072Z",
     "endTime": "2025-05-23T06:36:56.072Z",
     "lastCycleTime": 31,
-    "mainPrgmName": "O6495",
-    "machineID": "1"
+    "mainPrgmName": "O6495"
   }
 ]
 ```
@@ -268,5 +289,5 @@ Response example
 | machineName | String | (Required) Machine name, set in the "Add/Edit Device" window on the "Machine Configuration" page. |
 | startTime | String | (Required) Cycle start time (UTC) |
 | endTime | String | (Required) Cycle end time (UTC) |
-| lastCycleTime | Int32 | (Required) Cycle duration [seconds]; counts only auto-run time. |
+| lastCycleTime | Int64 | (Required) Cycle duration [seconds]; counts only auto-run time. |
 | mainPrgmName | String | (Required) Name of the main program executed during the cycle |

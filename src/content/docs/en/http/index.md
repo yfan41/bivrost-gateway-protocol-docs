@@ -19,7 +19,7 @@ For example, if the gateway's IP address is 192.168.100.1, and you want to obtai
 http://192.168.100.1/api/cnc/readCNCStatus?MachineID=1010
 ```
 
-All interfaces only accept HTTP data with Content-Type set to application/json.
+Request bodies use Content-Type application/json by default. File and stream interfaces (such as sendFileStream, upload-license and upload-alarm-mapping-file) use application/octet-stream or text/plain to upload binary/text content. Only POST/PUT requests read the request body.
 
 Except for a few file-related interfaces, most interfaces return HTTP data of type application/json.
 
@@ -33,8 +33,8 @@ Whenever an error occurs in a request, an error object is returned as follows:
 
 ```json
 {
-  "errorCode": -1,
-  "errorMsg": "Unknown error"
+  "errorCode": 1,
+  "errorMsg": "Unexpected Error."
 }
 ```
 
@@ -42,10 +42,15 @@ Whenever an error occurs in a request, an error object is returned as follows:
 | --- | --- | --- |
 | errorCode | Int32 | (Required) Error code, 0 indicates success. |
 | errorMsg | String | (Required) Error message |
+| statusMsg | String | (Optional) Error detail providing additional context; not returned when empty |
 
 When the operation succeeds, the corresponding data is returned, and the HTTP status code is 200 in this case.
 
-When an error occurs, an error code is returned, and the HTTP status code is generally 400, 409, 500, etc. Common error codes are as follows:
+:::note[Note]
+The HTTP status code is indicative only. Some informational-severity errors are also returned with HTTP 200, so a client must determine success from whether errorCode in the response body is 0, not from the HTTP status code alone.
+:::
+
+When an error occurs, an error code is returned, and the HTTP status code is 400 (bad or unsupported request), 401 (unauthorized), 404 (interface or path not found), 409 (conflict), 502 (machine unreachable) or 503 (any other error, the default). Common error codes are as follows:
 
 ### Common Error Codes {#error-codes}
 
@@ -54,6 +59,7 @@ When an error occurs, an error code is returned, and the HTTP status code is gen
 | 0 | Success | Operation executed successfully |
 | 3 | Machine off or offline | Unable to communicate with the machine tool; the machine tool is powered off or there is a network hardware fault (machine tool network port, switch, network cable, etc.) |
 | 7 | No permission | The interface is protected or out of authorization scope, or the authentication information is invalid. |
+| 101 | Function not supported by the current system | The machine tool control system does not support this interface |
 | 102 | Machine network fault, unable to obtain data | Able to communicate with the machine tool, but unable to obtain data; there is an issue with the machine tool's network settings |
 | 125 | Invalid file path | The input file path is invalid |
 | 142 | File already exists | A file with the same name already exists in the target directory |
@@ -62,3 +68,4 @@ When an error occurs, an error code is returned, and the HTTP status code is gen
 | 158 | File does not exist | The target file does not exist in the target directory |
 | 10003 | machineID does not exist | The machineID is incorrect, the corresponding machine is not activated, or the gateway service was not restarted after editing the machine's IP or activation status |
 | 10006 | Interface not authorized | To use an unauthorized interface, please contact BIVROST |
+| 10017 | Invalid request | A request parameter is missing, has the wrong type, or cannot be parsed |

@@ -168,9 +168,9 @@ Response example
   "password": "password",
   "dataReportTopic": "topic1",
   "rpcRequestTopic": "rpcReq",
-  "rcResponseTopic": "rpcRes",
+  "rpcResponseTopic": "rpcRes",
   "encoding": "GBK",
-  "allowAnomynous": false,
+  "allowAnonymous": false,
   "arrayToString": false,
   "publishOnValueChange": false,
   "publishAllOnValueChange": false,
@@ -195,7 +195,7 @@ The response parameters are listed in the table below:
 | rpcRequestTopic | String | RPC request topic |
 | rpcResponseTopic | String | RPC response topic |
 | encoding | String | Encoding, e.g. ASCII, UTF-8, GBK, etc. |
-| allowAnomynous | Bool | Allow anonymous login. true = on, false = off. |
+| allowAnonymous | Bool | Allow anonymous login. true = on, false = off. |
 | arrayToString | Bool | Convert array to string. true = on, false = off. |
 | publishOnValueChange | Bool | Write on value change. true = on, false = off. Default is false. |
 | publishAllOnValueChange | Bool | Upload all content on change. Effective only when publish-on-value-change is enabled. Default is false, meaning only the changed portion is uploaded when a value changes. |
@@ -236,7 +236,7 @@ Request body example
   "rpcRequestTopic": "rpcReq",
   "rpcResponseTopic": "rpcRes",
   "encoding": "UTF-8",
-  "allowAnomynous": true,
+  "allowAnonymous": true,
   "arrayToString": true,
   "publishOnValueChange": true,
   "publishAllOnValueChange": false,
@@ -261,7 +261,7 @@ Response example
   "rpcRequestTopic": "rpcReq",
   "rpcResponseTopic": "rpcRes",
   "encoding": "UTF-8",
-  "allowAnomynous": true,
+  "allowAnonymous": true,
   "arrayToString": true,
   "publishOnValueChange": true,
   "publishAllOnValueChange": false,
@@ -294,6 +294,7 @@ For an InfluxDB v2.x type database, the response is as follows:
   "bucket": "Bucket",
   "tablePrefix": "Prefix",
   "organization": "Organization",
+  "dataRetentionPeriod": 0,
   "writeOnValueChange": true,
   "timeoutReportingInterval": 0
 }
@@ -312,6 +313,7 @@ For a non-InfluxDB v2.x type database, the response is as follows:
   "database": "Database",
   "tablePrefix": "Prefix",
   "storageMode": "User Defined",
+  "dataRetentionPeriod": 0,
   "useLocalTime": false,
   "enablePrimaryKey": false,
   "writeOnValueChange": false,
@@ -344,7 +346,8 @@ For a non-InfluxDB v2.x type database, the response is as follows:
     "AlarmLog",
     "GroupOEE",
     "OEE"
-  ]
+  ],
+  "noActionModeTypes": []
 }
 ```
 
@@ -364,7 +367,7 @@ The response parameters are listed in the table below:
 | organization | String | Organization name. InfluxDB v2.x type only. |
 | database | String | Database. Non-InfluxDB v2.x types only. |
 | storageMode | String | Storage mode. Non-InfluxDB v2.x types only. See [Database Storage Modes](#database-save-modes) for details. |
-| dataRetentionPeriod | Int32 | Data retention period (hours). Non-InfluxDB v2.x database types only. |
+| dataRetentionPeriod | Int32 | Data retention period (hours). Not returned when `storageMode` is `Real Time`; returned in all other cases (including InfluxDB v2.x). |
 | loggingModeTypes | String[] | Effective when the storage mode is User Defined. See the `<type>` data classes in [1.2. Data Description](/en/conventions/data-classes/) for details. |
 | noActionModeTypes | String[] | Effective when the storage mode is User Defined. See the `<type>` data classes in [1.2. Data Description](/en/conventions/data-classes/) for details. |
 | realTimeModeTypes | String[] | Effective when the storage mode is User Defined. See the `<type>` data classes in [1.2. Data Description](/en/conventions/data-classes/) for details. |
@@ -381,7 +384,7 @@ The response parameters are listed in the table below:
 | InfluxDB v2.x |
 | MySQL |
 | SQL Server |
-| Postgre SQL |
+| PostgreSQL |
 
 #### Database Storage Modes {#database-save-modes}
 
@@ -466,7 +469,8 @@ Response example
     "AlarmLog",
     "GroupOEE",
     "OEE"
-  ]
+  ],
+  "noActionModeTypes": []
 }
 ```
 
@@ -499,8 +503,8 @@ The response parameters are listed in the table below:
 | Parameter | Type | Description |
 | --- | --- | --- |
 | enable | Bool | Enable the gateway file server. true = on, false = off. |
-| enableFtp | String | Enable FTP. true = on, false = off. |
-| enableSmb | String | Enable shared folder. true = on, false = off. |
+| enableFtp | Bool | Enable FTP. true = on, false = off. |
+| enableSmb | Bool | Enable shared folder. true = on, false = off. |
 | username | String | Username. Read-only, cannot be modified. |
 | password | String | Password |
 
@@ -564,7 +568,7 @@ The response parameters are listed in the table below:
 
 | Parameter | Type | Description |
 | --- | --- | --- |
-| Enable | Bool | Enable HTTP. true = on, false = off. |
+| enable | Bool | Enable HTTP. true = on, false = off. |
 | enableIpWhiteList | Bool | Enable IP whitelist. true = on, false = off. |
 | ipWhiteList | String | Whitelist entries (separated by `;`). Not returned if not set. |
 
@@ -687,7 +691,7 @@ Response example
   "host": "serverUrl",
   "hub": "XXXXXX-XXXXXX-XXXXXX-XXXXXX",
   "password": "password",
-  "bridgeNetwork": "LAN1",
+  "bridgeNetwork": "LAN1;",
   "state": "Established",
   "expiration": "2999-12-31T23:59:59"
 }
@@ -702,9 +706,9 @@ The response parameters are listed in the table below:
 | host | String | Remote server address. |
 | hub | String | Site (read-only), defaults to the gateway UID. |
 | password | String | Password. |
-| bridgeNetwork | String | Bridge network: "LAN1", "LAN2", "" (no bridging). |
+| bridgeNetwork | String | Bridge network, a semicolon-separated list: `""` (no bridging), `"LAN1;"`, `"LAN2;"` or `"LAN1;LAN2;"`. |
 | state | String | Connection state (read-only): Connecting, Negotiation, Retry (the above three are all "connecting" states), Auth (authenticating), Established (connected), Idle (not connected) |
-| expiration | String | Expiration date (read-only), returned only when state is Established (connected). |
+| expiration | String | Expiration date (read-only), returned when state is not Idle (not connected). |
 
 ## 2.9.6.16. update-remote-access Update Remote Access Settings {#update-remote-access}
 
@@ -720,7 +724,7 @@ Request body example
 {
   "host": "serverUrl2",
   "password": "password2",
-  "bridgeNetwork": "LAN1"
+  "bridgeNetwork": "LAN1;"
 }
 ```
 
@@ -733,7 +737,7 @@ Response example
   "host": "serverUrl2",
   "hub": "XXXXXX-XXXXXX-XXXXXX-XXXXXX",
   "password": "password2",
-  "bridgeNetwork": "LAN1",
+  "bridgeNetwork": "LAN1;",
   "state": "Established",
   "expiration": "2999-12-31T23:59:59"
 }

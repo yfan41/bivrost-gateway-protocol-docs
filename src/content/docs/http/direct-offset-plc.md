@@ -58,7 +58,7 @@ GET /api/cnc/readOffsetData?machineID=MACHINEID&channel=CHANNEL&toolNum=TOOLNUM&
   "toolNum": 2,
   "offsetNum": 1,
   "toolName": "ROUGHING_T80 A",
-  "toolType": 500,
+  "toolType": "500",
   "toolNose": 3,
   "wearX": 0.88,
   "wearZ": 0.78,
@@ -102,7 +102,7 @@ GET /api/cnc/readOffsetData?machineID=MACHINEID&channel=CHANNEL&toolNum=TOOLNUM&
 | lengthUnit | String | 刀补长度单位 |
 | toolNose | Int32 | （假想）刀尖位置/刀沿类型 |
 | lengthWear | Double | 长度磨损 |
-| radiuWear | Double | 半径磨损 |
+| radiusWear | Double | 半径磨损 |
 | lengthGeom | Double | 长度形状 |
 | radiusGeom | Double | 半径形状 |
 | wearX | Double | 长度 X 磨损 |
@@ -143,13 +143,24 @@ POST /api/cnc/batchReadOffsetData?machineID=MACHINEID
 ]
 ```
 
-请求参数与 [2.5.1.12. readOffsetData 读取刀补数据](#readoffsetdata)一致。
+请求参数与 [2.5.1.12. readOffsetData 读取刀补数据](#readoffsetdata)一致，但分布在两处：machineID 为查询串参数，channel、toolNum、offsetNum 为请求体数组中每个元素的字段。
+
+查询串参数：
 
 | 请求参数 | 类型 | 说明 |
 | --- | --- | --- |
 | machineID | String | (必需)目标机台标识，详见 [1.1.1. machineID 机台标识](/conventions/identifiers/#machineid) |
+
+请求体数组中每个元素的字段：
+
+| 请求参数 | 类型 | 说明 |
+| --- | --- | --- |
 | channel | Int32 | 机台通道号，如不补充则默认为 0，即主通道 |
 | toolNum、offsetNum | Int32 | 补充 toolNum 刀具号或 offsetNum 刀补号，以确定目标刀具。请求参数对应[刀补数据 `<tag>` 数据标签](/conventions/data-classes/#offset)中的标签。参考[刀补数据标签组合](/conventions/data-classes/#offset)中各系统的标签组合表，补充请求参数组合。 |
+
+:::note[注]
+channel 仅在请求体数组的每个元素中生效。补充在查询串上的 channel 对本接口无效，会被忽略。
+:::
 
 返回示例
 
@@ -192,7 +203,7 @@ POST /api/cnc/batchReadOffsetData?machineID=MACHINEID
 | lengthUnit | String | 刀补长度单位 |
 | toolNose | Int32 | （假想）刀尖位置/刀沿类型 |
 | lengthWear | Double | 长度磨损 |
-| radiuWear | Double | 半径磨损 |
+| radiusWear | Double | 半径磨损 |
 | lengthGeom | Double | 长度形状 |
 | radiusGeom | Double | 半径形状 |
 | wearX | Double | 长度 X 磨损 |
@@ -209,6 +220,8 @@ POST /api/cnc/batchReadOffsetData?machineID=MACHINEID
 :::
 
 ## 2.5.1.14. writeOffsetData 写入刀补数据 {#writeoffsetdata}
+
+默认设置下，网关屏蔽了该接口（安全设置的受保护 API 列表默认包含 `/cnc/writeOffsetData`），使用前需要在网关管理页面**设置**页面打开对应选项，否则调用返回 UNAUTHORIZED_ACCESS。
 
 ```http
 POST /api/cnc/writeOffsetData?machineID=MACHINEID&channel=CHANNEL&toolNum=TOOLNUM&offsetNum=OFFSETNUM
@@ -240,7 +253,7 @@ POST /api/cnc/writeOffsetData?machineID=MACHINEID&channel=CHANNEL&toolNum=TOOLNU
 | lengthUnit | String | 刀补长度单位 |
 | toolNose | Int32 | （假想）刀尖位置/刀沿类型 |
 | lengthWear | Double | 长度磨损 |
-| radiuWear | Double | 半径磨损 |
+| radiusWear | Double | 半径磨损 |
 | lengthGeom | Double | 长度形状 |
 | radiusGeom | Double | 半径形状 |
 | wearX | Double | 长度 X 磨损 |
@@ -447,7 +460,7 @@ GET /api/cnc/readPlcData?machineID=MACHINEID&area=AREA&start=START&count=COUNT&t
 | Siemens 西门子 | 宏变量 | `$MACRO$\|type=R` | R 参数 |
 | Siemens 西门子 | 宏变量 | `$MACRO$\|type=RG` | RG 参数 |
 | Siemens 西门子 [通用型] | 标签（变量名） | `$TAG$\|area=AREA\|block=BLOCK\|name=NAME\|areaNo=AREANO\|row=ROW\|column=COLUMN` | S7 变量，补充参数 Area，Block(Component)，VariableName，AreaNo.（默认为 1），Row（默认为 1），Column（默认为 1），如：`$TAG$\|area=C\|block=AUXFU\|name=status\|areaNo=2\|row=3` |
-| Siemens 西门子 [OPC UA] | 标签（变量名） | `$TAG$\|name=NAME\|ns=NS` | OPC UA 服务器变量地址，补充参数 name（变量名），ns（name space index，默认为 2），如：`$TAG$\|area=/Channel/State/actParts\|ns=2` |
+| Siemens 西门子 [OPC UA] | 标签（变量名） | `$TAG$\|name=NAME\|ns=NS` | OPC UA 服务器变量地址，补充参数 name（变量名），ns（name space index，默认为 2），如：`$TAG$\|name=/Channel/State/actParts\|ns=2` |
 | Syntec 新代 | 宏变量 | `$MACRO$` | |
 | Allen-Bradley 罗克韦尔 | 标签（变量名） | `$TAG$\|name=NAME` | 补充 name 标签（变量名） |
 
@@ -468,31 +481,39 @@ GET /api/cnc/readPlcData?machineID=MACHINEID&area=AREA&start=START&count=COUNT&t
 
 ### PLC 数据类型 {#plc-types}
 
-| 数据类型 | Bit | Byte | SByte | Int16 | UInt16 | Float | Int32 | UInt32 | Double | String |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 数据长度 | 1 位 | 8 位 | 8 位 | 16 位 | 16 位 | 32 位 | 32 位 | 32 位 | 64 位 | 不固定 |
-| 博尚 | O | O | O | O | O | O | O | O | O | O |
-| 兄弟 | O | | | O | | | | | | |
-| 台达 | O | O | O | O | O | O | O | O | O | O |
-| 法格 [8060,8065,8070] | | | | | | | O | | O | O |
-| 发那科 | | O | O | O | O | | O | O | \* | |
-| 广数 [988,980] | | O | | | | | | | \* | |
-| 广数 [以太网, 串口转网口, 986 V4.15] | O | O | O | O | O | O | O | O | O | O |
-| 哈斯 [通用型] | | | | O | O | O | O | O | O | O |
-| 海德汉 | O | | O | O | | | O | | | O |
-| 华中数控 | | O | | O | | | O | O | O | |
-| 北京精雕 | | O | | O | O | | O | O | O | |
-| 凯恩帝 | | O | O | O | O | | O | O | | |
-| 宝元 | O | | | | | O | O | | | |
-| 三菱 | O | O | | O | O | O | O | O | \* | |
-| 模拟机台 | O | O | O | O | O | O | O | O | O | O |
-| 西门子 | O | O | | O | O | O | O | O | O | O |
-| 新代 | | O | | O | | | O | | \* | |
-| 外接模块 | | | | | O | O | | | | |
+| 数据类型 | Bit | Byte | SByte | Int16 | UInt16 | Float | Int32 | UInt32 | Int64 | UInt64 | Double | String |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 数据长度 | 1 位 | 8 位 | 8 位 | 16 位 | 16 位 | 32 位 | 32 位 | 32 位 | 64 位 | 64 位 | 64 位 | 不固定 |
+| 博尚 | O | O | O | O | O | O | O | O | | | O | O |
+| 兄弟 | O | | | O | | | | | | | | |
+| 台达 | O | O | O | O | O | O | O | O | O | O | O | O |
+| 法格 [8035,8040,8055] | O | O | O | O | O | O | O | O | | | O | O |
+| 法格 [8060,8065,8070] | | | | | | | O | | | | O | O |
+| 发那科 | | O | O | O | O | | O | O | | | \* | |
+| 广数 [988,980] | | O | | | | | | | | | \* | |
+| 广数 [以太网, 串口转网口, 986 V4.15] | O | O | O | O | O | O | O | O | | | O | O |
+| 哈斯 [通用型] | | | | O | O | O | O | O | O | O | O | O |
+| 海德汉 | O | | O | O | | | O | | | | | O |
+| 华中数控 | | O | | O | | | O | O | | | O | |
+| 北京精雕 | | O | | O | O | | O | O | | | O | |
+| 科德 | O | O | O | O | O | O | O | O | O | O | O | |
+| 凯恩帝 | | O | O | O | O | | O | O | | | | |
+| 宝元 | O | | | | | O | O | | | | | |
+| 铼纳克 | | | | | | | | O | | | \* | |
+| 马扎克 [Smart，Smooth] | | | | | | | O | | | | \* | |
+| 三菱 | O | O | | O | O | O | O | O | | | \* | |
+| 模拟机台 | O | O | O | O | O | O | O | O | | | O | O |
+| 西门子 | O | O | | O | O | O | O | O | | | O | O |
+| 新代 | O | O | | O | | | O | | | | \* | |
+| 外接模块 | | | | | O | O | | | | | | |
 
 O：支持。
 
 \*：仅支持宏变量（本地变量，公共变量等）使用该数据类型。
+
+Bit 类型可写作 Bit0–Bit7 以指定字节或字中的位号，Bit 等同于 Bit0。
+
+新代的 I/O/C/S/A 位区域必须使用 Bit 类型（Bit0–Bit7）。
 
 ### 请求示例 {#readplcdata-examples}
 

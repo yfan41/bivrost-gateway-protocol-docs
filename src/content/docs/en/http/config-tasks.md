@@ -253,9 +253,9 @@ Response example
 {
   "monitorMode": "Time Window",
   "windowSize": 6000,
-  "resetTime": "00:00;01:00;2:00;22:00;",
+  "resetTime": "00:00;22:00;01:00;2:00",
   "availabilityMode": "Autorun Time / (Total Time - Break Time)",
-  "breakTimeInterval": "08:00-09:00;11:30-12:30;"
+  "breakTimeInterval": "08:00-09:00;11:30-12:30"
 }
 ```
 
@@ -339,7 +339,7 @@ The response parameters are shown in the table below:
 | --- | --- | --- |
 | monitorMode | String | Monitoring mode; see [monitorMode Monitoring Mode](#monitor-mode) for details. |
 | windowSize | Int32 | Window duration (seconds); effective in real-time window mode. |
-| resetTime | String[] | Reset time (hour:minute); effective in scheduled reset mode. |
+| resetTime | String | Reset time (hour:minute); effective in scheduled reset mode. Separate multiple times with `;`. |
 
 ## 2.9.5.10. update-count-monitoring-settings Modify Machining Count Monitoring Settings {#update-count-monitoring-settings}
 
@@ -367,7 +367,7 @@ Response example
 {
   "monitorMode": "Scheduled Reset",
   "windowSize": 36000,
-  "resetTime": "3:24;12:22;15:28;23:00;"
+  "resetTime": "23:00;3:24;15:28;12:22"
 }
 ```
 
@@ -437,7 +437,8 @@ Response example
 
 ```json
 {
-  "mininumAlarmLevel": "Warning"
+  "mininumAlarmLevel": "Warning",
+  "alarmMappingFileNames": "a.csv;b.csv;"
 }
 ```
 
@@ -450,6 +451,7 @@ The response parameters are shown in the table below:
 | mininumAlarmLevel | String | Minimum alarm level; see [mininumAlarmLevel Minimum Alarm Level](#minimum-alarm-level) for details. |
 | infoLevel | String | Info-level keywords; not returned means not set |
 | errorLevel | String | Error-level keywords; not returned means not set |
+| alarmMappingFileNames | String | List of uploaded alarm mapping file names, separated by `;` (terminated with `;` when not empty). Read-only; ignored if supplied in a request. For uploading, downloading and deleting these files, see [2.9.5.19. upload-alarm-mapping-file Upload Alarm Mapping File](#upload-alarm-mapping-file), [2.9.5.20. download-alarm-mapping-file Download Alarm Mapping File](#download-alarm-mapping-file) and [2.9.5.21. delete-alarm-mapping-file Delete Alarm Mapping File](#delete-alarm-mapping-file). |
 
 ### mininumAlarmLevel Minimum Alarm Level {#minimum-alarm-level}
 
@@ -458,6 +460,7 @@ The response parameters are shown in the table below:
 | Information | Information |
 | Warning | Warning |
 | Error | Error |
+| None | None |
 
 ## 2.9.5.14. update-alarm-monitoring-settings Modify Alarm Monitoring Settings {#update-alarm-monitoring-settings}
 
@@ -479,13 +482,18 @@ Request body example
 
 For request parameters, see [Alarm Monitoring Settings Parameters](#alarm-params).
 
+:::note[Note]
+Unlike the other modification interfaces on this page, `infoLevel` and `errorLevel` are cleared when they are not supplied in the request body, so they must be submitted in full every time; `mininumAlarmLevel` retains its original value when not supplied.
+:::
+
 Response example
 
 ```json
 {
   "mininumAlarmLevel": "Error",
   "infoLevel": "消息;提示;Inf",
-  "errorLevel": "错误;錯誤;Err"
+  "errorLevel": "错误;錯誤;Err",
+  "alarmMappingFileNames": "a.csv;b.csv;"
 }
 ```
 
@@ -557,3 +565,125 @@ Response example
 ```
 
 For response parameters, see [Machine Status Monitoring Settings Parameters](#status-params).
+
+## 2.9.5.17. task-manager-settings Get Task Manager Settings {#task-manager-settings}
+
+This interface has no request parameters.
+
+```http
+GET /api/config/task-manager-settings
+```
+
+Response example
+
+```json
+{
+  "maxTaskManagers": 255
+}
+```
+
+The response parameters are shown in the table below:
+
+### Task Manager Settings Parameters {#task-manager-params}
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| maxTaskManagers | Int32 | Maximum number of task managers; default is 255 |
+
+## 2.9.5.18. update-task-manager-settings Modify Task Manager Settings {#update-task-manager-settings}
+
+Modifies the task manager settings and returns the updated settings.
+
+```http
+POST /api/config/update-task-manager-settings
+```
+
+Request body example
+
+```json
+{
+  "maxTaskManagers": 128
+}
+```
+
+For request parameters, see [Task Manager Settings Parameters](#task-manager-params).
+
+Response example
+
+```json
+{
+  "maxTaskManagers": 128
+}
+```
+
+For response parameters, see [Task Manager Settings Parameters](#task-manager-params).
+
+## 2.9.5.19. upload-alarm-mapping-file Upload Alarm Mapping File {#upload-alarm-mapping-file}
+
+Uploads an alarm mapping file. The file name is supplied as a query parameter and the file content is sent as binary in the request body (Content-Type application/octet-stream).
+
+```http
+POST /api/config/upload-alarm-mapping-file?fileName=FILENAME
+```
+
+| Request Parameter | Type | Description |
+| --- | --- | --- |
+| fileName | String | (Required) Alarm mapping file name. Returns GENERAL_API_INVALID_REQUEST (Invalid fileName.) when empty. |
+
+When a file with the same name already exists, the gateway does not overwrite it and returns GENERAL_INVALID_PATH (file already exists.). To replace a file, first call [2.9.5.21. delete-alarm-mapping-file Delete Alarm Mapping File](#delete-alarm-mapping-file).
+
+Response example
+
+```json
+{
+  "errorCode": 0,
+  "errorMsg": "Success"
+}
+```
+
+| Response Parameter | Type | Description |
+| --- | --- | --- |
+| errorCode | Int32 | (Required) Error code, 0 indicates success. |
+| errorMsg | String | (Required) Error message |
+
+## 2.9.5.20. download-alarm-mapping-file Download Alarm Mapping File {#download-alarm-mapping-file}
+
+Downloads an uploaded alarm mapping file; the response body is a file stream.
+
+```http
+GET /api/config/download-alarm-mapping-file?fileName=FILENAME
+```
+
+| Request Parameter | Type | Description |
+| --- | --- | --- |
+| fileName | String | (Required) Alarm mapping file name, which can be obtained from alarmMappingFileNames in [Alarm Monitoring Settings Parameters](#alarm-params). Returns GENERAL_API_INVALID_REQUEST (Invalid fileName.) when empty. |
+
+When the file does not exist, GENERAL_INVALID_PATH (file not found.) is returned.
+
+## 2.9.5.21. delete-alarm-mapping-file Delete Alarm Mapping File {#delete-alarm-mapping-file}
+
+Deletes an uploaded alarm mapping file.
+
+```http
+GET /api/config/delete-alarm-mapping-file?fileName=FILENAME
+```
+
+| Request Parameter | Type | Description |
+| --- | --- | --- |
+| fileName | String | (Required) Alarm mapping file name, which can be obtained from alarmMappingFileNames in [Alarm Monitoring Settings Parameters](#alarm-params). Returns GENERAL_API_INVALID_REQUEST (Invalid fileName.) when empty. |
+
+When the file does not exist, GENERAL_INVALID_PATH (file not found.) is returned.
+
+Response example
+
+```json
+{
+  "errorCode": 0,
+  "errorMsg": "Success"
+}
+```
+
+| Response Parameter | Type | Description |
+| --- | --- | --- |
+| errorCode | Int32 | (Required) Error code, 0 indicates success. |
+| errorMsg | String | (Required) Error message |

@@ -31,6 +31,8 @@ GET /api/db/machine?machineID=MACHINEID&type=TYPE&startUnix=STARTUNIX&endUnix=EN
 | type | String | (必需)数据类，详见 [1.2. 数据说明](/conventions/data-classes/) |
 | startUnix | Int64 | (必需)开始时间戳[秒] |
 | endUnix | Int64 | (必需)结束时间戳[秒] |
+| uid | String | (可选)数据来源网关 UID。不填代表仅查询本网关本地机台数据；填写则查询该 UID 网关转发的外部机台数据 |
+| limit | Int32 | (可选)返回数据条数上限，不填代表不限制。GET 请求无法传入排序方式，结果按 time 升序返回，即取时间最早的若干条 |
 
 示例
 
@@ -96,6 +98,7 @@ GET /api/db/group-machine?groupID=GROUPID&type=TYPE&startUnix=STARTUNIX&endUnix=
 | type | String | (必需)数据类，详见 [1.2. 数据说明](/conventions/data-classes/) |
 | startUnix | Int64 | (必需)开始时间戳[秒] |
 | endUnix | Int64 | (必需)结束时间戳[秒] |
+| limit | Int32 | (可选)返回数据条数上限，不填代表不限制。该上限按数据来源分别生效（本网关本地机台与每个外部 UID 各自限制），并非合并结果的总条数 |
 
 示例
 
@@ -165,8 +168,10 @@ GET /api/db/group-machine?groupID=g1&type=CNCStatus&startUnix=1709258400&endUnix
 查询符合条件的历史数据。类似数据库的查询命令。
 
 ```http
-POST /api/db/query?groupID=GROUPID&type=TYPE&startUnix=STARTUNIX&endUnix=ENDUNIX
+POST /api/db/query
 ```
+
+本接口的所有参数均通过 application/json 请求体传入，URL 查询字符串中的参数会被忽略。本接口不支持 `groupID`，如需限定机组范围，请将机组内机台以过滤条件表达，例如 `{"key":"machineID","operator":"in","value":["1010","1011"]}`。
 
 请求体示例 application/json
 
@@ -203,16 +208,20 @@ POST /api/db/query?groupID=GROUPID&type=TYPE&startUnix=STARTUNIX&endUnix=ENDUNIX
 | 请求参数 | 类型 | 说明 |
 | --- | --- | --- |
 | type | String | (必需)数据类，详见 [1.2. 数据说明](/conventions/data-classes/) |
-| startUnix | Int64 | (必需)开始时间戳[秒] |
-| endUnix | Int64 | (必需)结束时间戳[秒] |
-| filters | Object[] | (必需)过滤条件 |
+| startUnix | Int64 | (可选)开始时间戳[秒]，缺省为 0 |
+| endUnix | Int64 | (可选)结束时间戳[秒]，缺省为当前时间 |
+| filters | Object[] | (可选)过滤条件，缺省不过滤 |
 | key | String | (必需)键值 |
-| operator | String | (必需)比较运算 |
+| operator | String | (可选)比较运算，缺省为 `equal`。可选值：`equal`、`greaterEqual`、`greater`、`less`、`lessEqual`、`in`（value 为数组）、`null`、`notNull` |
 | value | Object | (必需)比较值，类型为 String 或者 String[] |
-| orderBy | Object | (必需)排序方式 |
-| field | String | (必需)排序对象 |
+| orderBy | Object | (可选)排序方式，缺省按 time 升序 |
+| field | String | (必需)排序对象，目前仅支持 `time`；填写其它值时排序会被忽略，数据按数据库默认顺序返回 |
 | isDesc | Bool | (必需)true：降序，false：升序 |
-| limit | Int32 | (必需)最大数量 |
+| limit | Int32 | (可选)最大数量，缺省不限制 |
+
+:::note[注]
+每个过滤条件都必须提供非 null 的 `key` 与 `value`，否则请求返回错误代码 10045（过滤条件无效）。因此使用 `null`、`notNull` 运算时也需要填写一个占位 `value`，该值会被忽略。
+:::
 
 返回示例
 

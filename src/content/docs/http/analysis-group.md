@@ -19,7 +19,7 @@ GET /api/group-analysis/oee?groupID=GROUPID&startUnix=STARTUNIX&endUnix=ENDUNIX&
 | --- | --- | --- |
 | groupID | String | (必需)目标机组标识，详见 [1.1.2. groupID 机组标识](/conventions/identifiers/#groupid) |
 | startUnix | Int64 | (必需)开始时间戳[秒] |
-| endUnix | Int64 | (必需)结束时间戳[秒] |
+| endUnix | Int64 | 结束时间戳[秒]，如未定义则为当前时间；晚于当前时间的取值会被截断为当前时间。 |
 | interval | Int32 | 分组间隔[秒]，如未定义，则只有一个分组间隔。 |
 
 返回示例
@@ -102,7 +102,7 @@ GET /api/group-analysis/alarm?groupID=GROUPID&startUnix=STARTUNIX&endUnix=ENDUNI
 | --- | --- | --- |
 | groupID | String | (必需)目标机组标识，详见 [1.1.2. groupID 机组标识](/conventions/identifiers/#groupid) |
 | startUnix | Int64 | (必需)开始时间戳[秒] |
-| endUnix | Int64 | (必需)结束时间戳[秒] |
+| endUnix | Int64 | 结束时间戳[秒]，如未定义则为当前时间；晚于当前时间的取值会被截断为当前时间。 |
 
 返回示例
 
@@ -172,8 +172,9 @@ GET /api/group-analysis/count?groupID=GROUPID&startUnix=STARTUNIX&endUnix=ENDUNI
 | --- | --- | --- |
 | groupID | String | (必需)目标机组标识，详见 [1.1.2. groupID 机组标识](/conventions/identifiers/#groupid) |
 | startUnix | Int64 | (必需)开始时间戳[秒] |
-| endUnix | Int64 | (必需)结束时间戳[秒] |
+| endUnix | Int64 | 结束时间戳[秒]，如未定义则为当前时间；晚于当前时间的取值会被截断为当前时间。 |
 | interval | Int32 | 分组间隔[秒]，如未定义，则只有一个分组间隔。 |
+| enableCountPerProgram | Bool | 是否按主程序分别统计计数，默认 false。为 true 时，每个分组间隔按主程序 mainPrgmName 分组返回多条记录，count 为该主程序的节拍计数 deltaCount 之和；若时间范围内无节拍数据，则回退为按累计计数之差统计。 |
 
 返回示例
 
@@ -191,23 +192,20 @@ GET /api/group-analysis/count?groupID=GROUPID&startUnix=STARTUNIX&endUnix=ENDUNI
     "machineName": "模拟机台 1",
     "startTime": "2022-04-28T15:30:00Z",
     "endTime": "2022-04-28T16:30:00Z",
-    "machineName": "模拟机台 1",
     "count": 0
   },
   {
-    "machineID": "1010",
-    "machineName": "模拟机台 1",
+    "machineID": "1011",
+    "machineName": "模拟机台 2",
     "startTime": "2022-04-28T14:30:00Z",
     "endTime": "2022-04-28T15:30:00Z",
-    "machineName": "模拟机台 2",
     "count": 52
   },
   {
-    "machineID": "1010",
-    "machineName": "模拟机台 1",
+    "machineID": "1011",
+    "machineName": "模拟机台 2",
     "startTime": "2022-04-28T15:30:00Z",
     "endTime": "2022-04-28T16:30:00Z",
-    "machineName": "模拟机台 2",
     "count": 0
   }
 ]
@@ -220,6 +218,7 @@ GET /api/group-analysis/count?groupID=GROUPID&startUnix=STARTUNIX&endUnix=ENDUNI
 | startTime | String | (必需)分组间隔开始时间 |
 | endTime | String | (必需)分组间隔结束时间 |
 | count | Int32 | (必需)累计加工计数，为指定时间范围首末的机台累计加工计数 `cumulativeCount` 之差 |
+| mainPrgmName | String | 主程序名，仅当请求参数 enableCountPerProgram 为 true 时返回；此时每个分组间隔按主程序返回多条记录。 |
 
 ## 2.7.2.4. overall 机组综合数据分析 {#overall}
 
@@ -233,7 +232,7 @@ GET /api/group-analysis/overall?groupID=GROUPID&startUnix=STARTUNIX&endUnix=ENDU
 | --- | --- | --- |
 | groupID | String | (必需)目标机组标识，详见 [1.1.2. groupID 机组标识](/conventions/identifiers/#groupid) |
 | startUnix | Int64 | (必需)开始时间戳[秒] |
-| endUnix | Int64 | (必需)结束时间戳[秒] |
+| endUnix | Int64 | 结束时间戳[秒]，如未定义则为当前时间；晚于当前时间的取值会被截断为当前时间。 |
 | interval | Int32 | 分组间隔[秒]，如未定义，则只有一个分组间隔。 |
 
 返回示例
@@ -311,7 +310,7 @@ GET /api/group-analysis/overall?groupID=GROUPID&startUnix=STARTUNIX&endUnix=ENDU
 
 ## 2.7.2.5. cycle 机组节拍数据分析 {#cycle}
 
-获取指定时间范围内，每个分组间隔的，机组内所有机台的机台综合数据。
+获取指定时间范围内，机组内所有机台的节拍数据。
 
 ```http
 GET /api/group-analysis/cycle?groupID=GROUPID&startUnix=STARTUNIX&endUnix=ENDUNIX
@@ -321,7 +320,7 @@ GET /api/group-analysis/cycle?groupID=GROUPID&startUnix=STARTUNIX&endUnix=ENDUNI
 | --- | --- | --- |
 | groupID | String | (必需)目标机组标识，详见 [1.1.2. groupID 机组标识](/conventions/identifiers/#groupid) |
 | startUnix | Int64 | (必需)开始时间戳[秒] |
-| endUnix | Int64 | (必需)结束时间戳[秒] |
+| endUnix | Int64 | 结束时间戳[秒]，如未定义则为当前时间；晚于当前时间的取值会被截断为当前时间。 |
 
 返回示例
 
@@ -368,5 +367,5 @@ GET /api/group-analysis/cycle?groupID=GROUPID&startUnix=STARTUNIX&endUnix=ENDUNI
 | machineName | String | (必需)机台名，在“机台配置”页“添加/编辑设备”窗口设置。 |
 | startTime | String | (必需)节拍开始时间(UTC) |
 | endTime | String | (必需)节拍结束时间(UTC) |
-| lastCycleTime | Int32 | (必需)节拍时长[秒]，仅计算自动运行时间。 |
+| lastCycleTime | Int64 | (必需)节拍时长[秒]，仅计算自动运行时间。 |
 | mainPrgmName | String | (必需)节拍执行的主程序名 |

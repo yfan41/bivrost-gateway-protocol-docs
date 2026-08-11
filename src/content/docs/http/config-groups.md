@@ -12,21 +12,21 @@ sidebar:
 | 参数 | 类型 | 说明 |
 | --- | --- | --- |
 | id | Int32 | 机组数据库标识，详见 [1.1.4. ID 数据库标识](/conventions/identifiers/#db-id) |
-| number | Int32 | 机台，有效范围 1~8 |
-| useDefaultGroupID | Bool | 使用默认机组标识 |
+| number | Int32 | 机组号，有效范围 1~16 |
+| useDefaultGroupID | Bool | 使用默认机组标识。true 时机组标识由机组号自动生成（g+机组号），请求中的 groupID 被忽略；要自定义 groupID 必须设置 useDefaultGroupID=false。 |
 | groupID | String | 机组标识，详见 [1.1.2. groupID 机组标识](/conventions/identifiers/#groupid) |
-| name | String | 机台名 |
+| name | String | 机组名，留空时自动取 groupID |
 | isActive | Bool | 激活状态，true=激活，false=未激活 |
 | machines | Object[] | 机组包含的机台信息，详见 [machines 机台列表信息](#group-machines-info)。 |
 | enableExternalMachines | Bool | 启用外部机台 |
-| externalMachines | String | 外部机台命令 |
+| externalMachines | String | 外部机台命令。enableExternalMachines 为 true 时必需，留空会报错；格式为 `uid,machineID[\|countMultiplier=1\|name=xxx][,machineID...];...`，格式非法时 create-group / update-group 返回错误。 |
 | taskCount | Bool | 机组加工计数任务，true=开启，false=关闭。 |
 | taskOEE | Bool | 机组 OEE 监控任务，true=开启，false=关闭。 |
 | taskCumulativeStatusTime | Bool | 机组累计状态时间任务，true=开启，false=关闭。 |
 
 ## machines 机台列表信息 {#group-machines-info}
 
-machines 是机组包含的机台列表，参数如下表所示，注意除了 id, machineID, 和 countMultiplier 产量系数以外，其它参数均为只读参数。用户通过在列表中添加、移除 id 或 machineID 的方式修改机组包含的机台。使用机台配置接口修改机台配置后，机组的机台列表中相应机台信息会同步更新。
+machines 是机组包含的机台列表，参数如下表所示，注意除了 id, machineID, 和 countMultiplier 产量系数以外，其它参数均为只读参数。用户通过在列表中添加、移除 id 或 machineID 的方式修改机组包含的机台。create-group / update-group 请求中每个 machines 条目必须同时提供 id（或 machineID）与 countMultiplier，缺少 countMultiplier 的条目会被忽略，该机台不会加入机组（接口仍返回成功）。使用机台配置接口修改机台配置后，机组的机台列表中相应机台信息会同步更新。
 
 | 参数 | 类型 | 说明 |
 | --- | --- | --- |
@@ -40,7 +40,7 @@ machines 是机组包含的机台列表，参数如下表所示，注意除了 i
 | ip | String | IP 地址 |
 | port | Int32 | 端口号，0 代表各设备的默认端口。 |
 | isActive | Bool | 激活状态，true=激活，false=未激活 |
-| countMultiplier | Int32 | 产量系数 |
+| countMultiplier | Int32 | (必需)产量系数 |
 
 ## 2.9.4.1. group 获取机组配置 {#group}
 
@@ -230,7 +230,7 @@ POST /api/config/create-group
 }
 ```
 
-请求参数见[机组配置参数](#group-params)。注意请求体中不用设置数据库标识 id，id 由网关自动分配，创建成功后出现在返回体中。
+请求参数见[机组配置参数](#group-params)。注意请求体中不用设置数据库标识 id，id 由网关自动分配，创建成功后出现在返回体中。机组号 number 也可省略，省略时网关自动分配 1~16 中第一个未占用的机组号；机组号已用尽，或 number、groupID 与现有机组重复时，接口返回错误对象（见 [2.2. 错误处理](/http/#error-handling)）。
 
 返回示例
 
@@ -309,7 +309,7 @@ POST /api/config/update-group
 }
 ```
 
-请求参数见[机组配置参数](#group-params)。注意：此接口使用 id 作为唯一标识，请求体中必须设置数据库标识 id。机组标识 groupID 可以通过这个接口修改。
+请求参数见[机组配置参数](#group-params)。注意：此接口使用 id 作为唯一标识，请求体中必须设置数据库标识 id。机组标识 groupID 可以通过这个接口修改，但修改 groupID 时必须在同一请求中设置 useDefaultGroupID=false；update-group 请求未带 groupID 时，机组标识会被重置为默认值。
 
 返回示例
 
@@ -402,7 +402,7 @@ POST /api/config/batch-delete-groups
 }
 ```
 
-返回体中依次为请求体中的请求的执行结果。
+返回体只包含成功删除的机组数 deleted。ids 为空或缺失、以及一个机组都未删除时，接口返回错误对象（见 [2.2. 错误处理](/http/#error-handling)），不会返回 deleted=0。
 
 | 返回参数 | 类型 | 说明 |
 | --- | --- | --- |

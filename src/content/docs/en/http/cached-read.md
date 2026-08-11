@@ -5,7 +5,7 @@ sidebar:
 ---
 
 
-When using cache read/write APIs, the gateway returns the corresponding automatic data collection task data from its cache. To use these APIs, the gateway's local cache feature must be enabled (enabled by default from the factory), and the corresponding automatic data collection task must be enabled.
+When using cache read/write APIs, the gateway returns the corresponding automatic data collection task data from its cache. To use these APIs, the corresponding automatic data collection task must be enabled.
 
 ## 2.5.2.1. readTaskData Read Machine Task Data {#readtaskdata}
 
@@ -191,12 +191,12 @@ Request body example, application/json
 ]
 ```
 
-The request parameters are the same as [2.5.2.1. readTaskData Read Machine Task Data](#readtaskdata).
+The request parameters are the same as [2.5.2.3. readGroupTaskData Read Machine Group Task Data](#readgrouptaskdata).
 
 | Request Parameter | Type | Description |
 | --- | --- | --- |
-| groupID | String | Target machine group identifier, see [1.1.2. groupID Machine Group Identifier](/en/conventions/identifiers/#groupid) |
-| type | String | Data class, currently only [1.2.11. GroupCount: Machine Group Processing Count Data](/en/conventions/data-classes/#groupcount), [1.2.12. GroupCumulativeTime: Machine Group Cumulative Status Time](/en/conventions/data-classes/#groupcumulativetime), and [1.2.13. GroupOEE: Machine Group OEE](/en/conventions/data-classes/#groupoee) are supported |
+| groupID | String | (Required) Target machine group identifier, see [1.1.2. groupID Machine Group Identifier](/en/conventions/identifiers/#groupid) |
+| type | String | (Required) Data class, currently only [1.2.11. GroupCount: Machine Group Processing Count Data](/en/conventions/data-classes/#groupcount), [1.2.12. GroupCumulativeTime: Machine Group Cumulative Status Time](/en/conventions/data-classes/#groupcumulativetime), and [1.2.13. GroupOEE: Machine Group OEE](/en/conventions/data-classes/#groupoee) are supported |
 | tag | String | Field form of the tag, see [1.2. Data Description](/en/conventions/data-classes/) |
 
 Response example
@@ -292,8 +292,6 @@ Response example
   "error": 0
 }
 ```
-
-The order of the response results matches the order of the requests.
 
 | Response Parameter | Type | Description |
 | --- | --- | --- |

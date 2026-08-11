@@ -13,15 +13,18 @@ sidebar:
 | --- | --- |
 | alarmhistory | [AlarmHistory](/conventions/data-classes/#alarmhistory) |
 | alarmlog | [AlarmLog](/conventions/data-classes/#alarmlog) |
+| axialoverload | [AxialOverload](/conventions/data-classes/#axialoverload) |
 | cncstatus | [CNCStatus](/conventions/data-classes/#cncstatus) |
 | count | [Count](/conventions/data-classes/#count) |
 | currenttoolnumber | [CurrentToolNumber](/conventions/data-classes/#currenttoolnumber) |
 | cycle | [Cycle](/conventions/data-classes/#cycle) |
 | energyconsum | [EnergyConsum](/conventions/data-classes/#energyconsum) |
+| feed | [Feed](/conventions/data-classes/#feed) |
 | feedandspindle | [FeedAndSpindle](/conventions/data-classes/#feedandspindle) |
 | groupcount | [GroupCount](/conventions/data-classes/#groupcount) |
 | groupcumulativetime | [GroupCumulativeTime](/conventions/data-classes/#groupcumulativetime) |
 | groupoee | [GroupOEE](/conventions/data-classes/#groupoee) |
+| laserpower | [LaserPower](/conventions/data-classes/#laserpower) |
 | load | [Load](/conventions/data-classes/#load) |
 | loghistory | [LogHistory](/conventions/data-classes/#loghistory) |
 | machine | —（机台信息表） |
@@ -31,6 +34,7 @@ sidebar:
 | position | [Position](/conventions/data-classes/#position) |
 | programblock | [ProgramBlock](/conventions/data-classes/#programblock) |
 | programinfo | [ProgramInfo](/conventions/data-classes/#programinfo) |
+| spindleoverload | [SpindleOverload](/conventions/data-classes/#spindleoverload) |
 | timedata | [TimeData](/conventions/data-classes/#timedata) |
 | toollife | [ToolLife](/conventions/data-classes/#toollife) |
 
@@ -38,17 +42,20 @@ sidebar:
 
 | # | 名称 | 数据类型 | 长度/长度点 |
 | --- | --- | --- | --- |
-| 1 | id | BIGINT | 20 |
-| 2 | cncStatus | TEXT | |
-| 3 | adjustedStatus | TEXT | |
-| 4 | alarmStatus | TEXT | |
-| 5 | alarmLevel | TEXT | |
-| 6 | offTime | BIGINT | 20 |
-| 7 | waitTime | BIGINT | 20 |
-| 8 | emergencyTime | BIGINT | 20 |
-| 9 | autoRunTime | BIGINT | 20 |
-| 10 | manualTime | BIGINT | 20 |
-| 11 | channel | VARCHAR | 128 |
-| 12 | machineID | VARCHAR | 128 |
-| 13 | time | DATETIME | 3 |
-| 14 | uid | VARCHAR | 128 |
+| 1 | cncStatus | TEXT | |
+| 2 | adjustedStatus | TEXT | |
+| 3 | alarmStatus | TEXT | |
+| 4 | alarmLevel | TEXT | |
+| 5 | offTime | BIGINT | 20 |
+| 6 | waitTime | BIGINT | 20 |
+| 7 | emergencyTime | BIGINT | 20 |
+| 8 | autoRunTime | BIGINT | 20 |
+| 9 | manualTime | BIGINT | 20 |
+| 10 | channel | VARCHAR | 128 |
+| 11 | machineID | VARCHAR | 128 |
+| 12 | time | DATETIME | 3 |
+| 13 | uid | VARCHAR | 128 |
+
+:::note[注]
+上表不含 `id` 主键列。仅当数据库配置中开启「启用主键」选项（默认关闭）时，才会在表首额外创建自增主键列 `id`；其 SQL 数据类型随数据库类型而异：MySQL 与 SQL Server 为 `bigint`，PostgreSQL 为 `bigserial`，SQLite 为 `integer`。
+:::

@@ -43,11 +43,11 @@ sidebar:
 
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
-| alarmActive | Bool | true：激活警报状态；false：解除警报状态 |
 | alarmLevel | String | 警报级别 |
 | alarmMsg | String | 警报内容 |
+| alarmTime | String | 警报发生（开始）时间 |
 
-累计警报数为自从网关开始自动采集这台设备，累计的警报数。该值保存在网关中，与 machineID 机台标识绑定，不会被重置。
+AlarmHistory 仅在警报解除时产生一条历史记录，因此不存在「激活 / 解除」两种状态。记录中的 alarmTime 为警报发生（开始）时间，该条数据本身的时间为警报解除时间。
 
 ## 1.2.2. AlarmLog：当前警报 {#alarmlog}
 
@@ -74,6 +74,7 @@ sidebar:
 | 序号 | 标签 | 类型 | 缩写 | 说明 |
 | --- | --- | --- | --- | --- |
 | 1 | axisNo | Int32 | A | 轴号 |
+| 2 | channel | Int32 | C | 通道号，如不存在则代表默认通道 |
 
 ## 1.2.4. CNCStatus：机台状态 {#cncstatus}
 
@@ -89,11 +90,11 @@ sidebar:
 | programStatus | String | \*程序状态，随系统型号 |
 | emergencyStatus | String | \*急停状态，见[急停状态](/conventions/variables/#emergency-status) |
 | dryRunStatus | String | \*试运行状态，见[试运行状态](/conventions/variables/#dryrun-status) |
-| OffTime | UInt32 | 累计关机时间[秒] |
-| WaitTime | UInt32 | 累计待机时间[秒] |
-| EmergencyTime | UInt32 | 累计急停时间[秒] |
-| AutoRunTime | UInt32 | 累计自动运行时间[秒] |
-| ManualTime | UInt32 | 累计调机时间[秒] |
+| offTime | Int64 | 累计关机时间[秒] |
+| waitTime | Int64 | 累计待机时间[秒] |
+| emergencyTime | Int64 | 累计急停时间[秒] |
+| autoRunTime | Int64 | 累计自动运行时间[秒] |
+| manualTime | Int64 | 累计调机时间[秒] |
 
 累计状态时间为自从网关开始自动采集这台设备，累计的各状态时间。该值保存在网关中，与 machineID 机台标识绑定，不会被重置。
 
@@ -115,7 +116,7 @@ sidebar:
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
 | count | Int32 | 机台系统记录的当前加工件数 |
-| cumulativeCount | UInt32 | 累计加工计数 |
+| cumulativeCount | Int32 | 累计加工计数 |
 | currentCount | Int32 | 当前产量 |
 
 累计加工计数为自从网关开始自动采集这台设备，累计的加工计数。该值保存在网关中，与 machineID 机台标识绑定，不会被重置。当前产量为机台在监控时间内的产量统计。
@@ -166,7 +167,7 @@ sidebar:
 | spindleCoolingFan | Double | 主轴冷却风扇[Wh] |
 | servoControl | Double | 伺服控制[Wh] |
 
-目前此数据类仅支持部分新款 Brother 兄弟机型。
+目前此数据类仅支持部分新款 Brother 兄弟机型与 Mock 模拟机台。
 
 ## 1.2.9. Feed：进给数据 {#feed}
 
@@ -211,7 +212,7 @@ sidebar:
 
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
-| cumulativeCount | UInt32 | 机组累计加工计数，即自从网关开始自动采集这组设备，累计的加工计数。详见《说明书》[6.1.3. 机组加工计数](https://docs.bivrost.cn/gateway/reference/glossary#group-count)。 |
+| cumulativeCount | Int32 | 机组累计加工计数，即自从网关开始自动采集这组设备，累计的加工计数。详见《说明书》[6.1.3. 机组加工计数](https://docs.bivrost.cn/gateway/reference/glossary#group-count)。 |
 
 ## 1.2.12. GroupCumulativeTime：机组累计状态时间 {#groupcumulativetime}
 
@@ -219,11 +220,11 @@ sidebar:
 
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
-| OffTime | UInt32 | 累计关机时间[秒] |
-| WaitTime | UInt32 | 累计待机时间[秒] |
-| EmergencyTime | UInt32 | 累计急停时间[秒] |
-| AutoRunTime | UInt32 | 累计自动运行时间[秒] |
-| ManualTime | UInt32 | 累计调机时间[秒] |
+| offTime | Int64 | 累计关机时间[秒] |
+| waitTime | Int64 | 累计待机时间[秒] |
+| emergencyTime | Int64 | 累计急停时间[秒] |
+| autoRunTime | Int64 | 累计自动运行时间[秒] |
+| manualTime | Int64 | 累计调机时间[秒] |
 
 累计状态时间为自从网关开始自动采集这组设备，累计的机组内所有设备的各状态时间和。
 
@@ -307,7 +308,7 @@ sidebar:
 | lengthUnit | String | 刀补长度单位 |
 | toolNose | Int32 | （假想）刀尖位置/刀沿类型 |
 | lengthWear | Double | 长度磨损 |
-| radiuWear | Double | 半径磨损 |
+| radiusWear | Double | 半径磨损 |
 | lengthGeom | Double | 长度形状 |
 | radiusGeom | Double | 半径形状 |
 | wearX | Double | 长度 X 磨损 |
@@ -336,14 +337,15 @@ sidebar:
 | 系统型号 | toolNum 刀具号 | offsetNum 刀补号 |
 | --- | --- | --- |
 | Bosunman 博尚 | X | O |
-| Brother 兄弟 | X | O |
+| Brother 兄弟 [通用型] | X | O |
+| Brother 兄弟 [S 系列, A00] | O | X |
 | Delta 台达 | X | O |
 | Fagor 法格 | X | O |
 | Fanuc 发那科 | X | O |
 | GSK 广数 | X | O |
 | Heidenhain 海德汉 | O；刀具表 "T" 列 | X |
 | Haas 哈斯 | X | O |
-| Kede 科德 | X | O |
+| Kede 科德 | O | X |
 | Knd 凯恩帝 | X | O |
 | Lynuc 铼纳克 | X | O |
 | Mazak 马扎克 [Smart, Smooth] | X | O |
@@ -376,6 +378,7 @@ PLC 数据 `<field>` 数据字段：
 | pDouble | Double | 后处理得到的 Double 数据 |
 | pString | String | 后处理得到的 String 数据 |
 | pBool | Bool | 后处理得到的 Bool 数据 |
+| pTime | String | 后处理得到的时间数据 |
 
 PLC 数据 `<tag>` 数据标签：
 
@@ -436,6 +439,10 @@ PLC 命令 `R,100,5,Double`，单个数据长度 = (64 + 15) / 16，结果向下
 | mach | Float[] | 机械坐标，依次对应 axisName 中的坐标名 |
 | rel | Float[] | 相对坐标，依次对应 axisName 中的坐标名 |
 | unit | String[] | 轴坐标单位 |
+| jointCoor | Float[] | 关节坐标，仅机器人设备返回 |
+| robotCoor | Float[] | 机器人（基）坐标，仅机器人设备返回 |
+| userCoor | Float[] | 用户坐标，仅机器人设备返回 |
+| worldCoor | Float[] | 世界坐标，仅机器人设备返回 |
 
 坐标数据 `<tag>` 数据标签：
 
@@ -466,7 +473,7 @@ PLC 命令 `R,100,5,Double`，单个数据长度 = (64 + 15) / 16，结果向下
 | mainPrgmName | String | 当前主程序名 |
 | programSeqNum | String | 当前执行子程序段顺序号 |
 | runningPrgName | String | 当前执行子程序名 |
-| programStack | String | 程序堆栈，仅支持 Siemens 西门子 [OPC UA] |
+| programStack | String | 程序堆栈，仅支持 Siemens 西门子（[OPC UA]、[通用型]（840D sl / 828D，S7 协议）、[810D/840D]） |
 
 当前程序 `<tag>` 数据标签：
 
@@ -515,6 +522,8 @@ PLC 命令 `R,100,5,Double`，单个数据长度 = (64 + 15) / 16，结果向下
 | currentCycleTimeMs | Int32 | 当前循环时间 2[毫秒] |
 | currentCuttingTimeMin | Int32 | 当前切削时间 1[分钟] |
 | currentCuttingTimeMs | Int32 | 当前切削时间 2[毫秒] |
+| remainingCycleTimeMin | Int32 | 剩余循环时间 1[分钟] |
+| remainingCycleTimeMs | Int32 | 剩余循环时间 2[毫秒] |
 
 各系统型号支持的时间数据如下表所示，其中：
 
@@ -560,7 +569,7 @@ cumulativeOperatingTimeMs = 13328, 累计运行时间 2
 | Mazak 马扎克 [MT-CONNECT] | ✅ |  | ✅ |  | ✅ |  |  |  |  |  |
 | Mazak 马扎克 [Smart, Smooth] | ✅ | ✅ | ✅ | ✅ | ✅ |  |  |  |  |  |
 | Mitsubishi 三菱 | ✅ |  | ✅ |  | ✅ |  |  | ✅ |  |  |
-| Mock 模拟机台 | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |  |
+| Mock 模拟机台 | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Okuma 大隈 | ✅ |  | ✅ |  | ✅ |  |  |  |  |  |
 | Rexroth 力士乐 [OPC UA] |  |  |  | ✅ |  |  |  | ✅ |  |  |
 | Siemens 西门子 | ✅ | ✅ |  | ✅ | ✅ |  |  | ✅ |  |  |
@@ -580,9 +589,9 @@ cumulativeOperatingTimeMs = 13328, 累计运行时间 2
 | countLimit | Int32 | 寿命极限[次]，最大可用次数 |
 | currentCount | Int32 | 当前寿命[次]，已经使用的次数 |
 | prewarningCount | Int32 | 预警寿命[次]，当前寿命达到此值时发出警报 |
-| wearLimit | Int32 | 寿命极限[机床默认长度单位]，最大可磨损量 |
-| currentWear | Int32 | 当前寿命[机床默认长度单位]，当前磨损量 |
-| prewarningWear | Int32 | 预警寿命[机床默认长度单位]，当前寿命达到此值时发出警报 |
+| wearLimit | Double | 寿命极限[机床默认长度单位]，最大可磨损量 |
+| currentWear | Double | 当前寿命[机床默认长度单位]，当前磨损量 |
+| prewarningWear | Double | 预警寿命[机床默认长度单位]，当前寿命达到此值时发出警报 |
 
 **原始数据**
 
@@ -593,9 +602,11 @@ cumulativeOperatingTimeMs = 13328, 累计运行时间 2
 | rawToolLifeStatus | String | 刀具寿命状态 |
 | rawTimeLimit | Double | 寿命极限[时间] |
 | rawTimeLimit1 | Double | 刀具最长寿命[时间]，仅 Heidenhain 海德汉 |
-| rawTimeLimit1 | Double | 调用刀具的最长寿命[时间]，仅 Heidenhain 海德汉 |
+| rawTimeLimit2 | Double | 调用刀具的最长寿命[时间]，仅 Heidenhain 海德汉 |
 | rawCurrentTime | Double | 当前寿命[时间] |
 | rawOverTime | Double | 超出刀具寿命[时间]，仅 Heidenhain 海德汉 |
+| rawOverCount | Int32 | 超出刀具寿命[次]，仅 Siemens 西门子（自定义模块方式） |
+| rawPrewarningTime | Double | 预警寿命[时间]，仅 Brother 兄弟 |
 | rawRemainingTime | Double | 剩余寿命[时间] |
 | rawPrewarningRemainingTime | Double | 预警剩余寿命[时间] |
 | rawRemainingCount | Int32 | 剩余寿命[次] |

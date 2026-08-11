@@ -135,9 +135,9 @@ toolNum 为上图中位置；toolOffsetNum 为上图中 D；wearLimit 为上图�
 | countLimit | Int32 | 寿命极限[次]，最大可用次数 |
 | currentCount | Int32 | 当前寿命[次]，已经使用的次数 |
 | prewarningCount | Int32 | 预警寿命[次]，当前寿命达到此值时发出警报 |
-| wearLimit | Int32 | 寿命极限[机床默认的长度单位]，最大可磨损量 |
-| currentWear | Int32 | 当前寿命[机床默认长度单位]，当前磨损量 |
-| prewarningWear | Int32 | 预警寿命[机床默认长度单位]，当前寿命达到此值时发出警报 |
+| wearLimit | Double | 寿命极限[机床默认的长度单位]，最大可磨损量 |
+| currentWear | Double | 当前寿命[机床默认长度单位]，当前磨损量 |
+| prewarningWear | Double | 预警寿命[机床默认长度单位]，当前寿命达到此值时发出警报 |
 
 :::note[注]
 表中为通用的刀具寿命数据，为了所有机床系统标准统一，有些参数由原始数据换算得到。如需获得原始数据，可以使用 [2.5.1.23. readToolLifeDetails 读取刀具寿命详情](#readtoollifedetails)。
@@ -213,9 +213,9 @@ POST /api/cnc/batchReadToolLife?machineID=MACHINEID
 | countLimit | Int32 | 寿命极限[次]，最大可用次数 |
 | currentCount | Int32 | 当前寿命[次]，已经使用的次数 |
 | prewarningCount | Int32 | 预警寿命[次]，当前寿命达到此值时发出警报 |
-| wearLimit | Int32 | 寿命极限[机床默认的长度单位]，最大可磨损量 |
-| currentWear | Int32 | 当前寿命[机床默认长度单位]，当前磨损量 |
-| prewarningWear | Int32 | 预警寿命[机床默认的长度单位]，当前寿命达到此值时发出警报 |
+| wearLimit | Double | 寿命极限[机床默认的长度单位]，最大可磨损量 |
+| currentWear | Double | 当前寿命[机床默认长度单位]，当前磨损量 |
+| prewarningWear | Double | 预警寿命[机床默认的长度单位]，当前寿命达到此值时发出警报 |
 
 :::note[注]
 表中为通用的刀具寿命数据，为了所有机床系统标准统一，有些数据由原始数据换算得到。
@@ -361,7 +361,7 @@ toolNum 为上图中位置；toolOffsetNum 为上图中 D；wearLimit 为上图�
 | 返回参数 | 类型 | 说明 |
 | --- | --- | --- |
 | **通用数据** | | |
-| groupNum | Int32 | 刀组号 |
+| toolGroupNum | Int32 | 刀组号 |
 | toolIndex | Int32 | 组内序号 |
 | toolNum | Int32 | 刀具号 |
 | toolOffsetNum | Int32 | 刀补号 |
@@ -371,9 +371,9 @@ toolNum 为上图中位置；toolOffsetNum 为上图中 D；wearLimit 为上图�
 | countLimit | Int32 | 寿命极限[次]，最大可用次数 |
 | currentCount | Int32 | 当前寿命[次]，已经使用的次数 |
 | prewarningCount | Int32 | 预警寿命[次]，当前寿命达到此值时发出警报 |
-| wearLimit | Int32 | 寿命极限[机床默认的长度单位]，最大可磨损量 |
-| currentWear | Int32 | 当前寿命[机床默认长度单位]，当前磨损量 |
-| prewarningWear | Int32 | 预警寿命[机床默认的长度单位]，当前寿命达到此值时发出警报 |
+| wearLimit | Double | 寿命极限[机床默认的长度单位]，最大可磨损量 |
+| currentWear | Double | 当前寿命[机床默认长度单位]，当前磨损量 |
+| prewarningWear | Double | 预警寿命[机床默认的长度单位]，当前寿命达到此值时发出警报 |
 | **原始数据** | | |
 | rawToolLifeType | String | 刀具寿命类型 |
 | rawToolLifeUnit | String | 时间单位，以下简称为[时间] |
@@ -383,12 +383,14 @@ toolNum 为上图中位置；toolOffsetNum 为上图中 D；wearLimit 为上图�
 | rawTimeLimit2 | Double | 调用刀具的最长寿命[时间]，仅 Heidenhain 海德汉 |
 | rawCurrentTime | Double | 当前寿命[时间] |
 | rawOverTime | Double | 超出刀具寿命[时间]，仅 Heidenhain 海德汉 |
-| rawRemainingTime | Double | 剩余寿命[时间]，仅 Siemens 西门子 |
-| rawPrewarningRemainingTime | Double | 预警剩余寿命[时间]，仅 Siemens 西门子 |
-| rawRemainingCount | Int32 | 剩余寿命[次]，仅 Siemens 西门子 |
-| rawPrewarningRemainingCount | Int32 | 预警剩余寿命[次]，仅 Siemens 西门子 |
-| rawRemainingWear | Double | 剩余寿命[机床默认长度单位]，仅 Siemens 西门子 |
-| rawPrewarningRemainingWear | Double | 预警剩余寿命[机床默认长度单位]，仅 Siemens 西门子 |
+| rawOverCount | Int32 | 超出刀具寿命[次]，仅 Siemens 西门子（自定义模块方式） |
+| rawRemainingTime | Double | 剩余寿命[时间] |
+| rawPrewarningRemainingTime | Double | 预警剩余寿命[时间] |
+| rawPrewarningTime | Double | 预警寿命[时间]，仅 Brother 兄弟 |
+| rawRemainingCount | Int32 | 剩余寿命[次] |
+| rawPrewarningRemainingCount | Int32 | 预警剩余寿命[次] |
+| rawRemainingWear | Double | 剩余寿命[机床默认长度单位] |
+| rawPrewarningRemainingWear | Double | 预警剩余寿命[机床默认长度单位] |
 | inventoryNum | String | 刀具识别码，仅 Heidenhain 海德汉 |
 
 :::note[注]
@@ -456,7 +458,7 @@ POST /api/cnc/batchReadToolLifeDetails?machineID=MACHINEID
 | 返回参数 | 类型 | 说明 |
 | --- | --- | --- |
 | **通用数据** | | |
-| groupNum | Int32 | 刀组号 |
+| toolGroupNum | Int32 | 刀组号 |
 | toolIndex | Int32 | 组内序号 |
 | toolNum | Int32 | 刀具号 |
 | toolOffsetNum | Int32 | 刀补号 |
@@ -466,9 +468,9 @@ POST /api/cnc/batchReadToolLifeDetails?machineID=MACHINEID
 | countLimit | Int32 | 寿命极限[次]，最大可用次数 |
 | currentCount | Int32 | 当前寿命[次]，已经使用的次数 |
 | prewarningCount | Int32 | 预警寿命[次]，当前寿命达到此值时发出警报 |
-| wearLimit | Int32 | 寿命极限[机床默认的长度单位]，最大可磨损量 |
-| currentWear | Int32 | 当前寿命[机床默认长度单位]，当前磨损量 |
-| prewarningWear | Int32 | 预警寿命[机床默认长度单位]，当前寿命达到此值时发出警报 |
+| wearLimit | Double | 寿命极限[机床默认的长度单位]，最大可磨损量 |
+| currentWear | Double | 当前寿命[机床默认长度单位]，当前磨损量 |
+| prewarningWear | Double | 预警寿命[机床默认长度单位]，当前寿命达到此值时发出警报 |
 | **原始数据** | | |
 | rawToolLifeType | String | 刀具寿命类型 |
 | rawToolLifeUnit | String | 时间单位，以下简称为[时间] |
@@ -478,12 +480,14 @@ POST /api/cnc/batchReadToolLifeDetails?machineID=MACHINEID
 | rawTimeLimit2 | Double | 调用刀具的最长寿命[时间]，仅 Heidenhain 海德汉 |
 | rawCurrentTime | Double | 当前寿命[时间] |
 | rawOverTime | Double | 超出刀具寿命[时间]，仅 Heidenhain 海德汉 |
-| rawRemainingTime | Double | 剩余寿命[时间]，仅 Siemens 西门子 |
-| rawPrewarningRemainingTime | Double | 预警剩余寿命[时间]，仅 Siemens 西门子 |
-| rawRemainingCount | Int32 | 剩余寿命[次]，仅 Siemens 西门子 |
-| rawPrewarningRemainingCount | Int32 | 预警剩余寿命[次]，仅 Siemens 西门子 |
-| rawRemainingWear | Double | 剩余寿命[机床默认长度单位]，仅 Siemens 西门子 |
-| rawPrewarningRemainingWear | Double | 预警剩余寿命[机床默认长度单位]，仅 Siemens 西门子 |
+| rawOverCount | Int32 | 超出刀具寿命[次]，仅 Siemens 西门子（自定义模块方式） |
+| rawRemainingTime | Double | 剩余寿命[时间] |
+| rawPrewarningRemainingTime | Double | 预警剩余寿命[时间] |
+| rawPrewarningTime | Double | 预警寿命[时间]，仅 Brother 兄弟 |
+| rawRemainingCount | Int32 | 剩余寿命[次] |
+| rawPrewarningRemainingCount | Int32 | 预警剩余寿命[次] |
+| rawRemainingWear | Double | 剩余寿命[机床默认长度单位] |
+| rawPrewarningRemainingWear | Double | 预警剩余寿命[机床默认长度单位] |
 | inventoryNum | String | 刀具识别码，仅 Heidenhain 海德汉 |
 
 :::note[注]

@@ -9,7 +9,7 @@ sidebar:
 
 使用数据分析接口前，必须开启网关本地缓存开关（详见《说明书》[5.12.2.3. 本地缓存](https://docs.bivrost.cn/gateway/usage/settings)），以允许在网关本地保存机台状态历史数据。
 
-使用数据分析接口需要补充开始时间戳，结束时间戳。两者间最大长度为 31 天。
+使用数据分析接口需要补充开始时间戳，结束时间戳。未设置 interval 时，开始与结束时间戳之间的长度必须小于 31 天（31 天整会被拒绝）；设置 interval 时，该限制作用于每个分组间隔，而非整个时间范围。
 
 本地保存最大时限为 365 天。因此开始时间不可早于当前时间的 365 天前。
 
@@ -132,9 +132,9 @@ GET /api/analysis/alarm?machineID=MACHINEID&startUnix=STARTUNIX&endUnix=ENDUNIX
 | alarmLevel | String | (必需)警报级别。按优先级由高到低分为错误（ERR），警告（WRN），消息（INF）三个级别。用户可以参照《说明书》[5.5.7. 警报监控设置](https://docs.bivrost.cn/gateway/usage/tasks#alarm-monitor)，以关键字设置警报级别，及过滤低于最低报警级别的警报；未设置级别的警报均默认为警告级别。 |
 
 :::note[注]
-从警报出现到警报解除作为一次警报，记录其开始时间，结束时间，警报内容，和警报级别。如在开始时间戳之前，警报已经出现，且未解除，则此次警报的开始时间为开始时间戳对应的时间。
+从警报出现到警报解除作为一次警报，记录其开始时间，结束时间，警报内容，和警报级别。警报开始时间为警报实际出现的时间，可能早于请求的开始时间戳（不会被裁剪到开始时间戳）。查询按警报解除时间是否落在时间范围内筛选。
 
-如果在结束时间戳对应的时间，警报尚未解除，则此次警报的结束时间为结束时间戳对应的时间。
+只有已解除的警报会被统计；在结束时间戳时仍未解除的警报不会出现在返回结果中（其记录在解除后才写入）。
 
 如开始时间和结束时间之间缺失警报数据，则默认该段缺失数据时间内没有出现警报。
 :::
@@ -144,7 +144,7 @@ GET /api/analysis/alarm?machineID=MACHINEID&startUnix=STARTUNIX&endUnix=ENDUNIX
 获取指定时间范围内，每个分组间隔的机台累计加工计数。
 
 ```http
-GET /api/analysis/count?machineID=MACHINEID&startUnix=STARTUNIX&endUnix=ENDUNIX&interval=INTERVAL
+GET /api/analysis/count?machineID=MACHINEID&startUnix=STARTUNIX&endUnix=ENDUNIX&interval=INTERVAL&enableCountPerProgram=ENABLECOUNTPERPROGRAM
 ```
 
 | 请求参数 | 类型 | 说明 |
@@ -153,6 +153,7 @@ GET /api/analysis/count?machineID=MACHINEID&startUnix=STARTUNIX&endUnix=ENDUNIX&
 | startUnix | Int64 | (必需)开始时间戳[秒] |
 | endUnix | Int64 | (必需)结束时间戳[秒] |
 | interval | Int32 | 分组间隔[秒]，如未定义，则只有一个分组间隔。 |
+| enableCountPerProgram | Bool | 按主程序分组统计加工计数。默认 false。为 true 时，返回值按主程序 mainPrgmName 分组，每个主程序一条记录，count 为该主程序的节拍计数 deltaCount 之和；该时间范围内如无节拍数据，则按 false 处理，返回单条记录（cumulativeCount 之差）。 |
 
 返回示例
 
@@ -179,6 +180,28 @@ GET /api/analysis/count?machineID=MACHINEID&startUnix=STARTUNIX&endUnix=ENDUNIX&
 | startTime | String | (必需)分组间隔开始时间(UTC) |
 | endTime | String | (必需)分组间隔结束时间(UTC) |
 | count | Int32 | (必需)累计加工计数，分组间隔首末机台累计加工计数 `cumulativeCount` 之差 |
+| mainPrgmName | String | 主程序名。仅当请求参数 enableCountPerProgram 为 true 且该时间范围内存在节拍数据时返回，此时每个主程序返回一条记录（无主程序名的节拍归入空字符串）。 |
+
+按主程序分组的返回示例（enableCountPerProgram 为 true）
+
+```json
+[
+  {
+    "machineName": "模拟机台 1",
+    "startTime": "2022-04-28T14:30:00Z",
+    "endTime": "2022-04-28T15:30:00Z",
+    "count": 60,
+    "mainPrgmName": "O6495"
+  },
+  {
+    "machineName": "模拟机台 1",
+    "startTime": "2022-04-28T14:30:00Z",
+    "endTime": "2022-04-28T15:30:00Z",
+    "count": 36,
+    "mainPrgmName": "O6496"
+  }
+]
+```
 
 ### 2.7.1.4. overall 机台综合数据分析 {#overall}
 
@@ -249,16 +272,14 @@ GET /api/analysis/cycle?machineID=MACHINEID&startUnix=STARTUNIX&endUnix=ENDUNIX
     "startTime": "2025-05-23T06:35:44.046Z",
     "endTime": "2025-05-23T06:36:25.046Z",
     "lastCycleTime": 41,
-    "mainPrgmName": "O6495",
-    "machineID": "1"
+    "mainPrgmName": "O6495"
   },
   {
     "machineName": "模拟机台 1",
     "startTime": "2025-05-23T06:36:25.072Z",
     "endTime": "2025-05-23T06:36:56.072Z",
     "lastCycleTime": 31,
-    "mainPrgmName": "O6495",
-    "machineID": "1"
+    "mainPrgmName": "O6495"
   }
 ]
 ```
@@ -268,5 +289,5 @@ GET /api/analysis/cycle?machineID=MACHINEID&startUnix=STARTUNIX&endUnix=ENDUNIX
 | machineName | String | (必需)机台名，在“机台配置”页“添加/编辑设备”窗口设置。 |
 | startTime | String | (必需)节拍开始时间(UTC) |
 | endTime | String | (必需)节拍结束时间(UTC) |
-| lastCycleTime | Int32 | (必需)节拍时长[秒]，仅计算自动运行时间。 |
+| lastCycleTime | Int64 | (必需)节拍时长[秒]，仅计算自动运行时间。 |
 | mainPrgmName | String | (必需)节拍执行的主程序名 |

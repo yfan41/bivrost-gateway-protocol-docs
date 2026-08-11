@@ -55,7 +55,7 @@ sidebar:
 
 ```json
 {
-    "<machineID>": [
+    "<entityID>": [
         {
             "ts": <time>,
             "values": {
@@ -93,7 +93,7 @@ sidebar:
                 {
                     "service_id": <type>,
                     "properties": {
-                        "<tagField>_<field>": <value>
+                        "<tagField…>_<field>": <value>
                     },
                     "event_time": <time>
                 }
@@ -102,6 +102,10 @@ sidebar:
     ]
 }
 ```
+
+:::note[注]
+IoTDA 模式下属性名的前缀由数据类的**标签**决定：若数据类不含**标签**，则属性名仅为 `<field>`；若数据类含多个**标签**，则各**标签的字段形式**之间以下横线连接后再作为前缀，顺序与数据类**标签**表中的序号一致（规则与下文重要概念 5 中 `<fieldID>` 相同）。
+:::
 
 ### WisIoT 模式 {#mode-wisiot}
 
@@ -117,6 +121,10 @@ sidebar:
     ]
 }
 ```
+
+:::note[注]
+若网关启用了自定义属性上报功能（默认关闭），则在以上所有模式中，机台配置中 `customAttributes` 所配置的 JSON 对象会被合并到所发布报文的顶层。此功能仅对机台数据生效，机组数据不受影响。`customAttributes` 见 [2.9.3. 机台配置参数](/http/config-machines/#machine-params)。
+:::
 
 ### 重要概念 {#key-concepts}
 
@@ -181,7 +189,7 @@ sidebar:
   "data": {
     "cumulativeCount": 233
   },
-  "groupID": 1
+  "groupID": "g1"
 }
 ```
 
@@ -203,11 +211,11 @@ sidebar:
 
 `<data>` 数据内容，可通过 `<type>` 申明的数据类查找对应内容的解释说明。这里查找 [1.2.11. GroupCount：机组加工计数数据](/conventions/data-classes/#groupcount)，"cumulativeCount" 是数据 GroupCount 下的 `<field>` 数据字段，代表机组累计加工计数。
 
-第 7 行，`"groupID": 1`
+第 7 行，`"groupID": "g1"`
 
 `<entityID>` 机台或机组标识：此处为 groupID 机组标识。
 
-第 7 行内容代表这条报文的数据来自 1 号机组。
+第 7 行内容代表这条报文的数据来自机组标识为 g1 的机组。
 
 #### 示例 3 {#example-3}
 
@@ -263,9 +271,9 @@ sidebar:
 ```json
 {
   "unixtimestamp": 1698908397751,
-  "10_ToolLife_T9_02_timeLimit": 1800,
-  "10_ToolLife_T9_02_currentTime": 1620,
-  "10_ToolLife_T9_02_prewarningTime": 1680
+  "10_ToolLife_T9_O2_timeLimit": 1800,
+  "10_ToolLife_T9_O2_currentTime": 1620,
+  "10_ToolLife_T9_O2_prewarningTime": 1680
 }
 ```
 
@@ -273,23 +281,23 @@ sidebar:
 
 `<unixtimestamp>` 时间戳，数值 1698908397751 即此条报文的时间戳。
 
-第 3 行，`"10_ToolLife_T9_02_timeLimit": 1800,`
+第 3 行，`"10_ToolLife_T9_O2_timeLimit": 1800,`
 
 其格式为 `"<entityID>_<fieldID>_<field>": <value>`，
 
 其中 10 是 `<entityID>` 机台或机组标识：此处为 machineID 机台标识，代表当前数据所属机台。
 
-ToolLife_T9_02 是 `<fieldID>` 数据字段标识，其中 ToolLife 是 `<type>` 数据类，用 "ToolLife" 作为关键词，可以在 [1.2. 数据说明](/conventions/data-classes/)中 `<type>` 数据类表中找到，由此找到 [1.2.27. ToolLife：刀具寿命数据](/conventions/data-classes/#toollife)，识别本条报文中的数据为刀具寿命数据。T9 与 02 是 `<tag>` 数据标签缩写与标签内容的组合，查找 [1.2.27. ToolLife：刀具寿命数据](/conventions/data-classes/#toollife) `<tag>` 数据标签，得到 T 是 toolNum 刀号的缩写，0 是 toolOffsetNum 刀补号的缩写，代表这条报文的刀补数据属于 9 号刀 2 号刀补。
+ToolLife_T9_O2 是 `<fieldID>` 数据字段标识，其中 ToolLife 是 `<type>` 数据类，用 "ToolLife" 作为关键词，可以在 [1.2. 数据说明](/conventions/data-classes/)中 `<type>` 数据类表中找到，由此找到 [1.2.27. ToolLife：刀具寿命数据](/conventions/data-classes/#toollife)，识别本条报文中的数据为刀具寿命数据。T9 与 O2 是 `<tag>` 数据标签缩写与标签内容的组合，查找 [1.2.27. ToolLife：刀具寿命数据](/conventions/data-classes/#toollife) `<tag>` 数据标签，得到 T 是 toolNum 刀号的缩写，O 是 toolOffsetNum 刀补号的缩写，代表这条报文的刀补数据属于 9 号刀 2 号刀补。
 
 timeLimit 是 `<field>` 数据字段，查找 [1.2.27. ToolLife：刀具寿命数据](/conventions/data-classes/#toollife) `<field>` 数据字段，"timeLimit" 是寿命极限[秒]。
 
 这一行的内容总结：来自机台标识为 10 的机台的 9 号刀 2 号刀补的刀具寿命数据，寿命极限为 1800 秒。
 
-第 4 行，`"10_ToolLife_T9_02_currentTime": 1620,`
+第 4 行，`"10_ToolLife_T9_O2_currentTime": 1620,`
 
 类似第三行，此行内容总结：来自机台标识为 10 的机台的 9 号刀 2 号刀补的刀具寿命数据，当前寿命为 1620 秒。
 
-第 5 行，`"10_ToolLife_T9_02_prewarningTime": 1680`
+第 5 行，`"10_ToolLife_T9_O2_prewarningTime": 1680`
 
 类似第三行，此行内容总结：来自机台标识为 10 的机台的 9 号刀 2 号刀补的刀具寿命数据，预警寿命为 1680 秒。
 
@@ -300,9 +308,9 @@ timeLimit 是 `<field>` 数据字段，查找 [1.2.27. ToolLife：刀具寿命�
   "机台10": [ {
     "ts": 1698908397751,
     "values": {
-      "ToolLife_T9_02_timeLimit": 1800,
-      "ToolLife_T9_02_currentTime": 1620,
-      "ToolLife_T9_02_prewarningTime": 1680
+      "ToolLife_T9_O2_timeLimit": 1800,
+      "ToolLife_T9_O2_currentTime": 1620,
+      "ToolLife_T9_O2_prewarningTime": 1680
     }
   } ]
 }
@@ -322,19 +330,19 @@ timeLimit 是 `<field>` 数据字段，查找 [1.2.27. ToolLife：刀具寿命�
 
 ```json
 "values": {
-    "ToolLife_T9_02_timeLimit": 1800,
-    "ToolLife_T9_02_currentTime": 1620,
-    "ToolLife_T9_02_prewarningTime": 1680
+    "ToolLife_T9_O2_timeLimit": 1800,
+    "ToolLife_T9_O2_currentTime": 1620,
+    "ToolLife_T9_O2_prewarningTime": 1680
 }
 ```
 
 `<values>` 数据内容。以第 5 行为例：
 
-`"ToolLife_T9_02_timeLimit": 1800,`
+`"ToolLife_T9_O2_timeLimit": 1800,`
 
 其格式为 `"<fieldID>_<field>": <value>`，
 
-ToolLife_T9_02 是 `<fieldID>` 数据字段标识，其中 ToolLife 是 `<type>` 数据类，用 "ToolLife" 作为关键词，可以在 [1.2. 数据说明](/conventions/data-classes/)中 `<type>` 数据类表中找到，由此找到 [1.2.27. ToolLife：刀具寿命数据](/conventions/data-classes/#toollife)，识别本条报文中的数据为刀具寿命数据。T9 与 02 是 `<tag>` 数据标签缩写与标签内容的组合，查找 [1.2.27. ToolLife：刀具寿命数据](/conventions/data-classes/#toollife) `<tag>` 可以找到 T 是 toolNum 刀号的缩写，0 是 toolOffsetNum 刀补号的缩写，代表这条报文的刀补数据属于 9 号刀 2 号刀补。
+ToolLife_T9_O2 是 `<fieldID>` 数据字段标识，其中 ToolLife 是 `<type>` 数据类，用 "ToolLife" 作为关键词，可以在 [1.2. 数据说明](/conventions/data-classes/)中 `<type>` 数据类表中找到，由此找到 [1.2.27. ToolLife：刀具寿命数据](/conventions/data-classes/#toollife)，识别本条报文中的数据为刀具寿命数据。T9 与 O2 是 `<tag>` 数据标签缩写与标签内容的组合，查找 [1.2.27. ToolLife：刀具寿命数据](/conventions/data-classes/#toollife) `<tag>` 可以找到 T 是 toolNum 刀号的缩写，O 是 toolOffsetNum 刀补号的缩写，代表这条报文的刀补数据属于 9 号刀 2 号刀补。
 
 timeLimit 是 `<field>` 数据字段，查找 [1.2.27. ToolLife：刀具寿命数据](/conventions/data-classes/#toollife) `<field>` 数据字段，"timeLimit" 是寿命极限[秒]。
 
@@ -353,9 +361,9 @@ timeLimit 是 `<field>` 数据字段，查找 [1.2.27. ToolLife：刀具寿命�
         {
           "service_id": "ToolLife",
           "properties": {
-            "T9_02_timeLimit": 1800,
-            "T9_02_currentTime": 1620,
-            "T9_02_prewarningTime": 1680},
+            "T9_O2_timeLimit": 1800,
+            "T9_O2_currentTime": 1620,
+            "T9_O2_prewarningTime": 1680},
           "event_time": 1698908397751
         }
       ]
@@ -378,12 +386,12 @@ timeLimit 是 `<field>` 数据字段，查找 [1.2.27. ToolLife：刀具寿命�
 
 ```json
 "properties": {
-    "T9_02_timeLimit": 1800,
-    "T9_02_currentTime": 1620,
-    "T9_02_prewarningTime": 1680},
+    "T9_O2_timeLimit": 1800,
+    "T9_O2_currentTime": 1620,
+    "T9_O2_prewarningTime": 1680},
 ```
 
-T9_02 是 `<tagField>` 标签的字段形式，T9 与 02 是 `<tag>` 数据标签缩写与标签内容的组合，查找 [1.2.27. ToolLife：刀具寿命数据](/conventions/data-classes/#toollife) `<tag>` 数据标签，得到 T 是 toolNum 刀号的缩写，0 是 toolOffsetNum 刀补号的缩写，代表这条报文的刀补数据属于 9 号刀 2 号刀补。
+T9_O2 是 `<tagField>` 标签的字段形式，T9 与 O2 是 `<tag>` 数据标签缩写与标签内容的组合，查找 [1.2.27. ToolLife：刀具寿命数据](/conventions/data-classes/#toollife) `<tag>` 数据标签，得到 T 是 toolNum 刀号的缩写，O 是 toolOffsetNum 刀补号的缩写，代表这条报文的刀补数据属于 9 号刀 2 号刀补。
 
 timeLimit 是 `<field>` 数据字段，查找 [1.2.27. ToolLife：刀具寿命数据](/conventions/data-classes/#toollife) `<field>` 数据字段，"timeLimit" 是寿命极限[秒]，"currentTime" 是当前寿命[秒]，"prewarningTime" 预警寿命[秒]。
 

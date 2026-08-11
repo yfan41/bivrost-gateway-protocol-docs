@@ -18,18 +18,21 @@ sidebar:
 | 机台存储器 | Brother 兄弟［TC 系列］ | X | `/` |
 | 机台存储器 | Brother 兄弟［S 系列］ | O | `/` |
 | 机台存储器 | Delta 台达［通用型］ | O | `B:\` |
-| 机台存储器 | Fagor 法格［所有型号］ | O | `MEMORY` |
+| 机台存储器 | Fagor 法格［8035M/T，8040M/T，8055M/T］\*\*\* | O | `MEMORY` |
 | 机台存储器 | Fanuc 发那科［0i-D，0i-F，30i，31i，32i，35i，Power Motion i-A］\* | O | `//CNC_MEM/` |
 | 机台存储器 | Fanuc 发那科［除 0i-D，0i-F，30i，31i，32i，35i，Power Motion i-A 以外型号］ | X | 当前机台设定的前台目录，不固定，如`//CNC_MEM/` |
 | 机台存储器 | Gsk 广数［980，988］ | O | `/user/NCPROG` |
-| 机台存储器 | Haas 哈斯［通用型，MT-CONNECT］ | O | 无 |
-| 机台存储器 | Heidenhain 海德汉［TNC640，TNC640 DNC］ | O | `TNC:\nc_prog` |
-| 机台存储器 | Heidenhain 海德汉［iTNC530］ | O | `TNC:\` |
+| 机台存储器 | Haas 哈斯［通用型，MT-CONNECT］ | X | 无 |
+| 机台存储器 | Heidenhain 海德汉［TNC640，TNC640 DNC］ | O | `TNC:/nc_prog` |
+| 机台存储器 | Heidenhain 海德汉［iTNC530］ | O | `TNC:/` |
+| 机台存储器 | Hnc 华中数控［1.24，1.26.02］ | O | `h/lnc8/` |
+| 机台存储器 | Jingdiao 北京精雕［JD50］ | O | `E:\存储文件夹` |
+| 机台存储器 | Lanhao 蓝昊 | O | `昊折\menudir\menu` |
 | 机台存储器 | Lynuc 铼纳克［所有型号］ | O | `/home/Lynuc/Users/NCFiles` |
 | 机台存储器 | Mitsubishi 三菱［所有型号］\*\* | O | `PRG\USER\` |
 | 机台存储器 | Mock 模拟机台 | O | `/` |
 | 机台存储器 | Okuma 大隈［所有型号］ | O | `MD1` |
-| 机台存储器 | Rexroth 力士乐［OPC UA］ | O | `Filesystem/prog` |
+| 机台存储器 | Rexroth 力士乐［OPC UA］ | O | `/prog` |
 | 机台存储器 | Siemens 西门子［通用型］ | O | `/nckfs` |
 | 机台存储器 | Siemens 西门子［OPC UA］ | O | `Sinumerik/FileSystem/Part Program` |
 | 机台存储器 | Siemens 西门子［810D/840D］ | O | `mpf.dir` |
@@ -47,6 +50,8 @@ X：不支持
 
 \*\*：Mitsubishi 三菱［M700 系列,M800 系列］可以修改目标目录路径为外接 CF 卡（M700 系列）或 SD 卡（M800 系列），如 IC1。
 
+\*\*\*：Fagor 法格［8060M/T/L，8065M/T，8070M/T/L］不支持程序传输功能，也不支持指定目标目录路径。
+
 ## 2.6.1. readProgramList 读取机台文件列表 {#readprogramlist}
 
 ```http
@@ -58,6 +63,7 @@ GET /api/cnc/readProgramList?machineID=MACHINEID&dirAtCNC=DIRATCNC&subDir=SUBDIR
 | machineID | String | (必需)目标机台标识，详见 [1.1.1. machineID 机台标识](/conventions/identifiers/#machineid) |
 | dirAtCNC | String | 指定目标目录路径。如未补充该参数，则默认为默认根目录路径。各机台系统型号默认根目录路径见[各系统型号默认根目录路径](#default-root-paths)。 |
 | subDir | String | 指定目标子目录路径。如未输入 dirAtCNC，自动将根目录路径与子目录路径拼接为 dirAtCNC。用户可以参考《说明书》[5.3.1.3. 程序传输设置](https://docs.bivrost.cn/gateway/usage/machines#add-machine)修改根目录路径，如未修改，默认根目录路径见[各系统型号默认根目录路径](#default-root-paths)。如 dirAtCNC 与 subDir 同时输入，subDir 被忽略。 |
+| startPrgNo | Int32 | 仅 Fanuc 发那科［除 0i-D，0i-F，30i，31i，32i，35i，Power Motion i-A 以外型号］有效：从该程序号开始读取，0（默认）表示读取全部；其它系统型号忽略此参数。 |
 
 返回示例
 
@@ -87,12 +93,12 @@ GET /api/cnc/readProgramList?machineID=MACHINEID&dirAtCNC=DIRATCNC&subDir=SUBDIR
 | 文件服务器类型 | 系统［型号］ | 获取文件列表 | 获取子文件夹列表 |
 | --- | --- | --- | --- |
 | 机台存储器 | Brother 兄弟［所有型号］ | O | O |
-| 机台存储器 | Fagor 法格［所有型号］ | O | X |
+| 机台存储器 | Fagor 法格［8035M/T，8040M/T，8055M/T］ | O | X |
 | 机台存储器 | Fanuc 发那科［0i-D，0i-F，30i，31i，32i，35i，Power Motion i-A］ | \* | O |
 | 机台存储器 | Fanuc 发那科［除 0i-D，0i-F，30i，31i，32i，35i，Power Motion i-A 以外型号］ | O | X |
 | 机台存储器 | Heidenhain 海德汉［所有型号］ | O | O |
 | 机台存储器 | Lynuc 铼纳克［所有型号］ | O | O |
-| 机台存储器 | Mitsubishi 三菱［所有型号］ | O | X |
+| 机台存储器 | Mitsubishi 三菱［所有型号］ | O | O |
 | 机台存储器 | Mock 模拟机台 | O | O |
 | 机台存储器 | Okuma 大隈［所有型号］ | O | O |
 | 机台存储器 | Rexroth 力士乐［OPC UA］ | O | O |
@@ -196,6 +202,7 @@ GET /api/cnc/readCurrentProgram?machineID=MACHINEID&dirAtCNC=DIRATCNC&subDir=SUB
 | 请求参数 | 类型 | 说明 |
 | --- | --- | --- |
 | machineID | String | (必需)目标机台标识，machineID 解释见 [1.1. 基本说明](/conventions/identifiers/#machineid)。 |
+| channel | Int32 | 机台通道号，如不补充则默认为 0，即主通道 |
 | dirAtCNC | String | 指定目标目录路径。如未补充该参数，则默认为默认根目录路径。各机台系统型号默认根目录路径见[各系统型号默认根目录路径](#default-root-paths)。 |
 | subDir | String | 指定目标子目录路径。如未输入 dirAtCNC，自动将根目录路径与子目录路径拼接为 dirAtCNC。用户可以参考《说明书》[5.3.1.3. 程序传输设置](https://docs.bivrost.cn/gateway/usage/machines#add-machine)修改根目录路径，如未修改，默认根目录路径见[各系统型号默认根目录路径](#default-root-paths)。如 dirAtCNC 与 subDir 同时输入，subDir 被忽略。 |
 
@@ -226,9 +233,8 @@ GET /api/cnc/readCurrentProgram?machineID=MACHINEID&dirAtCNC=DIRATCNC&subDir=SUB
 
 ```json
 {
-  "errorCode": 158,
-  "errorMsg": "Path is not found.",
-  "statusMsg": "No content."
+  "errorCode": 196,
+  "errorMsg": "Program not selected."
 }
 ```
 
@@ -239,6 +245,7 @@ GET /api/cnc/readCurrentProgram?machineID=MACHINEID&dirAtCNC=DIRATCNC&subDir=SUB
 | content | String | 文件内容 |
 | encoding | String | 原文件的编码 |
 | base64 | String | 当文件为二进制格式时，网关将使用 Base64 编码将二进制内容转换成字符串。用户可自行解码获取二进制文件。 |
+| channel | Int32 | 机台通道号，仅当请求中补充 channel 且不为 0 时出现 |
 | errorCode | Int32 | 错误码，0 代表成功。 |
 | errorMsg | String | 错误内容 |
 | statusMsg | String | 错误详情 |
@@ -514,7 +521,7 @@ POST /api/cnc/batchDeleteFile
 
 ## 2.6.10. lockFileByRange 锁定/解锁机台程序编辑 {#lockfilebyrange}
 
-当前仅支持 Mitsubishi 三菱，Fanuc 发那科系统程序号在 8000~8999，9000~9999，以及 8000~9999 三个区间内的编辑锁定/解锁。部分系统在锁定编辑后不可修改，但仍可以从机床端删除。
+当前仅支持 Fanuc 发那科系统程序号在 8000~8999，9000~9999，以及 8000~9999 三个区间内的编辑锁定/解锁（区间以外返回 10017 Invalid API request.），以及 Mock 模拟机台。部分系统在锁定编辑后不可修改，但仍可以从机床端删除。
 
 ```http
 GET /api/cnc/lockFileByRange?machineID=MACHINEID&isLock=ISLOCK&lockStart=LOCKSTART&lockEnd=LOCKEND
@@ -578,8 +585,10 @@ GET /api/cnc/createDir?machineID=MACHINEID&dirName=DIRNAME&dirAtCNC=DIRATCNC&sub
 | 机台存储器 | Delta 台达［通用型］ | O |
 | 机台存储器 | Fanuc 发那科［0i-D，0i-F，30i，31i，32i，35i，Power Motion i-A］ | O |
 | 机台存储器 | GSK［所有型号］ | X |
-| 机台存储器 | Haas 哈斯［通用型，MT-CONNECT］ | O |
+| 机台存储器 | Haas 哈斯［通用型，MT-CONNECT］ | X |
 | 机台存储器 | Heidenhain 海德汉［所有型号］ | O |
+| 机台存储器 | Jingdiao 北京精雕［JD50］ | O |
+| 机台存储器 | Lanhao 蓝昊 | O |
 | 机台存储器 | Mitsubishi 三菱［M70/M700 L，M70/M700 M，M80/M800 L，M80/M800 M］ | \*仅限 CF 卡，SD 卡（路径：IC1） |
 | 机台存储器 | Mock 模拟机台 | O |
 | 机台存储器 | Okuma 大隈［所有型号］ | O |
@@ -681,6 +690,7 @@ GET /api/cnc/selectProgram?machineID=MACHINEID&fileName=FILENAME&dirAtCNC=DIRATC
 | 请求参数 | 类型 | 说明 |
 | --- | --- | --- |
 | machineID | String | (必需)目标机台标识，详见 [1.1.1. machineID 机台标识](/conventions/identifiers/#machineid) |
+| channel | Int32 | 机台通道号，如不补充则默认为 0，即主通道 |
 | fileName | String | (必需)目标文件的文件名，参考 [2.6.1. readProgramList 读取机台文件列表](#readprogramlist)或 [2.6.15. readAllPrograms 浏览所有文件](#readallprograms)接口返回的文件名。部分系统型号，如 Gsk 广数，Siemens 西门子等，文件名必须包括文件扩展名。 |
 | dirAtCNC | String | 指定目标目录路径。如未补充该参数，则默认为默认根目录路径。各机台系统型号默认根目录路径见[各系统型号默认根目录路径](#default-root-paths)。 |
 | subDir | String | 指定目标子目录路径。如未输入 dirAtCNC，自动将根目录路径与子目录路径拼接为 dirAtCNC。用户可以参考《说明书》[5.3.1.3. 程序传输设置](https://docs.bivrost.cn/gateway/usage/machines#add-machine)修改根目录路径，如未修改，默认根目录路径见[各系统型号默认根目录路径](#default-root-paths)。如 dirAtCNC 与 subDir 同时输入，subDir 被忽略。 |
@@ -704,9 +714,15 @@ GET /api/cnc/selectProgram?machineID=MACHINEID&fileName=FILENAME&dirAtCNC=DIRATC
 
 | 系统［型号］ | 备注 |
 | --- | --- |
+| Bosunman 博尚［DF 系列 Ethernet，DF 系列 Serial over Ethernet］ | |
 | Brother 兄弟［所有型号］ | 必须在自动运行模式或运行中编辑模式下；必须未运行程序。 |
+| Delta 台达［通用型］ | |
 | Fanuc 发那科［0i-D，0i-F，30i，31i，32i，35i，Power Motion i-A］ | 必须在 Auto 或 Edit 模式下。 |
-| Gsk 广州数控［980，988］ | 部分版本支持。 |
+| Gsk 广州数控［980，988，25i］ | 部分版本支持。 |
+| Hnc 华中数控［1.26.02］ | |
+| Jingdiao 北京精雕［JD50］ | |
+| KND 凯恩帝［V4.3.00b，V5.1.00c］ | |
+| Lynuc 铼纳克［通用型］ | |
 | Mock 模拟机台 | 总是返回 SUCCESS，但不会改变当前程序。 |
 | Okuma 大隈［所有型号］ | 必需补充参数 mode 执行模式。 |
 | Syntec 新代 | |
@@ -724,6 +740,7 @@ GET /api/cnc/readAllPrograms?machineID=MACHINEID&dirAtCNC=DIRATCNC&subDir=SUBDIR
 | machineID | String | (必需)目标机台标识，详见 [1.1.1. machineID 机台标识](/conventions/identifiers/#machineid) |
 | dirAtCNC | String | 指定目标目录路径。如未补充该参数，则默认为默认根目录路径。各机台系统型号默认根目录路径见[各系统型号默认根目录路径](#default-root-paths)。 |
 | subDir | String | 指定目标子目录路径。如未输入 dirAtCNC，自动将根目录路径与子目录路径拼接为 dirAtCNC。用户可以参考《说明书》[5.3.1.3. 程序传输设置](https://docs.bivrost.cn/gateway/usage/machines#add-machine)修改根目录路径，如未修改，默认根目录路径见[各系统型号默认根目录路径](#default-root-paths)。如 dirAtCNC 与 subDir 同时输入，subDir 被忽略。 |
+| startPrgNo | Int32 | 仅 Fanuc 发那科［除 0i-D，0i-F，30i，31i，32i，35i，Power Motion i-A 以外型号］有效：从该程序号开始读取，0（默认）表示读取全部；其它系统型号忽略此参数。 |
 
 返回示例
 
@@ -766,6 +783,7 @@ GET /api/cnc/searchFile?machineID=MACHINEID&fileName=FILENAME&dirAtCNC=DIRATCNC&
 | fileName | String | (必需)目标文件名，参考 [2.6.1. readProgramList 读取机台文件列表](#readprogramlist)或 [2.6.15. readAllPrograms 浏览所有文件](#readallprograms)接口返回的文件名。部分系统型号，如 Gsk 广数，Siemens 西门子等，文件名必须包括文件扩展名。 |
 | dirAtCNC | String | 指定目标目录路径。如未补充该参数，则默认为默认根目录路径。各机台系统型号默认根目录路径见[各系统型号默认根目录路径](#default-root-paths)。 |
 | subDir | String | 指定目标子目录路径。如未输入 dirAtCNC，自动将根目录路径与子目录路径拼接为 dirAtCNC。用户可以参考《说明书》[5.3.1.3. 程序传输设置](https://docs.bivrost.cn/gateway/usage/machines#add-machine)修改根目录路径，如未修改，默认根目录路径见[各系统型号默认根目录路径](#default-root-paths)。如 dirAtCNC 与 subDir 同时输入，subDir 被忽略。 |
+| startPrgNo | Int32 | 仅 Fanuc 发那科［除 0i-D，0i-F，30i，31i，32i，35i，Power Motion i-A 以外型号］有效：从该程序号开始读取，0（默认）表示读取全部；其它系统型号忽略此参数。 |
 
 返回示例
 

@@ -58,7 +58,7 @@ Response example
   "toolNum": 2,
   "offsetNum": 1,
   "toolName": "ROUGHING_T80 A",
-  "toolType": 500,
+  "toolType": "500",
   "toolNose": 3,
   "wearX": 0.88,
   "wearZ": 0.78,
@@ -102,7 +102,7 @@ Response example
 | lengthUnit | String | Tool offset length unit |
 | toolNose | Int32 | (Imaginary) tool nose position / cutting edge type |
 | lengthWear | Double | Length wear |
-| radiuWear | Double | Radius wear |
+| radiusWear | Double | Radius wear |
 | lengthGeom | Double | Length geometry |
 | radiusGeom | Double | Radius geometry |
 | wearX | Double | Length X wear |
@@ -143,13 +143,24 @@ Request body example, application/json
 ]
 ```
 
-The request parameters are the same as [2.5.1.12. readOffsetData - Read Tool Offset Data](#readoffsetdata).
+The request parameters are the same as [2.5.1.12. readOffsetData - Read Tool Offset Data](#readoffsetdata), but they are supplied in two places: machineID is a query string parameter, while channel, toolNum, and offsetNum are fields of each element in the request body array.
+
+Query string parameters:
 
 | Request Parameter | Type | Description |
 | --- | --- | --- |
 | machineID | String | (Required) Target machine identifier, see [1.1.1. machineID Machine Identifier](/en/conventions/identifiers/#machineid) |
+
+Fields of each element in the request body array:
+
+| Request Parameter | Type | Description |
+| --- | --- | --- |
 | channel | Int32 | Machine channel number. Defaults to 0 (the main channel) if not supplied. |
 | toolNum, offsetNum | Int32 | Supply toolNum (tool number) or offsetNum (offset number) to identify the target tool. These request parameters correspond to the tags in [Tool offset data `<tag>` data tags](/en/conventions/data-classes/#offset). Refer to the per-system tag combination table in [Tool offset data tag combinations](/en/conventions/data-classes/#offset) to supply the correct combination of request parameters. |
+
+:::note[Note]
+channel takes effect only within each element of the request body array. A channel supplied on the query string has no effect for this endpoint and is ignored.
+:::
 
 Response example
 
@@ -192,7 +203,7 @@ The response parameters are the same as [2.5.1.12. readOffsetData - Read Tool Of
 | lengthUnit | String | Tool offset length unit |
 | toolNose | Int32 | (Imaginary) tool nose position / cutting edge type |
 | lengthWear | Double | Length wear |
-| radiuWear | Double | Radius wear |
+| radiusWear | Double | Radius wear |
 | lengthGeom | Double | Length geometry |
 | radiusGeom | Double | Radius geometry |
 | wearX | Double | Length X wear |
@@ -209,6 +220,8 @@ The table lists the common tool offset parameters, but not all of them. Some mac
 :::
 
 ## 2.5.1.14. writeOffsetData - Write Tool Offset Data {#writeoffsetdata}
+
+By default, the gateway blocks this endpoint (the protected API list in the security settings includes `/cnc/writeOffsetData` by default); before use, enable the corresponding option on the **Settings** page of the gateway management console, otherwise calls return UNAUTHORIZED_ACCESS.
 
 ```http
 POST /api/cnc/writeOffsetData?machineID=MACHINEID&channel=CHANNEL&toolNum=TOOLNUM&offsetNum=OFFSETNUM
@@ -240,7 +253,7 @@ Include only the parameters you want to write in the request body. Parameters th
 | lengthUnit | String | Tool offset length unit |
 | toolNose | Int32 | (Imaginary) tool nose position / cutting edge type |
 | lengthWear | Double | Length wear |
-| radiuWear | Double | Radius wear |
+| radiusWear | Double | Radius wear |
 | lengthGeom | Double | Length geometry |
 | radiusGeom | Double | Radius geometry |
 | wearX | Double | Length X wear |
@@ -447,7 +460,7 @@ GET /api/cnc/readPlcData?machineID=MACHINEID&area=AREA&start=START&count=COUNT&t
 | Siemens | Macro variable | `$MACRO$\|type=R` | R parameter |
 | Siemens | Macro variable | `$MACRO$\|type=RG` | RG parameter |
 | Siemens [general-purpose] | Tag (variable name) | `$TAG$\|area=AREA\|block=BLOCK\|name=NAME\|areaNo=AREANO\|row=ROW\|column=COLUMN` | S7 variable; supply the parameters Area, Block (Component), VariableName, AreaNo. (default 1), Row (default 1), Column (default 1), e.g.: `$TAG$\|area=C\|block=AUXFU\|name=status\|areaNo=2\|row=3` |
-| Siemens [OPC UA] | Tag (variable name) | `$TAG$\|name=NAME\|ns=NS` | OPC UA server variable address; supply the parameters name (variable name) and ns (name space index, default 2), e.g.: `$TAG$\|area=/Channel/State/actParts\|ns=2` |
+| Siemens [OPC UA] | Tag (variable name) | `$TAG$\|name=NAME\|ns=NS` | OPC UA server variable address; supply the parameters name (variable name) and ns (name space index, default 2), e.g.: `$TAG$\|name=/Channel/State/actParts\|ns=2` |
 | Syntec | Macro variable | `$MACRO$` | |
 | Allen-Bradley | Tag (variable name) | `$TAG$\|name=NAME` | Supply the name tag (variable name) |
 
@@ -468,31 +481,39 @@ Note 2: When using the $TAG$ method, the Start start address does not need to be
 
 ### PLC Data Types {#plc-types}
 
-| Data Type | Bit | Byte | SByte | Int16 | UInt16 | Float | Int32 | UInt32 | Double | String |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Data length | 1 bit | 8 bits | 8 bits | 16 bits | 16 bits | 32 bits | 32 bits | 32 bits | 64 bits | variable |
-| Bosunman | O | O | O | O | O | O | O | O | O | O |
-| Brother | O | | | O | | | | | | |
-| Delta | O | O | O | O | O | O | O | O | O | O |
-| Fagor [8060,8065,8070] | | | | | | | O | | O | O |
-| Fanuc | | O | O | O | O | | O | O | \* | |
-| Gsk [988,980] | | O | | | | | | | \* | |
-| Gsk [Ethernet, serial-to-Ethernet, 986 V4.15] | O | O | O | O | O | O | O | O | O | O |
-| Haas [general-purpose] | | | | O | O | O | O | O | O | O |
-| Heidenhain | O | | O | O | | | O | | | O |
-| Hnc | | O | | O | | | O | O | O | |
-| Jingdiao | | O | | O | O | | O | O | O | |
-| Knd | | O | O | O | O | | O | O | | |
-| Lnc | O | | | | | O | O | | | |
-| Mitsubishi | O | O | | O | O | O | O | O | \* | |
-| Mock simulated machine | O | O | O | O | O | O | O | O | O | O |
-| Siemens | O | O | | O | O | O | O | O | O | O |
-| Syntec | | O | | O | | | O | | \* | |
-| External module | | | | | O | O | | | | |
+| Data Type | Bit | Byte | SByte | Int16 | UInt16 | Float | Int32 | UInt32 | Int64 | UInt64 | Double | String |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Data length | 1 bit | 8 bits | 8 bits | 16 bits | 16 bits | 32 bits | 32 bits | 32 bits | 64 bits | 64 bits | 64 bits | variable |
+| Bosunman | O | O | O | O | O | O | O | O | | | O | O |
+| Brother | O | | | O | | | | | | | | |
+| Delta | O | O | O | O | O | O | O | O | O | O | O | O |
+| Fagor [8035,8040,8055] | O | O | O | O | O | O | O | O | | | O | O |
+| Fagor [8060,8065,8070] | | | | | | | O | | | | O | O |
+| Fanuc | | O | O | O | O | | O | O | | | \* | |
+| Gsk [988,980] | | O | | | | | | | | | \* | |
+| Gsk [Ethernet, serial-to-Ethernet, 986 V4.15] | O | O | O | O | O | O | O | O | | | O | O |
+| Haas [general-purpose] | | | | O | O | O | O | O | O | O | O | O |
+| Heidenhain | O | | O | O | | | O | | | | | O |
+| Hnc | | O | | O | | | O | O | | | O | |
+| Jingdiao | | O | | O | O | | O | O | | | O | |
+| Kede | O | O | O | O | O | O | O | O | O | O | O | |
+| Knd | | O | O | O | O | | O | O | | | | |
+| Lnc | O | | | | | O | O | | | | | |
+| Lynuc | | | | | | | | O | | | \* | |
+| Mazak [Smart, Smooth] | | | | | | | O | | | | \* | |
+| Mitsubishi | O | O | | O | O | O | O | O | | | \* | |
+| Mock simulated machine | O | O | O | O | O | O | O | O | | | O | O |
+| Siemens | O | O | | O | O | O | O | O | | | O | O |
+| Syntec | O | O | | O | | | O | | | | \* | |
+| External module | | | | | O | O | | | | | | |
 
 O: Supported.
 
 \*: This data type is supported only for macro variables (local variables, common variables, etc.).
+
+The Bit type can be written as Bit0–Bit7 to specify the bit position within a byte or word; Bit is equivalent to Bit0.
+
+On Syntec, the I/O/C/S/A bit areas must use the Bit type (Bit0–Bit7).
 
 ### Request Examples {#readplcdata-examples}
 

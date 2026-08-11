@@ -72,7 +72,7 @@ GET /api/cnc/readCNCStatus?machineID=MACHINEID&channel=CHANNEL
 | alarmLevel | String | 警报级别，如有多个警报，取这些警报中的最高级别。如无警报，则不返回。详见[警报级别](/conventions/variables/#alarm-level) |
 | channel | Int32 | 机台通道号，仅当请求中补充 channel 且不为 0 时出现 |
 
-由网关后处理得到的修正运行状态 adjustedStatus，累计关机时间 offTime，累计待机时间 waitTime，累计急停时间 emergencyTime，累计自动运行时间 autoRunTime，累计调机时间 ManualTime 等，暂不支持 HTTP 协议。需要在开启自动采集任务后，通过接口 [2.5.2.1. readTaskData 读取机台任务数据](/http/cached-read/#readtaskdata)或 [2.5.2.2. batchReadTaskData 批量读取机台任务数据](/http/cached-read/#batchreadtaskdata)，或通过 MODBUS，MQTT，数据库等方式获取。
+由网关后处理得到的修正运行状态 adjustedStatus，累计关机时间 offTime，累计待机时间 waitTime，累计急停时间 emergencyTime，累计自动运行时间 autoRunTime，累计调机时间 manualTime 等，暂不支持 HTTP 协议。需要在开启自动采集任务后，通过接口 [2.5.2.1. readTaskData 读取机台任务数据](/http/cached-read/#readtaskdata)或 [2.5.2.2. batchReadTaskData 批量读取机台任务数据](/http/cached-read/#batchreadtaskdata)，或通过 MODBUS，MQTT，数据库等方式获取。
 
 ### 2.5.1.3. readCNCStatusDetails 读取机台状态详情 {#readcncstatusdetails}
 
@@ -113,7 +113,7 @@ GET /api/cnc/readCNCStatusDetails?machineID=MACHINEID&channel=CHANNEL
 | alarmLevel | String | 警报级别，如有多个警报，取这些警报中的最高级别。如无警报，则不返回。详见[警报级别](/conventions/variables/#alarm-level) |
 | channel | Int32 | 机台通道号，仅当请求中补充 channel 且不为 0 时出现 |
 
-由网关后处理得到的修正运行状态 adjustedStatus，累计关机时间 offTime，累计待机时间 waitTime，累计急停时间 emergencyTime，累计自动运行时间 autoRunTime，累计调机时间 ManualTime 等，暂不支持 HTTP 协议。需要在开启自动采集任务后，通过接口 [2.5.2.1. readTaskData 读取机台任务数据](/http/cached-read/#readtaskdata)或 [2.5.2.2. batchReadTaskData 批量读取机台任务数据](/http/cached-read/#batchreadtaskdata)，或通过 MODBUS，MQTT，数据库等方式获取。
+由网关后处理得到的修正运行状态 adjustedStatus，累计关机时间 offTime，累计待机时间 waitTime，累计急停时间 emergencyTime，累计自动运行时间 autoRunTime，累计调机时间 manualTime 等，暂不支持 HTTP 协议。需要在开启自动采集任务后，通过接口 [2.5.2.1. readTaskData 读取机台任务数据](/http/cached-read/#readtaskdata)或 [2.5.2.2. batchReadTaskData 批量读取机台任务数据](/http/cached-read/#batchreadtaskdata)，或通过 MODBUS，MQTT，数据库等方式获取。
 
 ### 2.5.1.4. readCount 读取加工计数 {#readcount}
 
@@ -361,8 +361,9 @@ GET /api/cnc/readLog?machineID=MACHINEID
 | 请求参数 | 类型 | 说明 |
 | --- | --- | --- |
 | machineID | String | (必需)目标机台标识，详见 [1.1.1. machineID 机台标识](/conventions/identifiers/#machineid) |
-| type | String | 类型，范围：Alarm(警报日志)，Operation(操作日志)，Default（默认），默认为 Default。ABB 机器人支持 Operation；Fanuc 机器人支持 Alarm；模拟机台支持所有类型，Default 等同 Operation。 |
+| type | String | 类型，范围：Alarm(警报日志)，Operation(操作日志)，Default（默认），默认为 Default。ABB 机器人支持 Operation；Fanuc 机器人支持 Alarm；模拟机台支持所有类型，Default 等同 Operation。可用分号 `;` 分隔多个类型（如 `type=Alarm;Operation`），返回的 msgs 为各类型日志按顺序合并的结果；取值非法时返回错误码 CNCWRAPPER_INVALID_COMMAND。 |
 | count | Int32 | 日志数量，获取最新的指定数量的日志内容，默认为 0，即获取所有日志。 |
+| path | String | 日志文件路径。仅 ABB 机器人支持；如指定，则直接返回该文件的全部内容作为 msgs 的唯一元素，并忽略 type 参数。 |
 
 返回示例（ABB 机器人 Operation）
 
@@ -408,3 +409,88 @@ GET /api/cnc/readLog?machineID=MACHINEID
 | 返回参数 | 类型 | 说明 |
 | --- | --- | --- |
 | msgs | String[] | (必需)日志内容。注：不同机台的日志内容格式不同。 |
+
+### 2.5.1.25. readCNCCommonStatus 读取机台通用状态 {#readcnccommonstatus}
+
+此接口除了读取到与 [2.5.1.3. readCNCStatusDetails 读取机台状态详情](#readcncstatusdetails)相同的机台状态数据，还能获取到部分系统特有的状态数据。
+
+```http
+GET /api/cnc/readCNCCommonStatus?machineID=MACHINEID&channel=CHANNEL
+```
+
+| 请求参数 | 类型 | 说明 |
+| --- | --- | --- |
+| machineID | String | (必需)目标机台标识，详见 [1.1.1. machineID 机台标识](/conventions/identifiers/#machineid) |
+| channel | Int32 | 机台通道号，如不补充则默认为 0，即主通道 |
+
+返回示例
+
+```json
+{
+  "mode": "AUTO_RUN",
+  "programStatus": "RUNNING",
+  "emergencyStatus": "NOT_EMG",
+  "dryRunStatus": "DRY_RUN",
+  "cncStatus": "AUTO_RUN",
+  "alarmStatus": "ALARM",
+  "alarmLevel": "WRN",
+  "channel": 2
+}
+```
+
+| 返回参数 | 类型 | 说明 |
+| --- | --- | --- |
+| mode | String | 运行模式 |
+| programStatus | String | 程序状态 |
+| emergencyStatus | String | 急停状态，见[急停状态](/conventions/variables/#emergency-status) |
+| dryRunStatus | String | 试运行状态，见[试运行状态](/conventions/variables/#dryrun-status) |
+| cncStatus | String | (必需)运行状态，详见[运行状态](/conventions/variables/#cnc-status) |
+| alarmStatus | String | (必需)警报状态，详见[警报状态](/conventions/variables/#alarm-status) |
+| alarmLevel | String | 警报级别，如有多个警报，取这些警报中的最高级别。如无警报，则不返回。详见[警报级别](/conventions/variables/#alarm-level) |
+| channel | Int32 | 机台通道号，仅当请求中补充 channel 且不为 0 时出现 |
+| mode2 | String | 手动模式选择。Fanuc 发那科［15，15i］为手动模式选择；Rexroth 力士乐［OPC UA］为副模式 |
+| readyStatus | String | 准备就绪状态，仅 KND 凯恩帝 |
+| alarmOnlyStatus | String | 警报状态（不含警告），仅 LNC 宝元 |
+| emergencySetStatus | String | 急停设定状态，仅 LNC 宝元、Lanhao 蓝昊、Mazak 马扎克［640］ |
+| lightColor1 | String | 第 1 组信号灯颜色，仅 Dmg Mori 德玛吉森精机 |
+| lightStatus1 | String | 第 1 组信号灯状态，仅 Dmg Mori 德玛吉森精机 |
+| lightColor2 | String | 第 2 组信号灯颜色，仅 Dmg Mori 德玛吉森精机 |
+| lightStatus2 | String | 第 2 组信号灯状态，仅 Dmg Mori 德玛吉森精机 |
+| lightColor3 | String | 第 3 组信号灯颜色，仅 Dmg Mori 德玛吉森精机 |
+| lightStatus3 | String | 第 3 组信号灯状态，仅 Dmg Mori 德玛吉森精机 |
+| lightColor4 | String | 第 4 组信号灯颜色，仅 Dmg Mori 德玛吉森精机 |
+| lightStatus4 | String | 第 4 组信号灯状态，仅 Dmg Mori 德玛吉森精机 |
+
+:::note[注]
+表中限定系统的参数，仅在对应系统的机台上返回，其它机台不返回。
+:::
+
+### 2.5.1.26. init 初始化机台连接 {#init}
+
+此接口对目标机台执行一次连接初始化（预处理），用于在正式读写数据前建立或校验与机台的通讯。接口不返回数据，仅返回执行结果。
+
+```http
+GET /api/cnc/init?machineID=MACHINEID
+```
+
+| 请求参数 | 类型 | 说明 |
+| --- | --- | --- |
+| machineID | String | (必需)目标机台标识，详见 [1.1.1. machineID 机台标识](/conventions/identifiers/#machineid) |
+
+返回示例
+
+```json
+{
+  "errorCode": 0,
+  "errorMsg": "Success"
+}
+```
+
+| 返回参数 | 类型 | 说明 |
+| --- | --- | --- |
+| errorCode | Int32 | (必需)错误代码，0 代表成功。 |
+| errorMsg | String | (必需)错误内容 |
+
+:::note[注]
+初始化失败时返回错误代码 3（机台关闭或离线），代表无法与机台建立通讯。
+:::

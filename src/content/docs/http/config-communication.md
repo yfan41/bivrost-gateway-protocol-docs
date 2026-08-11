@@ -168,9 +168,9 @@ GET /api/config/mqtt-settings
   "password": "password",
   "dataReportTopic": "topic1",
   "rpcRequestTopic": "rpcReq",
-  "rcResponseTopic": "rpcRes",
+  "rpcResponseTopic": "rpcRes",
   "encoding": "GBK",
-  "allowAnomynous": false,
+  "allowAnonymous": false,
   "arrayToString": false,
   "publishOnValueChange": false,
   "publishAllOnValueChange": false,
@@ -195,7 +195,7 @@ GET /api/config/mqtt-settings
 | rpcRequestTopic | String | RPC 请求主题 |
 | rpcResponseTopic | String | RPC 回复主题 |
 | encoding | String | 编码，如 ASCII，UTF-8，GBK 等。 |
-| allowAnomynous | Bool | 匿名登录，true=开启，false=关闭。 |
+| allowAnonymous | Bool | 匿名登录，true=开启，false=关闭。 |
 | arrayToString | Bool | 数组转字符串，true=开启，false=关闭。 |
 | publishOnValueChange | Bool | 变化值写入，true=开启，false=关闭。默认为 false。 |
 | publishAllOnValueChange | Bool | 变化时上传全部内容，true=开启，false=关闭。启用变化值上传时有效，默认为 false，即值变化时，仅上传变化的部分。 |
@@ -236,7 +236,7 @@ POST /api/config/update-mqtt-settings
   "rpcRequestTopic": "rpcReq",
   "rpcResponseTopic": "rpcRes",
   "encoding": "UTF-8",
-  "allowAnomynous": true,
+  "allowAnonymous": true,
   "arrayToString": true,
   "publishOnValueChange": true,
   "publishAllOnValueChange": false,
@@ -261,7 +261,7 @@ POST /api/config/update-mqtt-settings
   "rpcRequestTopic": "rpcReq",
   "rpcResponseTopic": "rpcRes",
   "encoding": "UTF-8",
-  "allowAnomynous": true,
+  "allowAnonymous": true,
   "arrayToString": true,
   "publishOnValueChange": true,
   "publishAllOnValueChange": false,
@@ -294,6 +294,7 @@ InfluxDB v2.x 类型数据库返回如下：
   "bucket": "Bucket",
   "tablePrefix": "Prefix",
   "organization": "Organization",
+  "dataRetentionPeriod": 0,
   "writeOnValueChange": true,
   "timeoutReportingInterval": 0
 }
@@ -312,6 +313,7 @@ InfluxDB v2.x 类型数据库返回如下：
   "database": "Database",
   "tablePrefix": "Prefix",
   "storageMode": "User Defined",
+  "dataRetentionPeriod": 0,
   "useLocalTime": false,
   "enablePrimaryKey": false,
   "writeOnValueChange": false,
@@ -344,7 +346,8 @@ InfluxDB v2.x 类型数据库返回如下：
     "AlarmLog",
     "GroupOEE",
     "OEE"
-  ]
+  ],
+  "noActionModeTypes": []
 }
 ```
 
@@ -364,7 +367,7 @@ InfluxDB v2.x 类型数据库返回如下：
 | organization | String | 机构名，限 InfluxDB v2.x 类型 |
 | database | String | 数据库，限非 InfluxDB v2.x 类型 |
 | storageMode | String | 保存模式，限非 InfluxDB v2.x 类型，详见[数据库保存模式](#database-save-modes) |
-| dataRetentionPeriod | Int32 | 数据保留期限（小时），限非 InfluxDB v2.x 数据库类型。 |
+| dataRetentionPeriod | Int32 | 数据保留期限（小时）。`storageMode` 为 `Real Time` 时不返回，其余情况（含 InfluxDB v2.x）均返回。 |
 | loggingModeTypes | String[] | 保存模式为 User Defined 时有效，详见 [1.2. 数据说明](/conventions/data-classes/)中的 `<type>` 数据类。 |
 | noActionModeTypes | String[] | 保存模式为 User Defined 时有效，详见 [1.2. 数据说明](/conventions/data-classes/)中的 `<type>` 数据类。 |
 | realTimeModeTypes | String[] | 保存模式为 User Defined 时有效，详见 [1.2. 数据说明](/conventions/data-classes/)中的 `<type>` 数据类。 |
@@ -381,7 +384,7 @@ InfluxDB v2.x 类型数据库返回如下：
 | InfluxDB v2.x |
 | MySQL |
 | SQL Server |
-| Postgre SQL |
+| PostgreSQL |
 
 #### 数据库保存模式 {#database-save-modes}
 
@@ -466,7 +469,8 @@ POST /api/config/update-database-settings
     "AlarmLog",
     "GroupOEE",
     "OEE"
-  ]
+  ],
+  "noActionModeTypes": []
 }
 ```
 
@@ -499,8 +503,8 @@ GET /api/config/gateway-file-server-settings
 | 参数 | 类型 | 说明 |
 | --- | --- | --- |
 | enable | Bool | 启用网关文件服务器，true=开启，false=关闭。 |
-| enableFtp | String | 启用 FTP，true=开启，false=关闭。 |
-| enableSmb | String | 启用共享文件夹，true=开启，false=关闭。 |
+| enableFtp | Bool | 启用 FTP，true=开启，false=关闭。 |
+| enableSmb | Bool | 启用共享文件夹，true=开启，false=关闭。 |
 | username | String | 用户名，只读，不可修改。 |
 | password | String | 密码 |
 
@@ -564,7 +568,7 @@ GET /api/config/http-settings
 
 | 参数 | 类型 | 说明 |
 | --- | --- | --- |
-| Enable | Bool | 启用 HTTP，true=开启，false=关闭。 |
+| enable | Bool | 启用 HTTP，true=开启，false=关闭。 |
 | enableIpWhiteList | Bool | 启用 IP 白名单，true=开启，false=关闭。 |
 | ipWhiteList | String | 白名单列表（以 ; 分隔）。未返回代表未设置。 |
 
@@ -687,7 +691,7 @@ GET /api/config/remote-access
   "host": "serverUrl",
   "hub": "XXXXXX-XXXXXX-XXXXXX-XXXXXX",
   "password": "password",
-  "bridgeNetwork": "LAN1",
+  "bridgeNetwork": "LAN1;",
   "state": "Established",
   "expiration": "2999-12-31T23:59:59"
 }
@@ -702,9 +706,9 @@ GET /api/config/remote-access
 | host | String | 远程服务器地址。 |
 | hub | String | 站点（只读），默认为网关 UID。 |
 | password | String | 密码。 |
-| bridgeNetwork | String | 桥接网络："LAN1"，"LAN2"，""（无桥接）。 |
+| bridgeNetwork | String | 桥接网络，分号分隔的列表：`""`（无桥接）、`"LAN1;"`、`"LAN2;"` 或 `"LAN1;LAN2;"`。 |
 | state | String | 连接状态（只读）：Connecting，Negotiation，Retry（以上三种状态均为连接中状态），Auth（验证中），Established（已连接），Idle（未连接） |
-| expiration | String | 截止日期（只读），仅当 state 为 Established（已连接）状态时返回。 |
+| expiration | String | 截止日期（只读），state 不为 Idle（未连接）时返回。 |
 
 ## 2.9.6.16. update-remote-access 修改远程访问设置 {#update-remote-access}
 
@@ -720,7 +724,7 @@ POST /api/config/update-remote-access
 {
   "host": "serverUrl2",
   "password": "password2",
-  "bridgeNetwork": "LAN1"
+  "bridgeNetwork": "LAN1;"
 }
 ```
 
@@ -733,7 +737,7 @@ POST /api/config/update-remote-access
   "host": "serverUrl2",
   "hub": "XXXXXX-XXXXXX-XXXXXX-XXXXXX",
   "password": "password2",
-  "bridgeNetwork": "LAN1",
+  "bridgeNetwork": "LAN1;",
   "state": "Established",
   "expiration": "2999-12-31T23:59:59"
 }

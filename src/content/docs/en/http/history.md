@@ -31,6 +31,8 @@ GET /api/db/machine?machineID=MACHINEID&type=TYPE&startUnix=STARTUNIX&endUnix=EN
 | type | String | (Required) Data class, see [1.2. Data Description](/en/conventions/data-classes/) |
 | startUnix | Int64 | (Required) Start timestamp [seconds] |
 | endUnix | Int64 | (Required) End timestamp [seconds] |
+| uid | String | (Optional) UID of the source gateway. When omitted, only data for this gateway's local machines is queried; when supplied, the query returns data for external machines forwarded by the gateway with that UID |
+| limit | Int32 | (Optional) Maximum number of records to return; when omitted, there is no limit. A GET request cannot supply a sort order, so results are returned in ascending order by time, i.e. the earliest records are taken |
 
 Example
 
@@ -96,6 +98,7 @@ GET /api/db/group-machine?groupID=GROUPID&type=TYPE&startUnix=STARTUNIX&endUnix=
 | type | String | (Required) Data class, see [1.2. Data Description](/en/conventions/data-classes/) |
 | startUnix | Int64 | (Required) Start timestamp [seconds] |
 | endUnix | Int64 | (Required) End timestamp [seconds] |
+| limit | Int32 | (Optional) Maximum number of records to return; when omitted, there is no limit. The limit applies to each data source separately (this gateway's local machines and each external UID are limited individually), not to the total number of records in the merged result |
 
 Example
 
@@ -165,8 +168,10 @@ Among the response parameters, machineID is the machine's machineID (see [1.1. I
 Queries historical data matching the specified conditions, similar to a database query command.
 
 ```http
-POST /api/db/query?groupID=GROUPID&type=TYPE&startUnix=STARTUNIX&endUnix=ENDUNIX
+POST /api/db/query
 ```
+
+All parameters of this interface are supplied in the application/json request body; parameters in the URL query string are ignored. This interface does not support `groupID` — to restrict a query to a machine group, express the group's machines as a filter condition, for example `{"key":"machineID","operator":"in","value":["1010","1011"]}`.
 
 Request body example (application/json)
 
@@ -203,16 +208,20 @@ Query the "PLC" class, with timestamps between 1704892831 and 1708893358, where 
 | Request Parameter | Type | Description |
 | --- | --- | --- |
 | type | String | (Required) Data class, see [1.2. Data Description](/en/conventions/data-classes/) |
-| startUnix | Int64 | (Required) Start timestamp [seconds] |
-| endUnix | Int64 | (Required) End timestamp [seconds] |
-| filters | Object[] | (Required) Filter conditions |
+| startUnix | Int64 | (Optional) Start timestamp [seconds]; defaults to 0 |
+| endUnix | Int64 | (Optional) End timestamp [seconds]; defaults to the current time |
+| filters | Object[] | (Optional) Filter conditions; when omitted, no filtering is applied |
 | key | String | (Required) Key |
-| operator | String | (Required) Comparison operator |
+| operator | String | (Optional) Comparison operator; defaults to `equal`. Accepted values: `equal`, `greaterEqual`, `greater`, `less`, `lessEqual`, `in` (value is an array), `null`, `notNull` |
 | value | Object | (Required) Comparison value, of type String or String[] |
-| orderBy | Object | (Required) Sort order |
-| field | String | (Required) Sort field |
+| orderBy | Object | (Optional) Sort order; defaults to ascending by time |
+| field | String | (Required) Sort field; currently only `time` is supported. With any other value the sort is ignored and the data is returned in the database's default order |
 | isDesc | Bool | (Required) true: descending, false: ascending |
-| limit | Int32 | (Required) Maximum number of records |
+| limit | Int32 | (Optional) Maximum number of records; when omitted, there is no limit |
+
+:::note[Note]
+Every filter condition must supply a non-null `key` and `value`; otherwise the request returns error code 10045 (invalid filter conditions). The `null` and `notNull` operators therefore also require a placeholder `value`, which is ignored.
+:::
 
 Response example
 

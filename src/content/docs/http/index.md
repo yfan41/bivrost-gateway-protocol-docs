@@ -19,7 +19,7 @@ http://{网关 IP}/api/cnc/{接口名}?MachineID={目标机台 machineID}
 http://192.168.100.1/api/cnc/readCNCStatus?MachineID=1010
 ```
 
-所有接口只接收 Content-Type 为 application/json 类型的 HTTP 数据。
+请求体默认使用 Content-Type 为 application/json 的 HTTP 数据。文件与流类接口（如 sendFileStream、upload-license、upload-alarm-mapping-file）使用 application/octet-stream 或 text/plain 上传二进制/文本内容。仅 POST/PUT 请求会读取请求体。
 
 除部分文件相关的接口外，大部分接口返回 application/json 类型的 HTTP 数据。
 
@@ -33,8 +33,8 @@ http://192.168.100.1/api/cnc/readCNCStatus?MachineID=1010
 
 ```json
 {
-  "errorCode": -1,
-  "errorMsg": "未知错误"
+  "errorCode": 1,
+  "errorMsg": "Unexpected Error."
 }
 ```
 
@@ -42,10 +42,15 @@ http://192.168.100.1/api/cnc/readCNCStatus?MachineID=1010
 | --- | --- | --- |
 | errorCode | Int32 | (必需)错误代码，0 代表成功。 |
 | errorMsg | String | (必需)错误内容 |
+| statusMsg | String | (可选)错误详情，附加的上下文说明，为空时不返回 |
 
 当操作成功时，返回相应数据，此时 HTTP 状态码为 200。
 
-出现错误时，返回错误代码，此时 HTTP 状态码一般是 400、409、500 等，常见返回错误代码如下：
+:::note[注]
+HTTP 状态码仅供参考。部分「信息级」错误也会以 HTTP 200 返回，客户端必须以返回体中的 errorCode 是否为 0 判断成功与否，不能只依据 HTTP 状态码。
+:::
+
+出现错误时，返回错误代码，此时 HTTP 状态码为 400（请求错误/不支持）、401（未授权）、404（接口或路径不存在）、409（冲突）、502（机台不可达）或 503（其它错误，默认）。常见返回错误代码如下：
 
 ### 常见错误代码 {#error-codes}
 
@@ -54,6 +59,7 @@ http://192.168.100.1/api/cnc/readCNCStatus?MachineID=1010
 | 0 | 成功 | 操作执行成功 |
 | 3 | 机台关闭或离线 | 无法与机床进行通讯，机床关机或网络硬件（机床网口、交换机、网线等）故障 |
 | 7 | 没有权限 | 接口受保护或不在授权范围内，或鉴权信息无效。 |
+| 101 | 当前系统不支持该功能 | 该机床控制系统不支持此接口 |
 | 102 | 机台网络故障，无法获取数据 | 能与机床进行通讯，但无法获取数据，机床网络设置有问题 |
 | 125 | 文件路径无效 | 输入的文件路径无效 |
 | 142 | 文件已存在 | 目标目录中已存在同名文件 |
@@ -62,3 +68,4 @@ http://192.168.100.1/api/cnc/readCNCStatus?MachineID=1010
 | 158 | 文件不存在 | 目标目录中无目标文件 |
 | 10003 | machineID 不存在 | machineID 有误，对应机台未激活，编辑机台 IP、激活状态后是否未重启网关服务 |
 | 10006 | 接口未授权 | 需使用未授权接口请联系彼络 |
+| 10017 | 请求无效 | 请求参数缺失、类型错误或无法解析 |

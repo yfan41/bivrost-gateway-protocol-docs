@@ -20,8 +20,8 @@ The MODBUS data addresses are as follows:
 | 400010 | Connection status | UInt16 | - | 1-Connected;2-Disconnected;3-Error |
 | 400011 | Alarm count | UInt16 | count | Current number of alarms |
 | 400012 | CNC operating status | Int16 | - | Current operating status code, see [Operating Status](/en/conventions/variables/#cnc-status) |
-| 400013 | Cumulative alarm count | UInt32 | count | |
-| 400015 | Cumulative alarm time | UInt32 | seconds | |
+| 400020 | Raw program status value | Int16 | - | Raw program status code returned by the machine tool's system; -1 if the machine tool's system does not support it or the data is unavailable |
+| 400021 | Raw operating mode value | Int16 | - | Raw mode code returned by the machine tool's system; -1 if the machine tool's system does not support it or the data is unavailable |
 | 400040~400075 | Axis 1 to Axis 18 name | String(4) | - | Converted to a 4-byte array (2 register addresses) using the encoding set in the MODBUS configuration. |
 | 400100 | Machining count | UInt32 | pieces | Machining count obtained from the machine tool's system |
 | 400102 | Spindle override | Float | % | Spindle speed override |
@@ -82,15 +82,11 @@ The MODBUS data addresses are as follows:
 | 401244~401279 | Axis 1 to Axis 18 absolute coordinate | Float | same as machine setting | |
 | 401400~401405 | Spindle 1 to Spindle 3 cumulative overload time | UInt32 | milliseconds | |
 | 401410~401445 | Axis 1 to Axis 18 cumulative overload time | UInt32 | milliseconds | |
-| 405000 | Alarm 1 | String(200) | - | Includes alarm content, time, and level |
-| 405100 | Alarm 2 | String(200) | - | Same as above |
-| 405200 | Alarm 3 | String(200) | - | Same as above |
-| 405300 | Alarm 4 | String(200) | - | Same as above |
-| 405400 | Alarm 5 | String(200) | - | Same as above |
+| 405000~406499 | Alarm 1 to Alarm 15 (each alarm occupies 100 register addresses; the start address of alarm n is 405000 + (n-1)×100) | String(200) | - | Includes alarm content, time, and level |
 | 420000~429999 | PLC data bits 1 to 10000 | UInt16 | - | PLC task data and external PLC task data, with PLC task data first followed by external PLC task data, arranged in task order. 32-bit data, 64-bit data, and String-type data are converted to UInt16 using the method set in the MODBUS configuration. |
 
 :::note[Note 1]
-The cumulative alarm count and cumulative machining count are the accumulated alarm count and machining count since the gateway started automatically collecting data from this device. These two values are stored in the gateway, bound to the `machineID` (i.e., the last two segments of the machine tool's IP address), and are never reset.
+The cumulative machining count is the accumulated machining count since the gateway started automatically collecting data from this device. This value is stored in the gateway, bound to the `machineID` (i.e., the last two segments of the machine tool's IP address), and is never reset.
 :::
 
 :::note[Note 2]
@@ -104,6 +100,33 @@ The cumulative alarm count and cumulative machining count are the accumulated al
 :::note[Note 4]
 The last takt time is monitored by the gateway's machine takt data task. If the gateway restarts and the first takt cycle has not yet finished, this value is 0. The last takt time is defined the same way as the last cycle time, but the former is calculated by the gateway and is supported by any machine whose output and status can be tracked, while the latter is provided by the machine tool itself and is only supported by some machines.
 :::
+
+### 3.1.1. Multi-Channel Machine Data {#multi-channel-data}
+
+The addresses above are the data addresses for channel 0 (the default channel). When a data collection task runs on a channel whose channel number is greater than 0 (the channel number is set with the `taskChannel*` parameters in the machine configuration, see [2.9.3. Machine Configuration Parameters](/en/http/config-machines/#machine-params)), the channel-related data listed in the table below is written to a separate address area:
+
+`Channel data address = 430000 + 2000 × (channel number - 1) + (base address - 400000)`
+
+For example, the base address of the Axis 1 load is 401100, so its address is 431100 for channel 1 and 433100 for channel 2. Addresses 430000~449999 are reserved for channel-related data. Addresses not listed in the table below do not change with the channel number.
+
+| Base Address | Name |
+| --- | --- |
+| 400040~400075 | Axis 1 to Axis 18 name |
+| 400102 | Spindle override |
+| 400104 | Actual spindle speed |
+| 400106 | Feed override |
+| 400108 | Actual feed rate |
+| 400110~400115 | Spindle 1 to Spindle 3 load |
+| 400120 | Rapid feed override |
+| 400122 | Commanded feed rate |
+| 400124 | Commanded spindle speed |
+| 401100~401135 | Axis 1 to Axis 18 load |
+| 401136~401171 | Axis 1 to Axis 18 machine coordinate |
+| 401172~401207 | Axis 1 to Axis 18 relative coordinate |
+| 401208~401243 | Axis 1 to Axis 18 remaining distance |
+| 401244~401279 | Axis 1 to Axis 18 absolute coordinate |
+| 401400~401405 | Spindle 1 to Spindle 3 cumulative overload time |
+| 401410~401445 | Axis 1 to Axis 18 cumulative overload time |
 
 ## 3.2. Group-Related Data {#group-data}
 

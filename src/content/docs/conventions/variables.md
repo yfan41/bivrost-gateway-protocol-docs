@@ -52,6 +52,7 @@ sidebar:
 | --- | --- |
 | ALARM | 有警报 |
 | NO_ALARM | 无警报 |
+| UNKNOWN | 未知（未取得警报状态，部分型号不支持） |
 
 ### 1.3.1.3. EmergencyStatus：急停状态 {#emergency-status}
 
@@ -59,6 +60,9 @@ sidebar:
 | --- | --- |
 | EMG | 急停 |
 | NOT_EMG | 非急停 |
+| RESET | 急停复位 |
+| WAIT | 等待（仅 FANUC FS35i） |
+| UNKNOWN | 未知（未取得急停状态，设备或型号不支持急停状态读取） |
 
 ### 1.3.1.4. DryRunStatus：试运行状态 {#dryrun-status}
 

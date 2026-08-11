@@ -5,7 +5,7 @@ sidebar:
 ---
 
 
-This document is the communication protocol reference for the Bivrost gateway, version v1.19.7, intended for developers who need to integrate with the gateway programmatically. For instructions on installing and configuring the gateway and using its web management interface, please refer to the [Bivrost Gateway Manual](https://docs.bivrost.cn/gateway/) (referred to below as the "Manual").
+This document is the communication protocol reference for the Bivrost gateway, version v1.19.7.18, intended for developers who need to integrate with the gateway programmatically. For instructions on installing and configuring the gateway and using its web management interface, please refer to the [Bivrost Gateway Manual](https://docs.bivrost.cn/gateway/) (referred to below as the "Manual").
 
 The gateway supports the following communication methods:
 

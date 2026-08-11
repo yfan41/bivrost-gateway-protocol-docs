@@ -12,21 +12,21 @@ The group configuration API is used to retrieve, add, modify, or delete group co
 | Parameter | Type | Description |
 | --- | --- | --- |
 | id | Int32 | Group database identifier, see [1.1.4. ID Database Identifier](/en/conventions/identifiers/#db-id) |
-| number | Int32 | Machine number, valid range 1-8 |
-| useDefaultGroupID | Bool | Use the default group ID |
+| number | Int32 | Group number, valid range 1-16 |
+| useDefaultGroupID | Bool | Use the default group ID. When true, the group identifier is generated automatically from the group number (g + group number) and the groupID in the request is ignored; to use a custom groupID, useDefaultGroupID must be set to false. |
 | groupID | String | Group identifier, see [1.1.2. groupID Group Identifier](/en/conventions/identifiers/#groupid) |
-| name | String | Machine name |
+| name | String | Group name; defaults to groupID when left empty |
 | isActive | Bool | Active status, true = active, false = inactive |
 | machines | Object[] | Information about the machines included in the group, see [machines Machine List Information](#group-machines-info). |
 | enableExternalMachines | Bool | Enable external machines |
-| externalMachines | String | External machine command |
+| externalMachines | String | External machine command. Required when enableExternalMachines is true; leaving it empty returns an error. The format is `uid,machineID[\|countMultiplier=1\|name=xxx][,machineID...];...`; when the format is invalid, create-group / update-group return an error. |
 | taskCount | Bool | Group production count task, true = enabled, false = disabled. |
 | taskOEE | Bool | Group OEE monitoring task, true = enabled, false = disabled. |
 | taskCumulativeStatusTime | Bool | Group cumulative status time task, true = enabled, false = disabled. |
 
 ## machines Machine list information {#group-machines-info}
 
-machines is the list of machines included in the group, with the parameters shown in the table below. Note that except for id, machineID, and the countMultiplier production coefficient, all other parameters are read-only. Users modify the machines included in a group by adding or removing an id or machineID in the list. After modifying a machine's configuration via the machine configuration API, the corresponding machine information in the group's machine list is updated accordingly.
+machines is the list of machines included in the group, with the parameters shown in the table below. Note that except for id, machineID, and the countMultiplier production coefficient, all other parameters are read-only. Users modify the machines included in a group by adding or removing an id or machineID in the list. In create-group / update-group requests, every machines entry must supply both id (or machineID) and countMultiplier; an entry without countMultiplier is ignored and that machine is not added to the group (the API still returns success). After modifying a machine's configuration via the machine configuration API, the corresponding machine information in the group's machine list is updated accordingly.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -40,7 +40,7 @@ machines is the list of machines included in the group, with the parameters show
 | ip | String | IP address |
 | port | Int32 | Port number, 0 indicates the default port for the given device. |
 | isActive | Bool | Active status, true = active, false = inactive |
-| countMultiplier | Int32 | Production coefficient |
+| countMultiplier | Int32 | (Required) Production coefficient |
 
 ## 2.9.4.1. group Get group configuration {#group}
 
@@ -230,7 +230,7 @@ Request body example
 }
 ```
 
-For request parameters, see [Group Configuration Parameters](#group-params). Note that the database identifier id does not need to be set in the request body; it is automatically assigned by the gateway and appears in the response body after successful creation.
+For request parameters, see [Group Configuration Parameters](#group-params). Note that the database identifier id does not need to be set in the request body; it is automatically assigned by the gateway and appears in the response body after successful creation. The group number `number` may also be omitted; when it is omitted the gateway automatically assigns the first unused group number in the range 1-16. If all group numbers are already in use, or if number or groupID duplicates an existing group, the API returns an error object (see [2.2. Error Handling](/en/http/#error-handling)).
 
 Response example
 
@@ -309,7 +309,7 @@ Request body example
 }
 ```
 
-For request parameters, see [Group Configuration Parameters](#group-params). Note: this API uses id as the unique identifier, and the database identifier id must be set in the request body. The group identifier groupID can be modified through this API.
+For request parameters, see [Group Configuration Parameters](#group-params). Note: this API uses id as the unique identifier, and the database identifier id must be set in the request body. The group identifier groupID can be modified through this API, but useDefaultGroupID=false must be set in the same request when changing groupID; if an update-group request does not include groupID, the group identifier is reset to its default value.
 
 Response example
 
@@ -402,7 +402,7 @@ Response example
 }
 ```
 
-The response body contains the execution results corresponding, in order, to the requests in the request body.
+The response body contains only deleted, the number of groups successfully deleted. If ids is empty or missing, or if no group was deleted at all, the API returns an error object (see [2.2. Error Handling](/en/http/#error-handling)) rather than deleted=0.
 
 | Response Parameter | Type | Description |
 | --- | --- | --- |

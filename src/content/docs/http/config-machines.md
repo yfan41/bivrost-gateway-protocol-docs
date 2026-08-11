@@ -25,18 +25,21 @@ sidebar:
 | useDefaultSlaveID | Bool | 使用默认从站标识 |
 | customAttributes | String | 自定义属性，示例：`{"attribute": value,…}` |
 | username | String | 用户名，部分设备需要。 |
-| permission | String | 权限，仅 Delta 台达 CNC 系统需要设置，范围：NORMAL，USER_1，USER_2，MACHIN，SYSTEM。默认为 NORMAL。 |
+| permission | String | 权限，仅 Delta 台达 CNC 系统需要设置，范围：NORMAL，USER_1，USER_2，MACHINE，SYSTEM。默认为 NORMAL。 |
 | password | String | 密码，部分设备需要。 |
 | version | String | 版本，部分设备需要。 |
 | connectionMode | String | 连接方式，部分设备需要。 |
 | encoding | String | 编码，如 ASCII，UTF-8，GBK 等。默认为 default 自动获取。 |
-| language | String | 警报语言。仅 Siemens 西门子系统需要设置，目前支持 English，Chinese。默认为 Chinese。 |
+| language | String | 警报语言。仅 CNC-Siemens 西门子系统与 Robot-ABB（RobotWare 6.0）需要设置，目前支持 English，Chinese。默认为 Chinese。 |
 | numberOfTasks | Int32 | 启用的任务数。只读。 |
+| statusMsg | String | 状态提示（只读）。创建/修改成功但存在警告（如从站标识重复、激活机台数超出授权）时返回。 |
 | taskAlarm | Bool | 警报信息任务，true=开启，false=关闭。 |
 | taskAlarmPrecond | String | 警报信息任务前置条件，未返回代表未设置。 |
 | taskAlarmEnableCustomAlarm | Bool | 自定义警报，true=开启，false=关闭。开启后以自定义警报代替默认警报。自定义警报任务执行逻辑：先检查警报状态，如有警报，则获取警报内容。如果此标签为空，则跳过检查警报状态，直接获取警报内容，以是否有警报内容判断警报状态。 |
 | taskAlarmCustomAlarmAlarmStatusTag | String | 自定义警报 alarmStaus 标签，填入对应 PLC 数据任务结果标签。 |
 | taskAlarmCustomAlarmAlarmMsgTag | String | 自定义警报 alarmMsg 标签，填入对应 PLC 数据任务结果标签。 |
+| taskAlarmEnableAlarmMapping | Bool | 警报映射，true=开启，false=关闭。 |
+| taskAlarmAlarmMappingFilename | String | 警报映射文件名。 |
 | taskMachineStatus | Bool | 机台状态任务，true=开启，false=关闭。 |
 | taskChannelMachineStatus | String | 机台状态任务目标通道，如 "0;1-3"。 |
 | taskMachineStatusPrecond | String | 机台状态任务前置条件，未返回代表未设置。 |
@@ -63,7 +66,7 @@ sidebar:
 | taskChannelFeedAndSpindle | String | 进给转速任务目标通道，如 "0;1-3"。 |
 | taskFeedAndSpindlePrecond | String | 进给转速任务前置条件，未返回代表未设置。 |
 | taskLaserPower | Bool | 激光功率任务，true=开启，false=关闭。 |
-| taskFeedPrecond | String | 激光功率任务前置条件，未返回代表未设置。 |
+| taskLaserPowerPrecond | String | 激光功率任务前置条件，未返回代表未设置。 |
 | taskLoad | Bool | 负载数据任务，true=开启，false=关闭。 |
 | taskChannelLoad | String | 负载数据任务目标通道，如 "0;1-3"。 |
 | taskLoadPrecond | String | 负载数据任务前置条件，未返回代表未设置。 |
@@ -78,6 +81,7 @@ sidebar:
 | taskChannelPosition | String | 坐标数据任务目标通道，如 "0;1-3"。 |
 | taskPositionPrecond | String | 坐标数据任务前置条件，未返回代表未设置。 |
 | taskCurrentProgramBlock | Bool | 当前程序段任务，true=开启，false=关闭。 |
+| taskChannelCurrentProgramBlock | String | 当前程序段任务目标通道，如 "0;1-3"。 |
 | taskCurrentProgramBlockPrecond | String | 当前程序段任务前置条件，未返回代表未设置。 |
 | taskProgramInfo | Bool | 加工程序任务，true=开启，false=关闭。 |
 | taskChannelProgramInfo | String | 加工程序任务目标通道，如 "0;1-3"。 |
@@ -103,8 +107,9 @@ sidebar:
 | taskOEE | Bool | OEE 监控任务，true=开启，false=关闭。 |
 | taskOEEPrecond | String | OEE 监控任务前置条件，未返回代表未设置。 |
 | taskExternalPlcDataSettings | String | 外部 PLC 任务设置 |
+| networkErrorAsOffline | Bool | 网络异常视为离线，true=开启，false=关闭。默认 false。 |
 | parallelProcessing | Int | 并行任务处理数 |
-| fileServerType | String | 文件服务器类型（程序传输），可能的值有 Machine Memory，Shared Folder，Shared Folder (Win XP)，FTP Server，Wireless Disk，Gateway File Server。 |
+| fileServerType | String | 文件服务器类型（程序传输），可能的值有 Machine Memory，Shared Folder，Shared Folder (Win XP)，FTP Server，Wireless Disk，Gateway File Server，Scp（Scp 仅接口可用，UI 未开放）。 |
 | fileServerAddress | String | 服务器地址（程序传输）。 |
 | fileServerPort | Int32 | 自定义端口（程序传输）。 |
 | fileServerUsername | String | 用户名（程序传输）。 |
@@ -132,11 +137,11 @@ sidebar:
 | plcSID | Int32 | SID，部分设备需要。 |
 | plcSumCheck | Bool | 和检验，部分设备需要，true=开启，false=关闭。 |
 | plcReverseString | Bool | 反转字符串，部分设备需要，true=开启，false=关闭。 |
-| plcAutoRunValue | Int32 | 自动运行状态值，部分设备需要，可能的值有 1，2。默认为 1。 |
+| plcAutoRunValue | Int32 | 自动运行状态值，部分设备需要，可能的值有 0，1。默认为 1。 |
 | plcUseStation | Bool | 使用站号，部分设备需要，true=开启，false=关闭。 |
 
 :::note[注]
-接口仅返回已设置项，如 username，version，connectionMode，各任务的前置条件等参数，在未设置时，不会返回。password 参数无论是否已设置都不会返回。机台的 machineType 参数不同，支持的任务不同，接口仅返回支持任务的相关参数。
+接口仅返回已设置项，如 username，version，connectionMode，各任务的前置条件等参数，在未设置时，不会返回。password 参数在设备需要密码时（如 Delta 台达、Siemens 西门子、Okuma 大隈、Fagor、Heidenhain 海德汉、LNC 宝元等）会随配置一起返回，不需要密码的设备则不返回。机台的 machineType 参数不同，支持的任务不同，接口仅返回支持任务的相关参数。
 :::
 
 ## machineType 对应机台类型 {#machine-type}
@@ -146,9 +151,13 @@ sidebar:
 | machineType | 机台类型 |
 | --- | --- |
 | CNC | CNC |
-| LASER | 激光切割机 |
+| Laser | 激光切割机 |
 | PLC | PLC |
-| ROBOT | 机器人 |
+| Robot | 机器人 |
+
+:::note[注]
+machineType 的值区分大小写，必须与上表完全一致。提交 `LASER`、`ROBOT` 等其它大小写形式会返回 INVALID_CONFIG_SETTING（Invalid machine type）。
+:::
 
 ## 2.9.3.1. machine 获取机台配置 {#machine}
 
@@ -182,6 +191,7 @@ GET /api/config/machine?ID=ID&machineID=MACHINEID
   "numberOfTasks": 20,
   "taskAlarm": true,
   "taskAlarmEnableCustomAlarm": false,
+  "taskAlarmEnableAlarmMapping": false,
   "taskMachineStatus": true,
   "taskChannelMachineStatus": "0",
   "taskMachineStatusEnableAdjustedManual": false,
@@ -217,6 +227,7 @@ GET /api/config/machine?ID=ID&machineID=MACHINEID
   "taskAlarmHistory": true,
   "taskCycleData": true,
   "taskOEE": true,
+  "networkErrorAsOffline": false,
   "parallelProcessing": 1,
   "fileServerType": "Machine Memory",
   "fileServerRootDir": ""
@@ -255,6 +266,7 @@ GET /api/config/machines
     "numberOfTasks": 20,
     "taskAlarm": true,
     "taskAlarmEnableCustomAlarm": false,
+    "taskAlarmEnableAlarmMapping": false,
     "taskMachineStatus": true,
     "taskChannelMachineStatus": "0",
     "taskMachineStatusEnableAdjustedManual": false,
@@ -290,6 +302,7 @@ GET /api/config/machines
     "taskAlarmHistory": true,
     "taskCycleData": true,
     "taskOEE": true,
+    "networkErrorAsOffline": false,
     "parallelProcessing": 1,
     "fileServerType": "Machine Memory",
     "fileServerRootDir": ""
@@ -312,6 +325,7 @@ GET /api/config/machines
     "numberOfTasks": 2,
     "taskAlarm": false,
     "taskAlarmEnableCustomAlarm": false,
+    "taskAlarmEnableAlarmMapping": false,
     "taskMachineStatus": false,
     "taskChannelMachineStatus": "0",
     "taskMachineStatusEnableAdjustedManual": false,
@@ -324,6 +338,7 @@ GET /api/config/machines
     "taskPlcDataSettings": "4x,100,2,Int32;0x,100,10,Bit0;",
     "taskAlarmHistory": false,
     "taskOEE": false,
+    "networkErrorAsOffline": false,
     "parallelProcessing": 1,
     "modbusSlaveID": 1,
     "modbusByteOrder4": "DCBA",
@@ -383,6 +398,7 @@ POST /api/config/create-machine
   "numberOfTasks": 2,
   "taskAlarm": false,
   "taskAlarmEnableCustomAlarm": false,
+  "taskAlarmEnableAlarmMapping": false,
   "taskMachineStatus": false,
   "taskChannelMachineStatus": "0",
   "taskMachineStatusEnableAdjustedManual": false,
@@ -395,6 +411,7 @@ POST /api/config/create-machine
   "taskPlcDataSettings": "4x,100,2,Int32;0x,100,10,Bit0;",
   "taskAlarmHistory": false,
   "taskOEE": false,
+  "networkErrorAsOffline": false,
   "parallelProcessing": 1,
   "modbusSlaveID": 1,
   "modbusByteOrder4": "DCBA",
@@ -431,7 +448,7 @@ POST /api/config/update-machine
 }
 ```
 
-请求参数见[机台配置参数](#machine-params)。注意：此接口使用 id 作为唯一标识，请求体中必须设置数据库标识 id。机台标识 machineID 可以通过这个接口修改。
+请求参数见[机台配置参数](#machine-params)。注意：此接口以数据库标识 id 定位机台；未提供 id（或 `id <= 0`）时回退用机台标识 machineID 定位，二者至少提供其一。机台标识 machineID 可以通过这个接口修改；机台类型 machineType 不可通过此接口修改，提交与现有类型不一致的 machineType 会返回错误（statusMsg 为 "Changing MachineType is forbidden."）。
 
 返回示例
 
@@ -454,6 +471,7 @@ POST /api/config/update-machine
   "numberOfTasks": 0,
   "taskAlarm": false,
   "taskAlarmEnableCustomAlarm": false,
+  "taskAlarmEnableAlarmMapping": false,
   "taskMachineStatus": false,
   "taskChannelMachineStatus": "0",
   "taskMachineStatusEnableAdjustedManual": false,
@@ -466,6 +484,7 @@ POST /api/config/update-machine
   "taskPlcDataSettings": "4x,100,2,Int32;0x,100,10,Bit0;",
   "taskAlarmHistory": false,
   "taskOEE": false,
+  "networkErrorAsOffline": false,
   "parallelProcessing": 1,
   "modbusSlaveID": 1,
   "modbusByteOrder4": "DCBA",
@@ -534,8 +553,64 @@ POST /api/config/batch-delete-machines
 }
 ```
 
-返回体中依次为请求体中的请求的执行结果。
+返回体中仅包含成功删除的机台数 deleted；如果一台都未删除成功，则返回错误码。
 
 | 返回参数 | 类型 | 说明 |
 | --- | --- | --- |
 | deleted | Int32 | (必需)删除机台数 |
+
+## 2.9.3.7. duplicate-machine 复制机台配置 {#duplicate-machine}
+
+以指定机台为模板，自 startIP 起按 IP 递增顺序批量复制 count 台机台配置。
+
+```http
+GET /api/config/duplicate-machine?ID=ID&machineID=MACHINEID&startIP=STARTIP&count=COUNT
+```
+
+| 请求参数 | 类型 | 说明 |
+| --- | --- | --- |
+| id | Int32 | 模板机台的数据库标识，详见 [1.1.4. ID 数据库标识](/conventions/identifiers/#db-id) |
+| machineID | String | 模板机台标识，详见 [1.1.1. machineID 机台标识](/conventions/identifiers/#machineid)。id 与 machineID 至少提供其一，如 ID 与 machineID 同时输入，machineID 被忽略。 |
+| startIP | String | (必需) 起始 IP 地址，复制出的机台自此 IP 起依次分配。 |
+| count | Int32 | (必需) 复制数量，须大于 0。 |
+
+返回示例
+
+```json
+{
+  "errorCode": 0,
+  "errorMsg": "Success"
+}
+```
+
+| 返回参数 | 类型 | 说明 |
+| --- | --- | --- |
+| errorCode | Int32 | (必需)错误码，0 代表成功。 |
+| errorMsg | String | (必需)错误内容 |
+
+## 2.9.3.8. delete-machines 按 IP 批量删除机台配置 {#delete-machines}
+
+自 startIP 起按 IP 递增顺序检查 count 个 IP，删除这些 IP 上的机台配置；某个 IP 上没有机台时跳过。
+
+```http
+GET /api/config/delete-machines?startIP=STARTIP&count=COUNT
+```
+
+| 请求参数 | 类型 | 说明 |
+| --- | --- | --- |
+| startIP | String | (必需) 起始 IP 地址。 |
+| count | Int32 | (必需) 自起始 IP 起检查的 IP 数量。 |
+
+返回示例
+
+```json
+{
+  "errorCode": 0,
+  "errorMsg": "Success"
+}
+```
+
+| 返回参数 | 类型 | 说明 |
+| --- | --- | --- |
+| errorCode | Int32 | (必需)错误码，0 代表成功。 |
+| errorMsg | String | (必需)错误内容 |

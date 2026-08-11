@@ -7,11 +7,13 @@ sidebar:
 
 ## 2.9.2.1. user 获取用户设置 {#user}
 
-此接口无请求参数。
-
 ```http
 GET /api/config/user
 ```
+
+| 请求参数 | 类型 | 说明 |
+| --- | --- | --- |
+| id | Int32 | (必需)数据库标识，详见 [1.1.4. ID 数据库标识](/conventions/identifiers/#db-id) |
 
 返回示例
 
@@ -28,6 +30,11 @@ GET /api/config/user
 | id | Int32 | (必需)数据库标识，详见 [1.1.4. ID 数据库标识](/conventions/identifiers/#db-id) |
 | username | String | (必需)用户名 |
 | isAdmin | Bool | (必需)是否有管理员权限 |
+| roles | String[] | 非管理员用户的功能角色列表（页面权限）。未返回代表未设置。|
+
+:::note[注]
+管理员用户隐含拥有 admin 角色，`roles` 仅对非管理员用户生效。
+:::
 
 ## 2.9.2.2. users 获取所有用户设置 {#users}
 
@@ -59,10 +66,11 @@ GET /api/config/users
 | id | Int32 | (必需)数据库标识，详见 [1.1.4. ID 数据库标识](/conventions/identifiers/#db-id) |
 | username | String | (必需)用户名 |
 | isAdmin | Bool | (必需)是否有管理员权限 |
+| roles | String[] | 非管理员用户的功能角色列表（页面权限）。未返回代表未设置。|
 
 ## 2.9.2.3. create-user 创建新用户 {#create-user}
 
-新用户的初始密码与用户名相同。
+未提供密码时，新用户的初始密码与用户名相同。
 
 ```http
 POST /api/config/create-user
@@ -81,6 +89,8 @@ POST /api/config/create-user
 | --- | --- | --- |
 | username | String | (必需)用户名 |
 | isAdmin | Bool | 是否有管理员权限，默认为 true。 |
+| roles | String[] | 非管理员用户的功能角色列表（页面权限）。未提供代表不设置。|
+| password | String | 初始密码，未提供时默认与用户名相同。响应中不会返回密码。|
 
 返回示例
 
@@ -97,6 +107,7 @@ POST /api/config/create-user
 | id | Int32 | (必需)数据库标识，详见 [1.1.4. ID 数据库标识](/conventions/identifiers/#db-id) |
 | username | String | (必需)用户名 |
 | isAdmin | Bool | (必需)是否有管理员权限 |
+| roles | String[] | 非管理员用户的功能角色列表（页面权限）。未返回代表未设置。|
 
 ## 2.9.2.4. update-user 修改用户设置 {#update-user}
 
@@ -120,7 +131,8 @@ POST /api/config/update-user
 | --- | --- | --- |
 | id | Int32 | (必需)数据库标识，详见 [1.1.4. ID 数据库标识](/conventions/identifiers/#db-id) |
 | username | String | 用户名，默认不修改。 |
-| isAdmin | Bool | 是否有管理员权限，默认不修改。 |
+| isAdmin | Bool | 是否有管理员权限，默认不修改；但当该用户是系统中最后一个管理员时，必须显式传入 `isAdmin: true`，否则返回 INVALID_CONFIG_SETTING（At least one admin.）。|
+| roles | String[] | 非管理员用户的功能角色列表（页面权限）。默认不修改。|
 
 返回示例
 
@@ -137,6 +149,7 @@ POST /api/config/update-user
 | id | Int32 | (必需)数据库标识，详见 [1.1.4. ID 数据库标识](/conventions/identifiers/#db-id) |
 | username | String | (必需)用户名 |
 | isAdmin | Bool | (必需)是否有管理员权限 |
+| roles | String[] | 非管理员用户的功能角色列表（页面权限）。未返回代表未设置。|
 
 ## 2.9.2.5. delete-user 删除用户 {#delete-user}
 
@@ -199,7 +212,7 @@ POST /api/config/update-user-security
 ```json
 {
   "id": 2,
-  "secretKey": "Token",
+  "secretKey": "sk-XXXXXXXXXX",
   "authorizedApis": "prefix,/cnc;prefix,/db;prefix,/analysis;prefix,/group-analysis;prefix,/config;prefix,/core;prefix,/gateway;prefix,/auth;"
 }
 ```
@@ -207,7 +220,7 @@ POST /api/config/update-user-security
 | 请求参数 | 类型 | 说明 |
 | --- | --- | --- |
 | id | Int32 | (必需)数据库标识，详见 [1.1.4. ID 数据库标识](/conventions/identifiers/#db-id) |
-| secretKey | String | 密钥，以 "sk-" 前缀开头。 |
+| secretKey | String | 密钥，以 "sk-" 前缀开头。密钥在所有用户间必须唯一，重复时返回 GENERAL_CONFIG_DUPLICATE_VALUE（Secret key already exists.）。 |
 | authorizedApis | String | 授权 API，即用户可以使用的 API，未返回代表未设置。API 命令格式参考 [API 命令格式](/http/config-global/#api-command-format)。 |
 
 返回示例
@@ -215,7 +228,7 @@ POST /api/config/update-user-security
 ```json
 {
   "id": 2,
-  "secretKey": "Token",
+  "secretKey": "sk-XXXXXXXXXX",
   "authorizedApis": "prefix,/cnc;prefix,/db;prefix,/analysis;prefix,/group-analysis;prefix,/config;prefix,/core;prefix,/gateway;prefix,/auth;"
 }
 ```

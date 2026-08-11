@@ -29,6 +29,10 @@ sidebar:
 }
 ```
 
+:::note[注]
+在 Default/MKT/Brm 模式下，`params` 字段必须存在，且必须是 JSON 对象（或内容为 JSON 对象的字符串）；缺失、null、数组或标量的请求会被网关直接丢弃，网关仅记录 `GENERAL_API_INVALID_REQUEST` 错误，不会发布任何回复报文。无输入参数的命令（如 `settings`、`users`、`time`、`service-status` 等）也必须发送 `"params": {}`。TB 模式在 `params` 缺失或为 null 时会自动替换为空对象，TB2 模式接受 JSON null。
+:::
+
 ### TB/TB2 模式 {#request-tb}
 
 ```json
@@ -44,12 +48,12 @@ sidebar:
 
 ### WisIoT/IoTDA 模式 {#request-wisiot-iotda}
 
-暂不支持。
+WisIoT/IoTDA 模式沿用 [Default/MKT/Brm 模式](/mqtt/rpc/#request-default) 的请求报文格式。
 
 其中 `<request_id>` 为请求标识；`<method>` 为 RPC 命令；`<params>` 为 RPC 命令的输入参数；`<deviceName>` 为机台名称。
 
-:::note[注意]
-在 TB 模式下，`<params>` 中的参数 "machineID" 无需输入，机台将由 `<deviceName>` 指定。
+:::note[注]
+在 TB/TB2 模式下，`<params>` 中的参数 "machineID" 与 "groupID" 均无需输入，网关会根据 `<deviceName>` 覆盖这两个参数，机台与机组均由 `<deviceName>` 指定。在 TB2 模式下，`<deviceName>` 直接作为实体标识使用，若 `<deviceName>` 不是已知的机台或机组实体标识，请求将被直接丢弃，网关仅记录 `GENERAL_API_INVALID_REQUEST` 错误，不会发布任何回复报文。
 :::
 
 ## RPC 回复报文格式 {#reply-format}
@@ -77,7 +81,7 @@ sidebar:
 
 ### WisIoT/IoTDA 模式 {#reply-wisiot-iotda}
 
-暂不支持。
+WisIoT/IoTDA 模式沿用 [Default/MKT/Brm 模式](/mqtt/rpc/#reply-default) 的回复报文格式。
 
 其中 `<response>` 为 RPC 命令的返回结果；`<deviceName>` 为机台名称；`<request_id>` 为自定义请求标识。
 
@@ -94,7 +98,7 @@ sidebar:
 | readCNCStatusDetails | 读取机台状态详情 |
 | readCount | 读取加工计数 |
 | readCurrentToolNumber | 读取当前刀号 |
-| readEnergyConsumption | 读取能耗数据 |
+| readEnergyConsum | 读取能耗数据 |
 | readFeed | 读取进给数据 |
 | readFeedAndSpindle | 读取进给转速数据 |
 | readLaserPower | 读取激光功率 |
@@ -135,6 +139,7 @@ sidebar:
 | sendFile | 发送文件至机台 |
 | batchSendFile | 批量发送文件至机台 |
 | deleteFile | 删除机台文件 |
+| batchDeleteFile | 批量删除机台文件 |
 | lockFileByRange | 锁定/解锁机台程序编辑 |
 | createDir | 创建机台目录 |
 | deleteDir | 删除机台目录 |
@@ -179,6 +184,9 @@ sidebar:
 | update-settings | 修改网关全局设置 |
 | security | 获取网关全局安全设置 |
 | update-security | 修改网关全局安全设置 |
+| backup | 备份网关配置 |
+| restore | 还原网关配置 |
+| reset | 重置网关配置 |
 
 ### 用户配置接口，前缀 /config/ {#commands-config-users}
 
@@ -201,7 +209,7 @@ sidebar:
 | create-machine | 添加机台配置 |
 | update-machine | 修改机台配置 |
 | delete-machine | 删除机台配置 |
-| batch-delete-machine | 批量删除机台配置 |
+| batch-delete-machines | 批量删除机台配置 |
 
 ### 机组配置接口，前缀 /config/ {#commands-config-groups}
 
@@ -212,12 +220,14 @@ sidebar:
 | create-group | 添加机组配置 |
 | update-group | 修改机组配置 |
 | delete-group | 删除机组配置 |
-| batch-delete-group | 批量删除机组配置 |
+| batch-delete-groups | 批量删除机组配置 |
 
 ### 任务配置接口，前缀 /config/ {#commands-config-tasks}
 
 | RPC 命令 | 说明 |
 | --- | --- |
+| task-manager-settings | 获取任务管理器设置 |
+| update-task-manager-settings | 修改任务管理器设置 |
 | machine-task-interval-settings | 获取机台任务间隔设置 |
 | update-machine-task-interval-settings | 修改机台任务间隔设置 |
 | group-task-interval-settings | 获取机组任务间隔设置 |
@@ -264,6 +274,9 @@ sidebar:
 | license-info | 获取许可信息 |
 | service-status | 获取服务状态 |
 | upload-license | 上传网关许可 |
+| settings | 获取 Core 服务设置 |
+| log-level | 切换日志级别 |
+| need-restart | 查询 Core 服务是否需要重启 |
 
 ### Gateway 服务功能接口，前缀 /gateway/ {#commands-gateway}
 
@@ -283,6 +296,11 @@ sidebar:
 | time-zones | 获取时区选项 |
 | update-time-zone | 修改网关时区 |
 | network-adapters | 获取网关网络适配器列表 |
+| ping | Ping 网络诊断 |
+| telnet | Telnet 端口连通性诊断 |
+| traceroute | 路由跟踪诊断 |
+| scan-ports | 扫描端口 |
+| lookup-dns | DNS 解析查询 |
 | lan | 获取有线网设置 |
 | update-lan | 修改网关有线网设置 |
 | wifi | 获取无线网设置 |
@@ -297,7 +315,14 @@ sidebar:
 | file-server-items | 获取网关文件服务器列表 |
 | delete-file-server-item | 删除网关文件服务器项目 |
 
-除了鉴权接口，和部分文件管理接口，RPC 命令与 [二、HTTP 通讯](/http/)中对应的接口一一对应，输入参数与返回结果可参照 [二、HTTP 通讯](/http/)中的接口说明。
+### 日志接口，前缀 /log/ {#commands-log}
+
+| RPC 命令 | 说明 |
+| --- | --- |
+| access | 读取访问日志 |
+| error | 读取错误日志 |
+
+除了鉴权接口，以及返回文件流的接口（`sendFileStream`、`receiveFileStream`、`backupFiles`、`/log/core`、`/log/gateway`）不支持 RPC 调用外，RPC 命令与 [二、HTTP 通讯](/http/)中对应的接口一一对应，输入参数与返回结果可参照 [二、HTTP 通讯](/http/)中的接口说明。
 
 ## 示例 {#rpc-examples}
 
@@ -326,8 +351,10 @@ sidebar:
 
 ```json
 {
-  "errorCode": 0,
-  "errorMsg": "Success"
+  "data": {
+    "errorCode": 0,
+    "errorMsg": "Success"
+  }
 }
 ```
 
@@ -358,7 +385,9 @@ sidebar:
 
 ```json
 {
-  "errorCode": 0,
-  "errorMsg": "Success"
+  "data": {
+    "errorCode": 0,
+    "errorMsg": "Success"
+  }
 }
 ```
