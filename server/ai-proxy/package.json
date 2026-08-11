@@ -5,9 +5,9 @@
   "type": "module",
   "description": "Reference proxy for the docs Ask AI panel (see specs/ai-assistant-v1.md)",
   "scripts": {
-    "dev": "tsx src/server.ts",
+    "dev": "tsx --env-file-if-exists=.env src/server.ts",
     "build": "tsc",
-    "start": "node dist/server.js",
+    "start": "node --env-file-if-exists=.env dist/server.js",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -19,6 +19,6 @@
     "typescript": "^5.9.3"
   },
   "engines": {
-    "node": ">=20.0"
+    "node": ">=22.9"
   }
 }

@@ -41,3 +41,35 @@
   font-weight: 400;
   color: var(--sl-color-gray-2);
 }
+
+/*
+ * Header: the logo wordmark plus the search and menu buttons crowd out the site title
+ * on narrow viewports, and Starlight's `.title-wrapper` clips the overflow with no
+ * ellipsis — cutting CJK titles mid-glyph. On a 390px phone the wordmark alone takes
+ * ~140px and the search + menu buttons reserve ~120px, leaving under 100px for a title
+ * that needs ~205px.
+ *
+ * Drop the title text below 59em and let the wordmark carry the branding — the page
+ * <h1> repeats the document name directly underneath. 59em rather than Starlight's own
+ * 50em breakpoint because the desktop layout (bigger logo, 24px title) keeps truncating
+ * past it: measured, the title only fits in full from 880px (zh-CN) and 940px (en).
+ * Kept visually hidden rather than `display: none` so the link keeps its accessible name.
+ */
+@media (max-width: 59em) {
+  .site-title > span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+}
+
+/* Safety net on wider screens: degrade to an ellipsis instead of a mid-glyph cut. */
+.site-title > span {
+  text-overflow: ellipsis;
+}

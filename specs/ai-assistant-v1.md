@@ -85,13 +85,14 @@ data: {"type":"done"}
 - Standalone Node package (plain `node:http`, official `@anthropic-ai/sdk`); deliberately **not** part of the pnpm workspace so the docs site's lockfile and CI stay untouched.
 - Docs context: loads `llms-full.txt` at startup — from a local file (`DOCS_LLMS_FILE`, e.g. the build output) or by fetching the live site (`DOCS_LLMS_URL`). Chinese corpus only by default (halves the context; the model answers in the request locale regardless).
 - Claude call: model `claude-opus-5`, streaming, adaptive thinking, `max_tokens: 8192`, no sampling parameters (removed on Opus 5). Server-side refusal fallbacks enabled (`fallbacks: "default"` with the `server-side-fallback-2026-07-01` beta).
+- Alternative upstream: `AI_PROVIDER=deepseek` switches to DeepSeek's Anthropic-compatible API (`https://api.deepseek.com/anthropic`, key `DEEPSEEK_API_KEY`, default model `deepseek-v4-pro`, override with `AI_MODEL`). The Anthropic-only extras — `cache_control`, adaptive thinking, the refusal-fallback beta — are omitted on that path; the SSE surface is identical.
 - Prompt caching: system blocks ordered stable-first — instructions, then the docs corpus with `cache_control: {"type": "ephemeral"}` on the corpus block; volatile per-request data (page path, locale) rides in the final user message, after the breakpoint. Steady-state input cost is ~0.1× for the corpus.
 - `stop_reason: "refusal"` on the final message → localized `error` frame, never raw model internals.
 - Same-origin in production (no CORS); `ALLOWED_ORIGIN` env var enables CORS for development.
 
 ### Deployment (ops runbook, outside this repo)
 
-- Run the proxy on the docs host (e.g. port 8787) with `ANTHROPIC_API_KEY` in the service environment.
+- Run the proxy on the docs host (e.g. port 8787) with `ANTHROPIC_API_KEY` (or `AI_PROVIDER=deepseek` + `DEEPSEEK_API_KEY`) in the service environment.
 - nginx: `location /api/assistant/ { proxy_pass http://127.0.0.1:8787; proxy_buffering off; proxy_read_timeout 300s; }` — `proxy_buffering off` is required or streaming degrades to one big flush.
 - After each docs deploy the proxy should be restarted (or re-fetch `DOCS_LLMS_URL`) to pick up the new corpus; the corpus embeds the docs version string, so staleness is diagnosable.
 
@@ -115,4 +116,4 @@ data: {"type":"done"}
 - The two features compose: the proxy's knowledge base *is* the llms-full.txt artifact, so improving one improves the other and there is exactly one docs-extraction code path to maintain.
 - `PUBLIC_AI_ASSISTANT_ENDPOINT` is inlined at build time by Vite; changing the endpoint requires a rebuild, which matches how this site is deployed (every change is a rebuild + rsync).
 - The frozen `/v<version>/` snapshot builds include the panel pointing at the same `/api/assistant/chat` path — the assistant always answers from the *latest* corpus. Acceptable for v1; if version-pinned answers are ever needed, add a `version` field to the request.
-- If Anthropic API access becomes a constraint for the deployment region, the contract above is provider-neutral — a replacement proxy can keep the exact same SSE surface with a different upstream, and the frontend never changes.
+- If Anthropic API access becomes a constraint for the deployment region, the contract above is provider-neutral — a replacement proxy can keep the exact same SSE surface with a different upstream, and the frontend never changes. The reference proxy ships one such option built in (`AI_PROVIDER=deepseek`).

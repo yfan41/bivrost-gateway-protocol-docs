@@ -11,8 +11,19 @@
 cd server/ai-proxy
 pnpm install --ignore-workspace   # 必须带该参数，否则 pnpm 会误装到仓库根 workspace
 cp .env.example .env              # 填入 ANTHROPIC_API_KEY
-pnpm dev                          # tsx 直接运行 src/server.ts，监听 :8787
+pnpm dev                          # tsx 直接运行 src/server.ts，监听 127.0.0.1:8787
 ```
+
+默认只监听回环地址（`HOST`，默认 `127.0.0.1`）——生产环境由 nginx 终止 TLS 并限流，
+直接暴露 `:8787` 会绕过两者。仅当跑在容器/独立网络命名空间中时才设 `HOST=0.0.0.0`。
+
+## 上游模型
+
+默认上游为 Anthropic（`ANTHROPIC_API_KEY`，模型 `claude-opus-5`）。若部署环境访问
+Anthropic 受限，可切换到 [DeepSeek 的 Anthropic 兼容接口](https://api-docs.deepseek.com/guides/anthropic_api)：
+`.env` 中设 `AI_PROVIDER=deepseek` 并填入 `DEEPSEEK_API_KEY`（模型默认 `deepseek-v4-pro`，
+用 `AI_MODEL` 可覆盖）。DeepSeek 不支持 prompt caching、adaptive thinking 与 refusal
+fallback beta，代理在该模式下自动省略这些参数；SSE 输出契约完全一致，前端无需改动。
 
 语料来源二选一（`.env` 中配置）：
 
@@ -34,5 +45,29 @@ curl -N -X POST localhost:8787/api/assistant/chat \
 ## 生产部署（ops）
 
 - systemd 服务运行 `pnpm build && pnpm start`（或直接 `tsx`），环境变量注入 `ANTHROPIC_API_KEY`
-- nginx：`location /api/assistant/ { proxy_pass http://127.0.0.1:8787; proxy_buffering off; proxy_read_timeout 300s; }`
+  （或 `AI_PROVIDER=deepseek` + `DEEPSEEK_API_KEY`，见上）
+- 本服务只监听 `127.0.0.1:8787`，**由 nginx 反向代理**到文档站同一个 vhost 下（同源，
+  因此不需要 CORS，`ALLOWED_ORIGIN` 留空）：
+
+  ```nginx
+  # http {} 层：限流区（本接口无鉴权且每次请求都产生上游费用）
+  limit_req_zone $binary_remote_addr zone=askai:10m rate=10r/m;
+
+  # 文档站 server {} 内，放在静态文件 location 之前
+  location /api/assistant/ {
+      proxy_pass http://127.0.0.1:8787;   # 末尾不加 /，URI 原样透传
+      proxy_http_version 1.1;             # 默认 1.0 会破坏 chunked 流式输出
+      proxy_set_header Connection '';
+      proxy_set_header Host $host;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_buffering off;                # 必须，否则流式输出退化为一次性下发
+      proxy_cache off;
+      proxy_read_timeout 300s;            # 需大于最长一次生成耗时
+      client_max_body_size 256k;          # 与服务端 readBody() 上限一致
+      limit_req zone=askai burst=5 nodelay;
+  }
+  ```
+
+  两个易漏项：`proxy_http_version 1.1`（服务端发的 `X-Accel-Buffering: no` 只能兜住
+  buffering，兜不住 HTTP/1.0）、以及本 location 必须排在静态资源规则之前。
 - 每次文档站部署后重启本服务（或改用 `DOCS_LLMS_URL` 并定期重启）以更新语料
