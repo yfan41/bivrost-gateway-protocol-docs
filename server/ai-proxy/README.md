@@ -76,32 +76,20 @@ curl -N -X POST localhost:8787/api/assistant/chat \
 
 配合文档站本地联调：仓库根目录 `pnpm dev`（Vite 已将 `/api/assistant` 代理到 :8787），在页面右下角的面板中提问即可。
 
-## 生产部署（ops）
+## 部署
 
-- systemd 服务运行 `pnpm build && pnpm start`（或直接 `tsx`），环境变量注入 `ANTHROPIC_API_KEY`
-  （或 `AI_PROVIDER=deepseek` + `DEEPSEEK_API_KEY`，见上）
-- 本服务只监听 `127.0.0.1:8787`，**由 nginx 反向代理**到文档站同一个 vhost 下（同源，
-  因此不需要 CORS，`ALLOWED_ORIGIN` 留空）：
+具体部署（主机、systemd 单元、nginx 配置、密钥保管、发布流程）属于 ops 范畴，
+不记录在本仓库。本服务对运行环境的要求只有以下几条：
 
-  ```nginx
-  # http {} 层：限流区（本接口无鉴权且每次请求都产生上游费用）
-  limit_req_zone $binary_remote_addr zone=askai:10m rate=10r/m;
-
-  # 文档站 server {} 内，放在静态文件 location 之前
-  location /api/assistant/ {
-      proxy_pass http://127.0.0.1:8787;   # 末尾不加 /，URI 原样透传
-      proxy_http_version 1.1;             # 默认 1.0 会破坏 chunked 流式输出
-      proxy_set_header Connection '';
-      proxy_set_header Host $host;
-      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-      proxy_buffering off;                # 必须，否则流式输出退化为一次性下发
-      proxy_cache off;
-      proxy_read_timeout 300s;            # 需大于最长一次生成耗时
-      client_max_body_size 256k;          # 与服务端 readBody() 上限一致
-      limit_req zone=askai burst=5 nodelay;
-  }
-  ```
-
-  两个易漏项：`proxy_http_version 1.1`（服务端发的 `X-Accel-Buffering: no` 只能兜住
-  buffering，兜不住 HTTP/1.0）、以及本 location 必须排在静态资源规则之前。
-- 每次文档站部署后重启本服务（或改用 `DOCS_LLMS_URL` 并定期重启）以更新语料
+- **进程**：Node ≥ 22.9（`engines` 已声明），`npm run build` 后 `node dist/server.js`；
+  上游密钥经环境变量注入，不要写进仓库或镜像。
+- **监听**：默认只绑 `127.0.0.1`（见上文 `HOST`），必须由反向代理对外暴露。
+- **反向代理**：需与文档站同源挂在 `/api/assistant/` 下（否则前端要额外配 CORS）；
+  必须关闭响应缓冲、使用 HTTP/1.1 与上游通信、读超时大于一次生成的时长，否则
+  SSE 会退化成一次性下发或被提前掐断。建议在此处按 IP 限流：接口无鉴权，
+  每次请求都产生上游费用；限流响应用 `429`（契约如此，nginx 默认是 503）。
+- **语料**：`DOCS_LLMS_FILE`/`DOCS_LLMS_URL` 指向的 `llms-full.txt` 必须用生产
+  base（`DOCS_BASE=/gateway-protocol`）构建，否则模型引用的链接缺少前缀而全部 404；
+  语料在启动时读入，文档站发布后需重启本服务才会生效。
+- **不要设 `DOCS_CONTEXT_MAX_CHARS`**（除非上游确实塞不下）：完整语料约 277 KB，
+  截断到 80k 字符只覆盖 29 页中的 8 页，MQTT/Modbus 等后半部分会答"文档未包含"。

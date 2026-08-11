@@ -77,3 +77,12 @@ jobs:
           $SSH "${SSH_USER}@${SSH_HOST}" "mkdir -p '${DEPLOY_PATH}/v${VER}'"
           rsync -avz --delete \
             -e "$SSH" dist/ "${SSH_USER}@${SSH_HOST}:${DEPLOY_PATH}/v${VER}/"
+
+          # 3) Reload the Ask AI assistant's corpus. The proxy reads the llms-full.txt
+          #    published above once at startup, so without this it keeps answering from
+          #    the previous deploy's docs. Best-effort: a successful docs publish must
+          #    not be failed by the assistant being down, absent, or not restartable by
+          #    this deploy user — the run is annotated instead.
+          if ! $SSH "${SSH_USER}@${SSH_HOST}" "systemctl restart bivrost-ai-proxy"; then
+            echo "::warning::Ask AI proxy restart failed; it will keep serving the previous docs corpus"
+          fi
