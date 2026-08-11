@@ -57,6 +57,17 @@ export default defineConfig({
   site: 'https://docs.bivrost.cn',
   base: docsBase,
 
+  // Dev only: forward the Ask AI panel's requests to a locally running proxy
+  // (server/ai-proxy, port 8787). Ignored by `astro build`; in production the
+  // reverse proxy on docs.bivrost.cn routes /api/assistant/ to the service.
+  vite: {
+    server: {
+      proxy: {
+        '/api/assistant': 'http://localhost:8787',
+      },
+    },
+  },
+
   markdown: {
     // headingAttributes：支持自定义标题锚点语法 ## 标题 {#anchor}
     processor: satteri({

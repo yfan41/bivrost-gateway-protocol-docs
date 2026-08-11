@@ -1,10 +1,12 @@
 ---
 import Default from '@astrojs/starlight/components/Footer.astro';
+import AskAI from './AskAI.astro';
 
 const isEnglish = Astro.currentLocale === 'en';
 ---
 
 <Default />
+<AskAI />
 <div class="copyright">
   {isEnglish
     ? <>© BIVROST TECHNOLOGIES Company Limited / 深圳市彼络科技有限公司 · Gateway Protocol
