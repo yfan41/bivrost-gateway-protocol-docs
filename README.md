@@ -1,6 +1,6 @@
 # 彼络物联网关 通讯协议（文档站）
 
-基于 [Astro Starlight](https://starlight.astro.build/) 的《彼络物联网关 通讯协议》在线文档，内容对应通讯协议 **v1.19.7.18**（完整转录：HTTP ~150 个接口、MODBUS 地址表、MQTT 报文格式与 RPC、数据库通讯、常见问题与全部版本变更历史）。
+基于 [Astro Starlight](https://starlight.astro.build/) 的《彼络物联网关 通讯协议》在线文档，内容对应通讯协议 **v1.19.7.18**（完整转录：HTTP ~150 个接口、MODBUS 地址表、MQTT 报文格式与 RPC、数据库通讯、MCP 服务、常见问题与全部版本变更历史）。
 
 配套的《说明书》文档站位于 `../bivrost-gateway-docs`（线上 https://gateway.docs.bivrost.cn ）；本站中所有《说明书》引用均为指向该站的绝对链接。
 
@@ -43,7 +43,8 @@ pnpm build && pnpm pdf                  # 生成 dist/bivrost-gateway-protocol-{
 - `src/content/docs/conventions/` — 一、重要说明（标识、25 个数据类、变量枚举）
 - `src/content/docs/http/` — 二、HTTP 通讯（鉴权、数据读写、文件管理、数据分析、历史数据、网关配置、网关功能）
 - `src/content/docs/modbus.md` / `mqtt/` / `database.md` — 三～五、MODBUS / MQTT / 数据库通讯
-- `src/content/docs/mock-testing.md` / `faq.md` / `changelog.md` — 六～七、模拟机台、常见问题、版本变更历史
+- `src/content/docs/mcp.md` — 六、MCP 服务（网关/云端 MCP 服务端、鉴权、33 个只读工具）
+- `src/content/docs/mock-testing.md` / `faq.md` / `changelog.md` — 七～八、模拟机台、常见问题、版本变更历史
 - `public/img/protocol/` — 截图（取自当前版本网关 Web 管理页面）
 - `astro.config.mjs` — 站点配置（对应原 Docusaurus 的 `docusaurus.config.ts`）
 - `src/sidebar.mjs` — 章节顺序：侧边栏、PDF 与 llms.txt 共用（对应原 `sidebars.ts`）

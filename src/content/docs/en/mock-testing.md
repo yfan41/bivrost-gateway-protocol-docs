@@ -1,7 +1,7 @@
 ---
-title: "6. Mock Machine Testing"
+title: "7. Mock Machine Testing"
 sidebar:
-  label: "6. Mock Machine Testing"
+  label: "7. Mock Machine Testing"
 ---
 
 

@@ -1,6 +1,6 @@
 ---
 title: "Bivrost Gateway Protocol"
-description: "HTTP / MODBUS / MQTT / database protocol reference for the Bivrost IIoT gateway, intended for developers integrating with the gateway programmatically."
+description: "HTTP / MODBUS / MQTT / database / MCP protocol reference for the Bivrost IIoT gateway, intended for developers integrating with the gateway programmatically."
 sidebar:
   label: "Introduction"
 ---
@@ -33,6 +33,11 @@ This document is the communication protocol reference for the Bivrost gateway, v
     title="Database Communication"
     href={`${base}/en/database/`}
     description="The gateway writes automatic data collection task results to the specified database (InfluxDB, MySQL, SQL Server, PostgreSQL, etc.)."
+  />
+  <LinkCard
+    title="MCP Service"
+    href={`${base}/en/mcp/`}
+    description="The gateway's built-in MCP server exposes machine data, data analysis, and gateway status to AI clients as read-only tools."
   />
 </CardGrid>
 

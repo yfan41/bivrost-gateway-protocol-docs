@@ -17,6 +17,7 @@ sidebar:
 3. IP white list behaviour changed (v1.19.7.17). The login endpoint `/api/auth/login` and the product information endpoint `/api/misc/product-details` are no longer subject to the IP white list; requests authenticated with the JWT method skip the IP white list check, while requests authenticated with the secret key method are still subject to it. See [2.3.3. IP White List](/en/http/auth/#ip-white-list) for details.
 4. Machine reconnection wait changed (v1.19.7.18). Previously a fixed wait; now the first connection attempt does not wait, consecutive failures back off as 2s (after 1 failure) → 4s → 8s → 16s → 32s → 60s (capped from the 6th failure), and the backoff state resets after a successful connection.
 5. This documentation has been fully revised against the gateway source code, correcting errors in endpoint paths, field names, field types, enum values and supported machine models, and adding previously missing field and endpoint descriptions.
+6. Added the MCP service (v1.19.7.22). The gateway and the cloud platform now provide an MCP server at `/mcp`, exposing machine configuration, live status, data analysis and gateway system information to AI clients as 33 read-only tools, using the same authentication as the HTTP interfaces. See [6. MCP Service](/en/mcp/).
 
 ### v1.19.7 (2026-07-19) {#v1-19-7}
 

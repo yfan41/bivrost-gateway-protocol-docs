@@ -107,7 +107,82 @@ export default defineConfig({
       },
       // 构建时校验所有内部链接与锚点（对应 Docusaurus 的 onBrokenLinks: 'throw'）
       plugins: [starlightLinksValidator()],
-      sidebar: getSidebar(version),
+      sidebar: [
+        { label: '简介', translations: { en: 'Introduction' }, link: '/' },
+        {
+          label: '一、重要说明',
+          translations: { en: '1. Important Notes' },
+          items: [
+            'conventions/identifiers',
+            'conventions/data-classes',
+            'conventions/variables',
+          ],
+        },
+        {
+          label: '二、HTTP 通讯',
+          translations: { en: '2. HTTP Communication' },
+          items: [
+            'http',
+            'http/auth',
+            {
+              label: '2.5. 数据读写接口',
+              translations: { en: '2.5. Data Read/Write APIs' },
+              collapsed: true,
+              items: [
+                'http/direct-read',
+                'http/direct-offset-plc',
+                'http/direct-toollife',
+                'http/cached-read',
+              ],
+            },
+            'http/file-management',
+            {
+              label: '2.7. 数据分析接口',
+              translations: { en: '2.7. Data Analysis APIs' },
+              collapsed: true,
+              items: ['http/analysis-machine', 'http/analysis-group'],
+            },
+            'http/history',
+            {
+              label: '2.9. 网关配置接口',
+              translations: { en: '2.9. Gateway Configuration APIs' },
+              collapsed: true,
+              items: [
+                'http/config-global',
+                'http/config-users',
+                'http/config-machines',
+                'http/config-groups',
+                'http/config-tasks',
+                'http/config-communication',
+              ],
+            },
+            {
+              label: '2.10. 网关功能接口',
+              translations: { en: '2.10. Gateway Function APIs' },
+              collapsed: true,
+              items: ['http/core-functions', 'http/gateway-functions'],
+            },
+          ],
+        },
+        'modbus',
+        {
+          label: '四、MQTT 通讯',
+          translations: { en: '4. MQTT Communication' },
+          collapsed: true,
+          items: ['mqtt/upload-format', 'mqtt/rpc'],
+        },
+        'database',
+        'mcp',
+        'mock-testing',
+        'faq',
+        { slug: 'changelog', badge: { text: `v${version}`, variant: 'note' } },
+        {
+          label: '《彼络物联网关 说明书》',
+          translations: { en: 'Bivrost Gateway Manual' },
+          link: 'https://docs.bivrost.cn/gateway/',
+          attrs: { target: '_blank' },
+        },
+      ],
     }),
   ],
 });

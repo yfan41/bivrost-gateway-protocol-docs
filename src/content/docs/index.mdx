@@ -1,6 +1,6 @@
 ---
 title: "彼络物联网关 通讯协议"
-description: "彼络物联网关 HTTP / MODBUS / MQTT / 数据库通讯协议参考，供需要通过程序对接网关的开发者使用。"
+description: "彼络物联网关 HTTP / MODBUS / MQTT / 数据库 / MCP 通讯协议参考，供需要通过程序对接网关的开发者使用。"
 sidebar:
   label: "简介"
 ---
@@ -33,6 +33,11 @@ export const base = import.meta.env.BASE_URL.replace(/\/+$/, '');
     title="数据库通讯"
     href={`${base}/database/`}
     description="网关将自动采集任务结果写入指定数据库（InfluxDB、MySQL、SQL Server、PostgreSQL 等）。"
+  />
+  <LinkCard
+    title="MCP 服务"
+    href={`${base}/mcp/`}
+    description="网关内置 MCP 服务端，将机台数据、数据分析与网关状态以只读工具形式提供给 AI 客户端。"
   />
 </CardGrid>
 
