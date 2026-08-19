@@ -17,6 +17,10 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    # A hung step (apt mirror stalling, ssh with no response) must cost minutes,
+    # not the 6-hour default — a stuck run also blocks the deploy-docs concurrency
+    # group, so every later push queues behind it.
+    timeout-minutes: 25
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -38,15 +42,22 @@ jobs:
       - name: Install CJK fonts
         # `playwright install --with-deps` installs shared libraries, not fonts.
         # Without Noto CJK the simplified-Chinese PDF renders entirely as tofu.
+        timeout-minutes: 6
+        env:
+          DEBIAN_FRONTEND: noninteractive
         run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends fonts-noto-cjk
+          # Bound every mirror fetch: without these, a stalled Azure apt mirror
+          # hangs the step until the job timeout instead of failing fast.
+          APT_OPTS='-o Acquire::Retries=3 -o Acquire::http::Timeout=20 -o Acquire::https::Timeout=20'
+          sudo apt-get $APT_OPTS update
+          sudo apt-get $APT_OPTS install -y --no-install-recommends fonts-noto-cjk
           fc-cache -f
           test "$(fc-list :lang=zh | wc -l)" -gt 0 || { echo 'No CJK fonts installed'; exit 1; }
 
       - name: Install Chromium for Playwright
         # pnpm's allowBuilds policy keeps `pnpm install` from downloading browsers,
         # so fetch the revision this playwright expects here.
+        timeout-minutes: 10
         run: pnpm exec playwright install --with-deps chromium
 
       - name: Build & deploy over SSH (rsync)
