@@ -21,11 +21,9 @@ interface Props {
   /** undefined for the root/简体中文 tree, 'en' under /en/. */
   locale: 'en' | undefined;
   version: string;
-  /** Build date, passed in so the two locales stamp the same day. */
-  date: string;
 }
 
-const { locale, version, date } = Astro.props;
+const { locale, version } = Astro.props;
 const isEnglish = locale === 'en';
 
 const chapters = flattenSidebar(getSidebar(version));
@@ -45,16 +43,45 @@ for (const chapter of chapters) {
   // The page's own title is the chapter heading, except where the sidebar names the
   // node explicitly (see flattenSidebar).
   const heading = pickLabel(chapter.label, isEnglish) ?? entry.data.title;
-  // A top-level group's label, printed only when the chapter opening the group is
-  // not already named after it ('二、HTTP 通讯' is the title of http/index.md, so it
-  // would print twice).
-  const partText = pickLabel(chapter.part, isEnglish);
+
+  /*
+   * The same heading in 简体中文. The document's STRUCTURE is decided on the Chinese
+   * tree in both languages, so the two PDFs have the same contents, the same part
+   * headings and the same anchors — the ids are locale-free for the same reason.
+   * It has to be pinned to one language because only the Chinese sidebar labels and
+   * page titles agree: in English the sidebar says '2.5. Data Read/Write APIs' where
+   * the page title says '2.5. Data Read/Write Interface', which would otherwise make
+   * the English PDF grow a part heading and an indent level the Chinese one has not.
+   */
+  const zhEntry = byKey.get(entryKeyFor(chapter.slug, undefined));
+  const zhHeading = pickLabel(chapter.label, false) ?? zhEntry?.data.title;
+
+  /*
+   * Walk the enclosing groups outermost-first to get this chapter's level in the
+   * printed contents, and the part headings it opens.
+   *
+   * A group named after its own opening chapter ('二、HTTP 通讯' is the title of
+   * http/index.md) adds neither: that chapter IS the group, so it stays at the
+   * group's level and printing the label again would duplicate the heading. Any
+   * other group indents everything under it, and its opening chapter carries the
+   * label as a part heading — '一、重要说明' has no page of its own, so without this
+   * the PDF would jump from 简介 straight to 1.1. 标识说明.
+   */
+  let depth = 0;
+  const parts = [];
+  for (const group of chapter.groups) {
+    if (group.first && group.label['zh-CN'] === zhHeading) continue;
+    const label = pickLabel(group.label, isEnglish);
+    if (group.first && label) parts.push({ label, depth });
+    depth++;
+  }
 
   const idKey = chapter.slug.replace(/\//g, '-');
   sections.push({
     slug: chapter.slug,
     heading,
-    part: partText && partText !== heading ? partText : null,
+    depth,
+    parts,
     // Locale-qualified path, matching what the browser derives from an href:
     // /gateway-protocol/en/http/auth/ → 'en/http/auth'. Each tree's root
     // normalises to 'index' (简体中文) / 'en' (English).
@@ -86,26 +113,45 @@ const printData = {
 
 <div class="print-doc" data-pagefind-ignore>
   <section class="print-cover">
-    <img src={logo.src} width={logo.width} height={logo.height} alt="Bivrost" />
-    <h1 class="print-cover-title">
-      {isEnglish ? 'Bivrost Gateway' : '彼络物联网关'}
-    </h1>
-    <p class="print-cover-sub">{isEnglish ? 'Communication Protocol' : '通讯协议'}</p>
-    <p class="print-cover-meta">v{version} · {date}</p>
+    <div class="print-cover-mark">
+      <img src={logo.src} width={logo.width} height={logo.height} alt="Bivrost" />
+    </div>
+
+    <div class="print-cover-block">
+      <h1 class="print-cover-title">{isEnglish ? 'Bivrost IoT Gateway' : '彼络物联网关'}</h1>
+      <p class="print-cover-sub">{isEnglish ? '彼络物联网关' : 'Bivrost IoT Gateway'}</p>
+      <hr class="print-cover-rule" />
+      <p class:list={['print-cover-doctype', { 'is-latin': isEnglish }]}>
+        {isEnglish ? 'Communication Protocol' : '通讯协议'}
+      </p>
+    </div>
+
+    <div class="print-cover-imprint">
+      <p class="print-cover-meta">
+        {isEnglish ? `Document Version V${version}` : `文档版本 V${version}`}
+      </p>
+      <hr class="print-cover-rule" />
+      <p class="print-cover-org">
+        {isEnglish ? 'Bivrost Technologies Company Limited' : '深圳市彼络科技有限公司'}
+      </p>
+      <p class="print-cover-org-en">
+        {isEnglish ? '深圳市彼络科技有限公司' : 'Bivrost Technologies Company Limited'}
+      </p>
+    </div>
   </section>
 
   <nav class="print-toc" aria-label={isEnglish ? 'Contents' : '目录'}>
-    <h1>{isEnglish ? 'Contents' : '目录'}</h1>
+    <h1 class:list={[{ 'is-latin': isEnglish }]}>{isEnglish ? 'Contents' : '目录'}</h1>
     <ol>
       {
-        sections.map(({ sectionId, heading, part }) => (
+        sections.map(({ sectionId, heading, depth, parts }) => (
           <>
-            {part && (
-              <li class="print-toc-part">
-                <a href={`#${sectionId}`}>{part}</a>
+            {parts.map((part) => (
+              <li class:list={['print-toc-part', `print-toc-${part.depth}`]}>
+                <a href={`#${sectionId}`}>{part.label}</a>
               </li>
-            )}
-            <li>
+            ))}
+            <li class={`print-toc-${depth}`}>
               <a href={`#${sectionId}`}>{heading}</a>
             </li>
           </>
@@ -115,7 +161,7 @@ const printData = {
   </nav>
 
   {
-    sections.map(({ sectionId, slug, pathKey, idPrefix, heading, part, Content }) => (
+    sections.map(({ sectionId, slug, pathKey, idPrefix, heading, parts, Content }) => (
       <section
         class="print-section"
         id={sectionId}
@@ -123,7 +169,9 @@ const printData = {
         data-path={pathKey}
         data-prefix={idPrefix}
       >
-        {part && <p class="print-part-title">{part}</p>}
+        {parts.map((part) => (
+          <p class="print-part-title">{part.label}</p>
+        ))}
         <h1 class="print-section-title">{heading}</h1>
         <Content />
       </section>

@@ -15,7 +15,8 @@
 
 /**
  * @typedef {{ 'zh-CN': string, en?: string }} LocalizedLabel
- * @typedef {{ slug: string, label?: LocalizedLabel, part?: LocalizedLabel }} PrintChapter
+ * @typedef {{ label: LocalizedLabel, first: boolean }} SidebarGroup
+ * @typedef {{ slug: string, label?: LocalizedLabel, groups: SidebarGroup[] }} PrintChapter
  */
 
 /**
@@ -128,11 +129,13 @@ function slugFromLink(link) {
  *   name a node, that name wins. Today that is only the landing page, whose title is
  *   the whole document's title ('彼络物联网关 通讯协议') and whose sidebar label is the
  *   chapter it actually is ('简介').
- * - `part` — the label of the top-level group this page opens. Most groups are named
- *   after their first page ('二、HTTP 通讯' is the title of http/index.md), and
- *   PrintProtocol.astro drops the part heading when it matches; '一、重要说明' has no
- *   page of its own, so without this the PDF would jump from 简介 straight to
- *   1.1. 标识说明 with the 一、 chapter heading missing.
+ * - `groups` — the chain of sidebar groups enclosing the page, innermost last, each
+ *   flagged with whether this page opens that group. PrintProtocol.astro turns the
+ *   chain into the printed contents' indentation and into part headings: a group
+ *   named after its own opening page ('二、HTTP 通讯' is the title of http/index.md,
+ *   '2.5. 数据读写接口' the title of http/direct-read.md) contributes neither, while
+ *   '一、重要说明', which has no page of its own, contributes both — without it the
+ *   PDF would jump from 简介 straight to 1.1. 标识说明 with the 一、 heading missing.
  *
  * External links (the cross-link to 《彼络物联网关 说明书》) are skipped.
  *
@@ -142,27 +145,27 @@ function slugFromLink(link) {
 export function flattenSidebar(items) {
   /** @type {PrintChapter[]} */
   const out = [];
-  /** @type {LocalizedLabel | undefined} */
-  let pendingPart;
-  const takePart = () => {
-    const part = pendingPart;
-    pendingPart = undefined;
-    return part;
-  };
 
-  /** @param {any[]} nodes @param {number} depth */
-  const walk = (nodes, depth) => {
-    for (const node of nodes) {
+  /**
+   * `groups` is the chain of sidebar groups enclosing the current node, each
+   * carrying whether this branch is still that group's FIRST child. A node is the
+   * first child of an outer group only if it is at index 0 at every level below it,
+   * which is what narrowing the whole chain by `i === 0` expresses.
+   *
+   * @param {any[]} nodes
+   * @param {SidebarGroup[]} groups
+   */
+  const walk = (nodes, groups) => {
+    nodes.forEach((node, i) => {
+      const chain = groups.map((g) => ({ ...g, first: g.first && i === 0 }));
+
       if (typeof node === 'string') {
-        out.push({ slug: node, part: takePart() });
-        continue;
+        out.push({ slug: node, groups: chain });
+        return;
       }
       if (Array.isArray(node.items)) {
-        // Only top-level groups are parts; nested groups ('2.5. 数据读写接口') are
-        // always named after their first page, so they would print as duplicates.
-        if (depth === 0 && node.label) pendingPart = localized(node);
-        walk(node.items, depth + 1);
-        continue;
+        walk(node.items, [...chain, { label: localized(node), first: true }]);
+        return;
       }
       const slug =
         typeof node.slug === 'string'
@@ -170,12 +173,12 @@ export function flattenSidebar(items) {
           : typeof node.link === 'string'
             ? slugFromLink(node.link)
             : null;
-      if (!slug) continue; // external link — not part of this document
-      out.push({ slug, label: node.label ? localized(node) : undefined, part: takePart() });
-    }
+      if (!slug) return; // external link — not part of this document
+      out.push({ slug, label: node.label ? localized(node) : undefined, groups: chain });
+    });
   };
 
-  walk(items ?? [], 0);
+  walk(items ?? [], []);
   return out;
 }
 

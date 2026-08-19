@@ -13,9 +13,10 @@
  *   pnpm build && pnpm pdf
  *   DOCS_BASE=/gateway-protocol pnpm build && DOCS_BASE=/gateway-protocol pnpm pdf
  */
-import { spawn } from 'node:child_process';
-import { existsSync, readFileSync, statSync } from 'node:fs';
+import { spawn, spawnSync } from 'node:child_process';
+import { existsSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { setTimeout as sleep } from 'node:timers/promises';
+import { PDFDocument } from 'pdf-lib';
 import { pdfFileName } from '../src/pdf-name.mjs';
 
 const root = new URL('..', import.meta.url);
@@ -25,8 +26,20 @@ const port = Number(process.env.PDF_PORT || 4321);
 const origin = `http://127.0.0.1:${port}`;
 
 const targets = [
-  { locale: 'zh-CN', path: `${base}/print/`, title: '彼络物联网关 通讯协议' },
-  { locale: 'en', path: `${base}/en/print/`, title: 'Bivrost Gateway Protocol' },
+  {
+    locale: 'zh-CN',
+    path: `${base}/print/`,
+    title: '彼络物联网关 通讯协议',
+    // `第 X 页 共 Y 页` is the folio a Chinese manual uses; the spans are what
+    // Chromium substitutes the numbers into.
+    folio: '第 <span class="pageNumber"></span> 页 共 <span class="totalPages"></span> 页',
+  },
+  {
+    locale: 'en',
+    path: `${base}/en/print/`,
+    title: 'Bivrost IoT Gateway Communication Protocol',
+    folio: 'Page <span class="pageNumber"></span> of <span class="totalPages"></span>',
+  },
 ];
 
 if (!existsSync(new URL('dist/index.html', root))) {
@@ -45,13 +58,61 @@ try {
 // Not file://: images and cross-links are root-absolute /img/protocol/... paths
 // (rebased to /gateway-protocol/img/... under a base), which would resolve to
 // file:///img/ and 404.
-const preview = spawn('pnpm', ['exec', 'astro', 'preview', '--port', String(port), '--host', '127.0.0.1'], {
-  cwd: new URL('.', root),
+// Refuse to capture from a server this script did not start. `astro preview` falls
+// forward to the next free port when the requested one is taken, so a stray server
+// here would answer the readiness poll below and the PDF would be rendered from
+// whatever THAT is serving.
+const portTaken = await fetch(origin, { signal: AbortSignal.timeout(1000) }).then(
+  () => true,
+  () => false
+);
+if (portTaken) {
+  throw new Error(`something is already listening on ${origin} — stop it, or set PDF_PORT`);
+}
+
+const previewArgs = ['exec', 'astro', 'preview'];
+const cwd = new URL('.', root);
+// `detached` puts the wrapper and the astro process it starts in their own group, so
+// one signal reaches both (see stopPreview).
+const preview = spawn('pnpm', [...previewArgs, '--port', String(port), '--host', '127.0.0.1'], {
+  cwd,
   stdio: ['ignore', 'inherit', 'inherit'],
   env: process.env,
+  detached: true,
 });
+/*
+ * Astro changed how `preview` runs mid-7.x, and the two versions need opposite
+ * cleanups:
+ *  - up to 7.1 the server stays a child of this process. Signalling the process
+ *    group is what stops it, and `astro preview stop` does not exist there — it
+ *    parses as plain `astro preview` and starts ANOTHER server, which then blocks
+ *    this script forever.
+ *  - from 7.2 the server daemonises (detaches, reparents to init, leaves its process
+ *    group), so the signal cannot reach it and only `stop` gets rid of it. That case
+ *    is recognisable: the wrapper we spawned has already exited.
+ * A leaked server is not merely untidy — the next run's readiness poll would be
+ * answered by it and the PDF captured from a stale dist/.
+ */
+let stopped = false;
 const stopPreview = () => {
-  if (!preview.killed) preview.kill('SIGTERM');
+  if (stopped) return;
+  stopped = true;
+  if (preview.exitCode === null && preview.signalCode === null) {
+    try {
+      process.kill(-preview.pid, 'SIGTERM');
+    } catch {
+      /* already gone */
+    }
+    return;
+  }
+  // `stop` is scoped to this project, so it cannot stop a preview server for a
+  // sibling docs site. The timeout is a backstop against the 7.1 behaviour above.
+  spawnSync('pnpm', [...previewArgs, 'stop'], {
+    cwd,
+    stdio: 'ignore',
+    env: process.env,
+    timeout: 30_000,
+  });
 };
 process.on('exit', stopPreview);
 for (const sig of ['SIGINT', 'SIGTERM']) {
@@ -82,7 +143,7 @@ try {
 }
 
 try {
-  for (const { locale, path, title } of targets) {
+  for (const { locale, path, title, folio } of targets) {
     const page = await browser.newPage({ colorScheme: 'light' });
     /** @type {string[]} */
     const failures = [];
@@ -128,20 +189,53 @@ try {
     }
 
     const out = new URL(`dist/${pdfFileName(locale, version)}`, root);
-    // Header/footer render in a separate Chromium document that resolves fonts
-    // against the system only, so keep the running head ASCII — a CJK string here
-    // is the one place that turns into tofu on a runner without Noto CJK.
-    const chrome = 'font-size:8px; width:100%; padding:0 14mm; color:#666;';
-    await page.pdf({
-      path: out.pathname,
+    // The running head and folio render in a separate Chromium document that
+    // resolves fonts against the SYSTEM only — no page CSS, no webfonts. CJK here
+    // therefore depends on a system CJK family being installed, which is what the
+    // deploy workflow's fc-list assertion guarantees on the runner.
+    const chrome =
+      "font-family:'Songti SC','Noto Serif CJK SC',SimSun,serif; font-size:8pt; width:100%; padding:0 14mm; color:#444;";
+    const layout = {
       format: 'A4',
       printBackground: true,
-      displayHeaderFooter: true,
       margin: { top: '18mm', bottom: '18mm', left: '14mm', right: '14mm' },
-      headerTemplate: `<div style="${chrome} text-align:center;">Bivrost Gateway Protocol · v${version}</div>`,
-      footerTemplate: `<div style="${chrome} text-align:center;"><span class="pageNumber"></span> / <span class="totalPages"></span></div>`,
       timeout: 300_000,
+    };
+
+    const body = await page.pdf({
+      ...layout,
+      displayHeaderFooter: true,
+      headerTemplate: `<div style="${chrome} display:flex; justify-content:space-between; border-bottom:0.5px solid #bbb; padding-bottom:2mm;"><span>${title}</span><span>V${version}</span></div>`,
+      footerTemplate: `<div style="${chrome} text-align:center;">${folio}</div>`,
+      // A real bookmark tree for a 29-chapter reference; `outline` requires `tagged`.
+      tagged: true,
+      outline: true,
     });
+
+    /*
+     * A cover does not carry a running head or a folio, and Chromium's
+     * header/footer templates cannot test the page number — they render on every
+     * sheet or none. So render the cover a second time with the chrome off (same
+     * page geometry, so nothing reflows) and swap it in for page 1.
+     *
+     * Swapping one page rather than re-assembling the document is what keeps the
+     * bookmark tree: every other page object is untouched, so the outline's
+     * destinations still resolve.
+     */
+    // Strip everything after the cover before the second capture. `pageRanges: '1'`
+    // would re-paginate the whole document — minutes of work on a screenshot-heavy
+    // manual — for one sheet that is already laid out.
+    await page.evaluate(() => {
+      for (const el of document.querySelectorAll('.print-toc, .print-section')) el.remove();
+      // Nothing follows the cover now, so its page break would only risk a blank sheet.
+      document.querySelector('.print-cover').style.breakAfter = 'auto';
+    });
+    const cover = await page.pdf({ ...layout, displayHeaderFooter: false });
+    const doc = await PDFDocument.load(body);
+    const [coverPage] = await doc.copyPages(await PDFDocument.load(cover), [0]);
+    doc.removePage(0);
+    doc.insertPage(0, coverPage);
+    writeFileSync(out, await doc.save());
 
     const { size } = statSync(out);
     // Sanity floor, not a target: this document is nearly all text, so most of the
