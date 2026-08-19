@@ -10,17 +10,15 @@ import { pdfFileName } from '../pdf-name.mjs';
 const isEnglish = Astro.currentLocale === 'en';
 
 // The PDFs are produced by `pnpm pdf` after the build and land in dist/ next to
-// the pages. Builds that do not run that step — notably the on-device build served
-// from the gateway's wwwroot/app/docs, where 7 MB of PDF is not wanted — set
-// PUBLIC_PDF_DOWNLOAD=off so the header does not offer a file that is not there.
-// Same opt-out shape as PUBLIC_AI_ASSISTANT_ENDPOINT in AskAI.astro.
+// the pages. A build that does not run that step sets PUBLIC_PDF_DOWNLOAD=off, so
+// the header does not offer a file that is not there. Same opt-out shape as
+// PUBLIC_AI_ASSISTANT_ENDPOINT in AskAI.astro.
 const enabled = (import.meta.env.PUBLIC_PDF_DOWNLOAD ?? 'on') !== 'off';
 
 const version = versionRaw.trim();
-// BASE_URL is Astro's normalised `base`: '/' locally, '/gateway-protocol/',
-// '/gateway-protocol/v1.19.7/' or '/app/docs/' depending on the build. Strip the
-// trailing slash so the join below produces exactly one, and the href stays
-// correct under every base.
+// BASE_URL is Astro's normalised `base`: '/' locally, '/gateway-protocol/' or
+// '/gateway-protocol/v1.19.7/' in CI. Strip the trailing slash so the join below
+// produces exactly one, and the href stays correct under every base.
 const base = import.meta.env.BASE_URL.replace(/\/+$/, '');
 const file = pdfFileName(isEnglish ? 'en' : 'zh-CN', version);
 const href = `${base}/${file}`;

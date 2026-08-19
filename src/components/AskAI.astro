@@ -3,7 +3,7 @@
 // override. Talks to a Bivrost-hosted proxy (contract: server/ai-proxy/README.md);
 // when the proxy is unreachable it degrades to a localized error message.
 // Set PUBLIC_AI_ASSISTANT_ENDPOINT to move the endpoint, or to `off` to remove
-// the widget entirely (e.g. for the on-device build).
+// the widget entirely.
 const endpoint = import.meta.env.PUBLIC_AI_ASSISTANT_ENDPOINT ?? '/api/assistant/chat';
 const enabled = endpoint !== '' && endpoint !== 'off';
 const isEnglish = Astro.currentLocale === 'en';

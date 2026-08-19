@@ -12,11 +12,8 @@ import { getSidebar } from './src/sidebar.mjs';
 // the deploy subdir). See VERSION at the repo root.
 const version = readFileSync(new URL('./VERSION', import.meta.url), 'utf8').trim();
 
-// The standalone web deploy sets DOCS_BASE=/gateway-protocol (latest, served in
-// place) or /gateway-protocol/v<version> (a frozen snapshot); the on-device gateway
-// build sets DOCS_BASE=/app/docs so it can be served from the gateway's
-// wwwroot/app/docs (mirrors the Angular UI's baseHref=/app/gateway/). Default '/'
-// for local dev.
+// The deploy sets DOCS_BASE=/gateway-protocol (latest, served in place) or
+// /gateway-protocol/v<version> (a frozen snapshot). Default '/' for local dev.
 const docsBase = process.env.DOCS_BASE || '/';
 // Prefix used to rebase hand-authored root-absolute links (see plugin below):
 // '' when serving from root, otherwise the base with any trailing slash removed.
@@ -26,9 +23,9 @@ const basePrefix = docsBase === '/' ? '' : docsBase.replace(/\/+$/, '');
 // (e.g. [x](/conventions/data-classes/), ![](/img/protocol/...)). Astro/Starlight
 // only rebase their OWN generated URLs (assets, sidebar, relative links) under a
 // non-root `base`; hand-authored absolute paths are left untouched and would 404
-// once served from /app/docs. This hast plugin prefixes them with the base at
-// build time - a no-op for the standalone (base '/') build - so the site works
-// under a subfolder and the links validator stays green.
+// once served from a subfolder. This hast plugin prefixes them with the base at
+// build time - a no-op for the root (base '/') build - so the site works under a
+// subfolder and the links validator stays green.
 const rebaseAbsoluteLinks = {
   name: 'rebase-absolute-links',
   element: [

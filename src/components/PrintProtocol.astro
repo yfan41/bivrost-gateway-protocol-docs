@@ -67,8 +67,8 @@ for (const chapter of chapters) {
   });
 }
 
-// BASE_URL is '/' locally, '/gateway-protocol/', '/gateway-protocol/v1.19.7/' or
-// '/app/docs/' depending on the build.
+// BASE_URL is '/' locally, '/gateway-protocol/' or '/gateway-protocol/v1.19.7/'
+// in CI.
 const base = import.meta.env.BASE_URL.replace(/\/+$/, '');
 
 const linkMap = Object.fromEntries(
