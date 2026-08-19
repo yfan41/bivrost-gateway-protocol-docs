@@ -4,6 +4,9 @@ import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import { satteri } from '@astrojs/markdown-satteri';
 import starlightLinksValidator from 'starlight-links-validator';
+// Chapter order lives in one place so the PDF export and llms.txt cannot drift
+// from the nav.
+import { getSidebar } from './src/sidebar.mjs';
 
 // Single source of truth for the doc version (also drives the CI base path and
 // the deploy subdir). See VERSION at the repo root.
@@ -99,84 +102,15 @@ export default defineConfig({
       customCss: ['./src/styles/custom.css'],
       components: {
         Footer: './src/components/Footer.astro',
+        // Starlight renders SocialIcons in BOTH the desktop header right-group and
+        // the mobile menu drawer (MobileMenuFooter.astro), so this one override puts
+        // the PDF download link in every header placement without forking
+        // Header.astro. It renders the default icons (the Manual cross-link) first.
+        SocialIcons: './src/components/SocialIcons.astro',
       },
       // 构建时校验所有内部链接与锚点（对应 Docusaurus 的 onBrokenLinks: 'throw'）
       plugins: [starlightLinksValidator()],
-      sidebar: [
-        { label: '简介', translations: { en: 'Introduction' }, link: '/' },
-        {
-          label: '一、重要说明',
-          translations: { en: '1. Important Notes' },
-          items: [
-            'conventions/identifiers',
-            'conventions/data-classes',
-            'conventions/variables',
-          ],
-        },
-        {
-          label: '二、HTTP 通讯',
-          translations: { en: '2. HTTP Communication' },
-          items: [
-            'http',
-            'http/auth',
-            {
-              label: '2.5. 数据读写接口',
-              translations: { en: '2.5. Data Read/Write APIs' },
-              collapsed: true,
-              items: [
-                'http/direct-read',
-                'http/direct-offset-plc',
-                'http/direct-toollife',
-                'http/cached-read',
-              ],
-            },
-            'http/file-management',
-            {
-              label: '2.7. 数据分析接口',
-              translations: { en: '2.7. Data Analysis APIs' },
-              collapsed: true,
-              items: ['http/analysis-machine', 'http/analysis-group'],
-            },
-            'http/history',
-            {
-              label: '2.9. 网关配置接口',
-              translations: { en: '2.9. Gateway Configuration APIs' },
-              collapsed: true,
-              items: [
-                'http/config-global',
-                'http/config-users',
-                'http/config-machines',
-                'http/config-groups',
-                'http/config-tasks',
-                'http/config-communication',
-              ],
-            },
-            {
-              label: '2.10. 网关功能接口',
-              translations: { en: '2.10. Gateway Function APIs' },
-              collapsed: true,
-              items: ['http/core-functions', 'http/gateway-functions'],
-            },
-          ],
-        },
-        'modbus',
-        {
-          label: '四、MQTT 通讯',
-          translations: { en: '4. MQTT Communication' },
-          collapsed: true,
-          items: ['mqtt/upload-format', 'mqtt/rpc'],
-        },
-        'database',
-        'mock-testing',
-        'faq',
-        { slug: 'changelog', badge: { text: `v${version}`, variant: 'note' } },
-        {
-          label: '《彼络物联网关 说明书》',
-          translations: { en: 'Bivrost Gateway Manual' },
-          link: 'https://docs.bivrost.cn/gateway/',
-          attrs: { target: '_blank' },
-        },
-      ],
+      sidebar: getSidebar(version),
     }),
   ],
 });

@@ -1,0 +1,30 @@
+---
+/**
+ * English whole-document print route. Not part of the docs collection, so Starlight
+ * leaves it out of the sidebar, and `pagefind: false` keeps it out of search.
+ * scripts/generate-pdf.mjs captures this page into the downloadable PDF; it is also
+ * usable directly (Ctrl-P) as a print view.
+ */
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import PrintProtocol from '../../components/PrintProtocol.astro';
+import versionRaw from '../../../VERSION?raw';
+
+const version = versionRaw.trim();
+const date = new Date().toISOString().slice(0, 10);
+---
+
+<StarlightPage
+  hasSidebar={false}
+  headings={[]}
+  frontmatter={{
+    title: `Bivrost Gateway Protocol v${version}`,
+    template: 'doc',
+    tableOfContents: false,
+    pagefind: false,
+    prev: false,
+    next: false,
+    head: [{ tag: 'meta', attrs: { name: 'robots', content: 'noindex, nofollow' } }],
+  }}
+>
+  <PrintProtocol locale="en" version={version} date={date} />
+</StarlightPage>

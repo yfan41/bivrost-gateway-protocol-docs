@@ -1,6 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { getCollection, type CollectionEntry } from 'astro:content';
+// Plain-JS module, shared with astro.config.mjs (which is `// @ts-check`ed too).
+import { getSidebar, flattenSidebar } from '../sidebar.mjs';
 
 // Same single source of truth as astro.config.mjs. Resolved from the project
 // root (build cwd) rather than import.meta.url — this module gets bundled into
@@ -18,40 +20,14 @@ export function absUrl(path: string): string {
   return siteOrigin + basePrefix + path;
 }
 
-// Reading order for llms output, mirroring the sidebar in astro.config.mjs.
-// Entries not listed here are appended alphabetically (never dropped), so a
-// forgotten sync only affects ordering. Keep in sync when the sidebar changes.
-const PAGE_ORDER = [
-  '',
-  'conventions/identifiers',
-  'conventions/data-classes',
-  'conventions/variables',
-  'http',
-  'http/auth',
-  'http/direct-read',
-  'http/direct-offset-plc',
-  'http/direct-toollife',
-  'http/cached-read',
-  'http/file-management',
-  'http/analysis-machine',
-  'http/analysis-group',
-  'http/history',
-  'http/config-global',
-  'http/config-users',
-  'http/config-machines',
-  'http/config-groups',
-  'http/config-tasks',
-  'http/config-communication',
-  'http/core-functions',
-  'http/gateway-functions',
-  'modbus',
-  'mqtt/upload-format',
-  'mqtt/rpc',
-  'database',
-  'mock-testing',
-  'faq',
-  'changelog',
-];
+// Reading order, from the one place the chapter order lives (src/sidebar.mjs,
+// shared with the Starlight sidebar and the PDF export). Slugs here are
+// locale-free and use '' for the landing page, matching LlmsDoc.slug.
+// Entries the sidebar does not list are appended alphabetically (never dropped),
+// so a page added to the collection but not to the nav still reaches the corpus.
+const PAGE_ORDER = flattenSidebar(getSidebar(version)).map(({ slug }) =>
+  slug === 'index' ? '' : slug,
+);
 
 export type Locale = 'zh' | 'en';
 

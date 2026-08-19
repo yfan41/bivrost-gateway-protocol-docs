@@ -35,13 +35,28 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Install CJK fonts
+        # `playwright install --with-deps` installs shared libraries, not fonts.
+        # Without Noto CJK the simplified-Chinese PDF renders entirely as tofu.
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends fonts-noto-cjk
+          fc-cache -f
+          test "$(fc-list :lang=zh | wc -l)" -gt 0 || { echo 'No CJK fonts installed'; exit 1; }
+
+      - name: Install Chromium for Playwright
+        # pnpm's allowBuilds policy keeps `pnpm install` from downloading browsers,
+        # so fetch the revision this playwright expects here.
+        run: pnpm exec playwright install --with-deps chromium
+
       - name: Build & deploy over SSH (rsync)
         # Publishes the protocol docs twice: the latest tree served in place at
         # /gateway-protocol/, and a frozen snapshot at /gateway-protocol/v<version>/.
         # DOCS_BASE (read by astro.config.mjs) rebases each build's URLs; VERSION at
         # the repo root is the single source of the version. pnpm build runs
         # starlight-links-validator; a broken link fails the build (and the deploy)
-        # before anything is uploaded.
+        # before anything is uploaded. The downloadable PDFs are rendered once from
+        # the first build and published with both trees.
         env:
           SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           SSH_HOST: ${{ secrets.SSH_HOST }}
@@ -69,11 +84,21 @@ jobs:
           #    --delete from wiping the sibling v<version>/ snapshot dirs (no content
           #    dir starts with /v<digit>).
           DOCS_BASE=/gateway-protocol pnpm build
+          # Render the PDFs into dist/ before the first upload: the header's
+          # download link is emitted by every build, so a PDF failure must block the
+          # deploy rather than ship a 404.
+          DOCS_BASE=/gateway-protocol pnpm run pdf
+          mkdir -p "$RUNNER_TEMP/protocol-pdf"
+          cp dist/*.pdf "$RUNNER_TEMP/protocol-pdf/"
           rsync -avz --delete --exclude '/v[0-9]*/' \
             -e "$SSH" dist/ "${SSH_USER}@${SSH_HOST}:${DEPLOY_PATH}/"
 
           # 2) Frozen snapshot at /gateway-protocol/v<version>/ (isolated subdir, plain --delete).
+          # One render serves both trees: the filename comes from VERSION, the header
+          # href is recomputed per build from BASE_URL, and every cross-reference
+          # inside the PDF is a #fragment — nothing in it depends on the base path.
           DOCS_BASE="/gateway-protocol/v${VER}" pnpm build
+          cp "$RUNNER_TEMP/protocol-pdf/"*.pdf dist/
           $SSH "${SSH_USER}@${SSH_HOST}" "mkdir -p '${DEPLOY_PATH}/v${VER}'"
           rsync -avz --delete \
             -e "$SSH" dist/ "${SSH_USER}@${SSH_HOST}:${DEPLOY_PATH}/v${VER}/"
