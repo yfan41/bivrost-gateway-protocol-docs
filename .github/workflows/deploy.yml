@@ -42,15 +42,28 @@ jobs:
       - name: Install CJK fonts
         # `playwright install --with-deps` installs shared libraries, not fonts.
         # Without Noto CJK the simplified-Chinese PDF renders entirely as tofu.
-        timeout-minutes: 6
+        timeout-minutes: 8
         env:
           DEBIAN_FRONTEND: noninteractive
         run: |
-          # Bound every mirror fetch: without these, a stalled Azure apt mirror
-          # hangs the step until the job timeout instead of failing fast.
+          set -euo pipefail
+          # The runner image points apt at azure.archive.ubuntu.com, which stalls
+          # for minutes at a time and has failed this step outright. Drop it so
+          # fetches go straight to the canonical mirror, then bound and retry.
+          if [ -f /etc/apt/apt-mirrors.txt ]; then
+            sudo sed -i '/azure\.archive\.ubuntu\.com/d' /etc/apt/apt-mirrors.txt
+            grep -q . /etc/apt/apt-mirrors.txt \
+              || echo 'http://archive.ubuntu.com/ubuntu/' | sudo tee /etc/apt/apt-mirrors.txt >/dev/null
+          fi
           APT_OPTS='-o Acquire::Retries=3 -o Acquire::http::Timeout=20 -o Acquire::https::Timeout=20'
-          sudo apt-get $APT_OPTS update
-          sudo apt-get $APT_OPTS install -y --no-install-recommends fonts-noto-cjk
+          for attempt in 1 2 3; do
+            if sudo apt-get $APT_OPTS update \
+               && sudo apt-get $APT_OPTS install -y --no-install-recommends fonts-noto-cjk; then
+              break
+            fi
+            echo "::warning::apt attempt $attempt failed; retrying"
+            sleep 5
+          done
           fc-cache -f
           test "$(fc-list :lang=zh | wc -l)" -gt 0 || { echo 'No CJK fonts installed'; exit 1; }
 
@@ -85,9 +98,18 @@ jobs:
           printf '%s\n' "$SSH_KEY" > "$HOME/.ssh/deploy_key"
           chmod 600 "$HOME/.ssh/deploy_key"
           PORT="${SSH_PORT:-22}"
-          # Pin the host key at runtime (trust-on-first-use) so StrictHostKeyChecking
-          # can stay on without maintaining a SSH_KNOWN_HOSTS secret.
-          ssh-keyscan -p "$PORT" -H "$SSH_HOST" > "$HOME/.ssh/known_hosts" 2>/dev/null
+          # Pin the server's host key literally rather than scanning it at runtime.
+          # ssh-keyscan opened one probe connection per key type, each closing
+          # preauth; the server's fail2ban sshd jail read that as an attack and
+          # banned the runner, so every later ssh/rsync timed out. A public host key
+          # is not a secret, and pinning it here also turns trust-on-first-use into
+          # real verification: if the key ever changes the deploy fails loudly
+          # instead of trusting whatever answers.
+          # Rotate by pasting the new /etc/ssh/ssh_host_ed25519_key.pub from the server.
+          HOST_KEY='ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGI04IF4rUzccamLE/Cp/5RyuQjk3Ob5q4DXdvrtIVUh'
+          # known_hosts brackets the host only for non-default ports.
+          if [ "$PORT" = 22 ]; then KH_HOST="$SSH_HOST"; else KH_HOST="[$SSH_HOST]:$PORT"; fi
+          printf '%s %s\n' "$KH_HOST" "$HOST_KEY" > "$HOME/.ssh/known_hosts"
           chmod 644 "$HOME/.ssh/known_hosts"
           SSH="ssh -i $HOME/.ssh/deploy_key -p ${PORT} -o UserKnownHostsFile=$HOME/.ssh/known_hosts -o StrictHostKeyChecking=yes"
 
