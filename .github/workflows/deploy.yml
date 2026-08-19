@@ -1,31 +1,21 @@
-name: Publish docs
+name: Deploy docs
 
-# Builds the Starlight site and publishes it as a GitHub Release. The web server
-# polls that release and installs it itself, so it ends up served at
-# https://docs.bivrost.cn/gateway-protocol/ (base set via DOCS_BASE below).
-#
-# Deploys are pull-based: this workflow never connects to the server. The push
-# model it replaced needed a root SSH key in CI, and its rsync kept being dropped
-# by the server's sshd — first by MaxStartups throttling under a brute-force
-# flood, then by fail2ban banning the runner outright.
+# Builds the Starlight site and rsyncs it over SSH to the web server so it is
+# served at https://docs.bivrost.cn/gateway-protocol/ (base set via DOCS_BASE below).
 
 on:
   push:
     branches: [main]
   workflow_dispatch:
 
-# One publish at a time; let an in-flight run finish rather than cancel it, so
-# release assets are never replaced halfway.
+# One deploy at a time; let an in-flight deploy finish rather than cancel it
+# (a half-synced docs tree is worse than a slightly stale one).
 concurrency:
-  group: publish-docs
+  group: deploy-docs
   cancel-in-progress: false
 
-# Creating and updating the release is the only write this workflow needs.
-permissions:
-  contents: write
-
 jobs:
-  publish:
+  deploy:
     runs-on: ubuntu-latest
     # A hung step (apt mirror stalling, ssh with no response) must cost minutes,
     # not the 6-hour default — a stuck run also blocks the deploy-docs concurrency
@@ -83,60 +73,74 @@ jobs:
         timeout-minutes: 10
         run: pnpm exec playwright install --with-deps chromium
 
-      - name: Build & package
-        # Builds the protocol docs twice: the latest tree served in place at
+      - name: Build & deploy over SSH (rsync)
+        # Publishes the protocol docs twice: the latest tree served in place at
         # /gateway-protocol/, and a frozen snapshot at /gateway-protocol/v<version>/.
         # DOCS_BASE (read by astro.config.mjs) rebases each build's URLs; VERSION at
         # the repo root is the single source of the version. pnpm build runs
-        # starlight-links-validator; a broken link fails the build (and so the
-        # release) before anything is published. The downloadable PDFs are rendered
-        # once from the first build and shipped with both trees.
+        # starlight-links-validator; a broken link fails the build (and the deploy)
+        # before anything is uploaded. The downloadable PDFs are rendered once from
+        # the first build and published with both trees.
+        env:
+          SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          # Absolute path of the protocol docs' web root, a subdir dedicated to this
+          # site. rsync --delete only wipes within this subdir, not the sibling
+          # gateway/ site under the shared /var/www/docs.bivrost.cn root.
+          DEPLOY_PATH: /var/www/docs.bivrost.cn/gateway-protocol
         run: |
           set -euo pipefail
           VER="$(cat VERSION)"
+          mkdir -p "$HOME/.ssh"
+          chmod 700 "$HOME/.ssh"
+          printf '%s\n' "$SSH_KEY" > "$HOME/.ssh/deploy_key"
+          chmod 600 "$HOME/.ssh/deploy_key"
+          PORT="${SSH_PORT:-22}"
+          # Pin the server's host key literally rather than scanning it at runtime.
+          # ssh-keyscan opened one probe connection per key type, each closing
+          # preauth; the server's fail2ban sshd jail read that as an attack and
+          # banned the runner, so every later ssh/rsync timed out. A public host key
+          # is not a secret, and pinning it here also turns trust-on-first-use into
+          # real verification: if the key ever changes the deploy fails loudly
+          # instead of trusting whatever answers.
+          # Rotate by pasting the new /etc/ssh/ssh_host_ed25519_key.pub from the server.
+          HOST_KEY='ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGI04IF4rUzccamLE/Cp/5RyuQjk3Ob5q4DXdvrtIVUh'
+          # known_hosts brackets the host only for non-default ports.
+          if [ "$PORT" = 22 ]; then KH_HOST="$SSH_HOST"; else KH_HOST="[$SSH_HOST]:$PORT"; fi
+          printf '%s %s\n' "$KH_HOST" "$HOST_KEY" > "$HOME/.ssh/known_hosts"
+          chmod 644 "$HOME/.ssh/known_hosts"
+          SSH="ssh -i $HOME/.ssh/deploy_key -p ${PORT} -o UserKnownHostsFile=$HOME/.ssh/known_hosts -o StrictHostKeyChecking=yes"
 
-          # 1) Latest — the tree the server rsyncs into /gateway-protocol/ itself.
+          # 1) Latest — served in place at /gateway-protocol/. --exclude keeps
+          #    --delete from wiping the sibling v<version>/ snapshot dirs (no content
+          #    dir starts with /v<digit>).
           DOCS_BASE=/gateway-protocol pnpm build
-          # Render the PDFs into dist/ before packaging: the header's download link
-          # is emitted by every build, so a PDF failure must block the release
-          # rather than ship a 404.
+          # Render the PDFs into dist/ before the first upload: the header's
+          # download link is emitted by every build, so a PDF failure must block the
+          # deploy rather than ship a 404.
           DOCS_BASE=/gateway-protocol pnpm run pdf
-          mkdir -p "$RUNNER_TEMP/protocol-pdf" pkg
+          mkdir -p "$RUNNER_TEMP/protocol-pdf"
           cp dist/*.pdf "$RUNNER_TEMP/protocol-pdf/"
-          tar -C dist -czf pkg/site-latest.tar.gz .
+          rsync -avz --delete --exclude '/v[0-9]*/' \
+            -e "$SSH" dist/ "${SSH_USER}@${SSH_HOST}:${DEPLOY_PATH}/"
 
-          # 2) Frozen snapshot for /gateway-protocol/v<version>/.
+          # 2) Frozen snapshot at /gateway-protocol/v<version>/ (isolated subdir, plain --delete).
           # One render serves both trees: the filename comes from VERSION, the header
           # href is recomputed per build from BASE_URL, and every cross-reference
           # inside the PDF is a #fragment — nothing in it depends on the base path.
           DOCS_BASE="/gateway-protocol/v${VER}" pnpm build
           cp "$RUNNER_TEMP/protocol-pdf/"*.pdf dist/
-          tar -C dist -czf pkg/site-versioned.tar.gz .
+          $SSH "${SSH_USER}@${SSH_HOST}" "mkdir -p '${DEPLOY_PATH}/v${VER}'"
+          rsync -avz --delete \
+            -e "$SSH" dist/ "${SSH_USER}@${SSH_HOST}:${DEPLOY_PATH}/v${VER}/"
 
-          # The server reads VERSION from here to name the snapshot directory, so it
-          # is checksummed alongside the payloads rather than trusted.
-          printf 'VERSION=%s\nCOMMIT=%s\n' "$VER" "$GITHUB_SHA" > pkg/manifest.env
-          ( cd pkg && sha256sum manifest.env site-latest.tar.gz site-versioned.tar.gz > SHA256SUMS )
-          echo "VER=$VER" >> "$GITHUB_ENV"
-
-      - name: Publish release
-        # The web server polls this release and installs it itself (systemd
-        # docs-pull@gateway-protocol on tb). Nothing in this workflow connects to
-        # the server: no SSH key in CI, and no inbound port for a runner IP to be
-        # banned on. The server keys off the SHA256SUMS content rather than the tag,
-        # so re-releasing the same VERSION still deploys.
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: v${{ env.VER }}
-          name: v${{ env.VER }}
-          body: |
-            Protocol docs v${{ env.VER }} — built from ${{ github.sha }}.
-            Installed automatically by `docs-pull@gateway-protocol` on the web server.
-          files: |
-            pkg/manifest.env
-            pkg/site-latest.tar.gz
-            pkg/site-versioned.tar.gz
-            pkg/SHA256SUMS
-          # Docs ship more often than VERSION changes, so a release for this tag
-          # usually already exists; replace its assets in place.
-          make_latest: true
+          # 3) Reload the Ask AI assistant's corpus. The proxy reads the llms-full.txt
+          #    published above once at startup, so without this it keeps answering from
+          #    the previous deploy's docs. Best-effort: a successful docs publish must
+          #    not be failed by the assistant being down, absent, or not restartable by
+          #    this deploy user — the run is annotated instead.
+          if ! $SSH "${SSH_USER}@${SSH_HOST}" "systemctl restart bivrost-ai-proxy"; then
+            echo "::warning::Ask AI proxy restart failed; it will keep serving the previous docs corpus"
+          fi
