@@ -89,6 +89,7 @@ export function getSidebar(version) {
     items: ['mqtt/upload-format', 'mqtt/rpc'],
   },
   'database',
+  'mcp',
   'mock-testing',
   'faq',
   { slug: 'changelog', badge: { text: `v${version}`, variant: 'note' } },
