@@ -30,15 +30,11 @@ const targets = [
     locale: 'zh-CN',
     path: `${base}/print/`,
     title: '彼络物联网关 通讯协议',
-    // `第 X 页 共 Y 页` is the folio a Chinese manual uses; the spans are what
-    // Chromium substitutes the numbers into.
-    folio: '第 <span class="pageNumber"></span> 页 共 <span class="totalPages"></span> 页',
   },
   {
     locale: 'en',
     path: `${base}/en/print/`,
     title: 'Bivrost IoT Gateway Communication Protocol',
-    folio: 'Page <span class="pageNumber"></span> of <span class="totalPages"></span>',
   },
 ];
 
@@ -143,7 +139,7 @@ try {
 }
 
 try {
-  for (const { locale, path, title, folio } of targets) {
+  for (const { locale, path, title } of targets) {
     const page = await browser.newPage({ colorScheme: 'light' });
     /** @type {string[]} */
     const failures = [];
@@ -206,7 +202,7 @@ try {
       ...layout,
       displayHeaderFooter: true,
       headerTemplate: `<div style="${chrome} display:flex; justify-content:space-between; border-bottom:0.5px solid #bbb; padding-bottom:2mm;"><span>${title}</span><span>V${version}</span></div>`,
-      footerTemplate: `<div style="${chrome} text-align:center;">${folio}</div>`,
+      footerTemplate: `<div style="${chrome}"></div>`,
       // A real bookmark tree for a 29-chapter reference; `outline` requires `tagged`.
       tagged: true,
       outline: true,
