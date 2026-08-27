@@ -17,6 +17,10 @@ The MCP server endpoint is **/mcp**, served on the same port as the HTTP interfa
 http://{Gateway IP}/mcp
 ```
 
+:::caution[Caution]
+The MCP service is **disabled by default**; while it is off, `/mcp` returns HTTP 404. On the gateway, turning the MCP switch on from the Communication page takes effect immediately with no restart; on the cloud platform, set `EnableMcp: true` in its appsettings and restart the service.
+:::
+
 The transport is the MCP standard Streamable HTTP: the client POSTs JSON-RPC messages with the headers `Content-Type: application/json` and `Accept: application/json, text/event-stream`. The server is stateless — every tool call is an independent HTTP request.
 
 33 **read-only** tools are currently provided, covering machine configuration, live status, data analysis, and gateway system information; see [6.4. Tool List](#tools). No MCP tools are provided for interfaces that write data, control machines, or transfer files — those remain available through the HTTP interfaces only.

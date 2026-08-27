@@ -17,6 +17,10 @@ MCP 服务端地址为 **/mcp**，与 HTTP 接口使用同一端口：
 http://{网关 IP}/mcp
 ```
 
+:::caution[注意]
+MCP 服务**默认关闭**，关闭时 `/mcp` 返回 HTTP 404。网关在网页「通讯配置」页打开 MCP 开关后立即生效，无需重启；云平台需在其 appsettings 中设置 `EnableMcp: true` 并重启服务。
+:::
+
 传输方式为 MCP 标准的 Streamable HTTP：客户端以 POST 发送 JSON-RPC 报文，请求头需带 `Content-Type: application/json` 与 `Accept: application/json, text/event-stream`。服务端为无状态模式，每次工具调用都是独立的一次 HTTP 请求。
 
 当前提供 33 个**只读**工具，覆盖机台配置、实时状态、数据分析与网关系统信息，详见 [6.4. 工具列表](#tools)。所有涉及写入、机台控制、文件传输的接口均不提供 MCP 工具，只能通过 HTTP 接口调用。

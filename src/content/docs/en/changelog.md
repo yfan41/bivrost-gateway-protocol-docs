@@ -8,6 +8,12 @@ sidebar:
 This page records **gateway firmware** version changes. The version of this document itself is shown in the sidebar badge and on the PDF cover as "Document Version"; despite the similar numbering the two are not the same thing.
 :::
 
+### v1.19.7.24 (2026-08-27) {#v1-19-7-24}
+
+Release date: 2026-08-27
+
+1. [breaking] The MCP service now has a switch and is **disabled by default**; while it is off, `/mcp` returns HTTP 404. Enable it on the gateway from the Communication page (effective immediately), or on the cloud platform by setting `EnableMcp: true` and restarting. Existing MCP clients must have the switch turned on after upgrading. See [6. MCP Service](/en/mcp/).
+
 ### v1.19.7.22 (2026-08-20) {#v1-19-7-22}
 
 Release date: 2026-08-20
