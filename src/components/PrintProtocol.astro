@@ -94,7 +94,7 @@ for (const chapter of chapters) {
   });
 }
 
-// BASE_URL is '/' locally, '/gateway-protocol/' or '/gateway-protocol/v1.19.7/'
+// BASE_URL is '/' locally, '/gateway-protocol/' or '/gateway-protocol/v<version>/'
 // in CI.
 const base = import.meta.env.BASE_URL.replace(/\/+$/, '');
 

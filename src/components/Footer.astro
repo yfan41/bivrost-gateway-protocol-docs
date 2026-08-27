@@ -1,8 +1,13 @@
 ---
 import Default from '@astrojs/starlight/components/Footer.astro';
 import AskAI from './AskAI.astro';
+// Vite ?raw import: inlined at bundle time, so it also works in the prerender
+// build where import.meta.url points into dist/ and fs paths would break.
+import versionRaw from '../../VERSION?raw';
 
 const isEnglish = Astro.currentLocale === 'en';
+
+const version = versionRaw.trim();
 ---
 
 <Default />
@@ -10,9 +15,9 @@ const isEnglish = Astro.currentLocale === 'en';
 <div class="copyright">
   {isEnglish
     ? <>© BIVROST TECHNOLOGIES Company Limited / 深圳市彼络科技有限公司 · Gateway Protocol
-      v1.19.7.18 · Tel: 18824672282</>
+      v{version} · Tel: 18824672282</>
     : <>© BIVROST TECHONOLOGIES Company Limited / 深圳市彼络科技有限公司 · 通讯协议
-      v1.19.7.18 · 联系电话：18824672282</>}
+      v{version} · 联系电话：18824672282</>}
 </div>
 
 <style>

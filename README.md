@@ -1,6 +1,6 @@
 # 彼络物联网关 通讯协议（文档站）
 
-基于 [Astro Starlight](https://starlight.astro.build/) 的《彼络物联网关 通讯协议》在线文档，内容对应通讯协议 **v1.19.7.18**（完整转录：HTTP ~150 个接口、MODBUS 地址表、MQTT 报文格式与 RPC、数据库通讯、MCP 服务、常见问题与全部版本变更历史）。
+基于 [Astro Starlight](https://starlight.astro.build/) 的《彼络物联网关 通讯协议》在线文档，内容对应通讯协议 **v1.19.7**（完整转录：HTTP ~150 个接口、MODBUS 地址表、MQTT 报文格式与 RPC、数据库通讯、MCP 服务、常见问题与全部版本变更历史）。
 
 配套的《说明书》文档站位于 `../bivrost-gateway-docs`（线上 https://gateway.docs.bivrost.cn ）；本站中所有《说明书》引用均为指向该站的绝对链接。
 
@@ -84,5 +84,6 @@ pnpm build && pnpm pdf                  # 生成 dist/bivrost-gateway-protocol-{
 - 提示块使用带方括号标题的语法 `:::note[注] … :::`（与 Starlight Aside 语法一致）
 - 站内链接使用站点绝对路径并带尾部斜杠（如 `/conventions/identifiers/#machineid`），不要用相对 `.md` 文件路径
 - 构建时 `starlight-links-validator` 对断链/断锚全部报错，修改后请 `pnpm build` 验证
-- 更新版本号时需同步修改三处：`src/content/docs/` 内容、根目录 `VERSION`（驱动侧边栏 changelog 徽标、PDF 文件名与部署路径）、`src/components/Footer.astro` 页脚
+- 更新版本号时改根目录 `VERSION` 即可，它驱动侧边栏 changelog 徽标、页脚、PDF 封面「文档版本」与文件名、部署路径与 llms.txt；另需手工同步两处正文字面量——`README.md` 首段与 `src/content/docs/{,en/}index.mdx` 首句，`pnpm build` 前置的 `check-version` 会校验三者与 `VERSION` 一致
+- **文档版本与网关固件版本是两条线，不要混写。** 文档版本即 `VERSION`；`v1.19.7.16`～`v1.19.7.22` 一类是固件版本，只应出现在 `changelog.md` 正文，不得写进首页、页脚或本 README
 - 原 PDF 中经与网关 Web 前端源码比对确认的接口地址勘误已修正（`users`、`update-settings`、`update-security`、`update-database-settings`、`update-remote-access`）

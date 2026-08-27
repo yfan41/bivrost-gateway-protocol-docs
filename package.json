@@ -6,6 +6,8 @@
   "scripts": {
     "start": "astro dev",
     "dev": "astro dev",
+    "check-version": "node scripts/check-version.mjs",
+    "prebuild": "node scripts/check-version.mjs",
     "build": "astro build",
     "serve": "astro preview",
     "astro": "astro",
