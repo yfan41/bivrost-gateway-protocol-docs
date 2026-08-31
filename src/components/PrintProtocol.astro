@@ -15,6 +15,7 @@ import {
   pathKeyFor,
 } from '../sidebar.mjs';
 import logo from '../assets/logo.png';
+import qr from '../assets/qr-wechat.png';
 import '../styles/print-protocol.css';
 
 interface Props {
@@ -137,6 +138,15 @@ const printData = {
       <p class="print-cover-org-en">
         {isEnglish ? '深圳市彼络科技有限公司' : 'Bivrost Technologies Company Limited'}
       </p>
+      <figure class="print-cover-qr">
+        <img
+          src={qr.src}
+          width={qr.width}
+          height={qr.height}
+          alt={isEnglish ? 'Bivrost WeChat support QR code' : '彼络微信客服二维码'}
+        />
+        <figcaption>{isEnglish ? 'Scan for support on WeChat' : '扫码添加微信客服'}</figcaption>
+      </figure>
     </div>
   </section>
 
