@@ -18,7 +18,7 @@ http://{网关 IP}/mcp
 ```
 
 :::caution[注意]
-MCP 服务**默认关闭**，关闭时 `/mcp` 返回 HTTP 404。网关在网页「通讯配置」页打开 MCP 开关后立即生效，无需重启；云平台需在其 appsettings 中设置 `EnableMcp: true` 并重启服务。
+MCP 服务**默认关闭**，关闭时 `/mcp` 返回 HTTP 404。网关在网页「通讯配置」页打开 MCP 开关后立即生效，无需重启。
 :::
 
 传输方式为 MCP 标准的 Streamable HTTP：客户端以 POST 发送 JSON-RPC 报文，请求头需带 `Content-Type: application/json` 与 `Accept: application/json, text/event-stream`。服务端为无状态模式，每次工具调用都是独立的一次 HTTP 请求。
