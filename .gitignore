@@ -23,3 +23,6 @@ yarn-debug.log*
 yarn-error.log*
 .gstack/
 .playwright-cli/
+
+# Reproducible local PDF exports; released copies live in the knowledge base.
+/output/

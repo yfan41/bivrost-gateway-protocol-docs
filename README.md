@@ -87,3 +87,37 @@ pnpm build && pnpm pdf                  # 生成 dist/bivrost-gateway-protocol-{
 - 更新版本号时改根目录 `VERSION` 即可，它驱动侧边栏 changelog 徽标、页脚、PDF 封面「文档版本」与文件名、部署路径与 llms.txt；另需手工同步两处正文字面量——`README.md` 首段与 `src/content/docs/{,en/}index.mdx` 首句，`pnpm build` 前置的 `check-version` 会校验三者与 `VERSION` 一致
 - **文档版本与网关固件版本是两条线，不要混写。** 文档版本即 `VERSION`；`v1.19.7.16`～`v1.19.7.22` 一类是固件版本，只应出现在 `changelog.md` 正文，不得写进首页、页脚或本 README
 - 原 PDF 中经与网关 Web 前端源码比对确认的接口地址勘误已修正（`users`、`update-settings`、`update-security`、`update-database-settings`、`update-remote-access`）
+
+## 中文中性 PDF（按需生成）
+
+品牌版继续使用 `pnpm pdf`。中性版仅处理中文，通过同一份正文和打印页派生，不改网站页面、英文版和下载按钮，也不自动发布到网站。
+
+```bash
+# 首次需安装 Chromium 和 Poppler（最终 PDF 文本验收使用 pdftotext）
+pnpm exec playwright install chromium
+# macOS：brew install poppler；Debian/Ubuntu：apt-get install poppler-utils
+pnpm build && pnpm pdf:neutral
+pnpm test:neutral
+```
+
+使用 Node.js 22.12 或更高版本。配置了 `DOCS_BASE` 时，构建与导出必须传入相同的值；`PDF_PORT` 可指定临时本机预览端口。运行中性命令时会检查 Poppler 是否可用，缺失即终止。
+
+产物位于 `output/pdf/`，与部署用的 `dist/` 分开；同名 `.pdf.audit.json` 记录版本、页数、图片原始及处理后 SHA-256、最终 PDF SHA-256 和生成时间。正式文件通过全部自动检查后才替换；失败退出不会把旧文件报告为本次成功产物。仅交付 PDF，不向客户附带内部审查报告。
+
+中性模式去除封面、页眉、正文及图片中的彼络品牌和联系方式；说明书排除整章《产品使用协议》。跨册品牌站点链接保留书名与章节文字，本册引用保留内部跳转。示例中的自定义 MCP 名称改为 `gateway`／`hub`，许可示例与返回参数表均省略 `company` 字段；真实接口、字段定义、设备 IP 和旧设备登录所需的 `BIV-` 前缀保留。上述转换集中在 `scripts/neutral.mjs`，交付件中若出现“中性”、`neutral` 或未知品牌残留会阻止导出，禁止用全局删词来绕过检查。
+
+### 截图更新与复核
+
+`scripts/neutral-images.json` 是人工维护的审查清单，**不是自动生成后即可批准的文件**。每张实际引用的中文截图都必须登记，包括无需清除的截图：
+
+- `sha256`：原始文件的 SHA-256；`width`／`height`：原始像素尺寸；`reviewed`：人工复核日期。
+- `regions`：经复核的像素区域，含 `x`／`y`／`width`／`height`、背景色 `background`、替换文字 `text`、处理原因 `reason`；空数组表示已确认无需处理。
+- 有文字替换时，使用 `fontSize`／`fontFamily`／`color` 描述样式。坐标均以原图像素为准，空文字表示清除。
+
+更新流程：先检查完整原图，定位所有品牌、域名、联系方式和 Logo；记录清除区域，使用 `neutralImage` 生成临时副本，与原图逐区域比对并对完整图片做 OCR 辅助检查；确认参数、按钮及操作说明未受损后，才更新哈希、尺寸与 `reviewed`。可用 `shasum -a 256 public/img/...png` 读取哈希。不得只更新哈希使检查通过，不得自动接受旧区域。
+
+导出逐张核对清单和源图，同时比对 `dist/` 实际提供的图片，防止使用旧构建。新增图片、同尺寸内容变化、尺寸变化、缺少审查记录、区域越界或旧构建都会报错，必须人工复核或重新构建后再运行。品牌清除直接修改副本像素，PDF 不嵌入原始品牌图片或可移除的遮盖层。
+
+自动检查涵盖正文、替代文本、链接、PDF 书签／注释／元数据及失效页面目标；发布前仍需渲染 PDF 检查封面、目录、表格、代码分行和所有处理过的截图。图片 OCR 只作复核辅助，不代替人工审查，也不会自动更新清单。
+
+本册交付文件名：`gateway-protocol-zh-CN-v<版本>.pdf`。

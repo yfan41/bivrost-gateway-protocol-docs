@@ -17,7 +17,12 @@ import { spawn, spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { PDFDocument } from 'pdf-lib';
-import { pdfFileName } from '../src/pdf-name.mjs';
+import { pdfFileName, neutralPdfFileName } from '../src/pdf-name.mjs';
+
+const neutral = process.argv.includes('--neutral');
+if (process.argv.slice(2).some((arg) => arg !== '--neutral')) throw new Error('Usage: pnpm pdf [--neutral]');
+const neutralExport = neutral ? await import('./neutral.mjs') : null;
+if (neutral) neutralExport.requirePdfTextTool();
 
 const root = new URL('..', import.meta.url);
 const version = readFileSync(new URL('VERSION', root), 'utf8').trim();
@@ -37,6 +42,11 @@ const targets = [
     title: 'Bivrost IoT Gateway Communication Protocol',
   },
 ];
+
+if (neutral) {
+  targets.splice(1);
+  targets[0].title = '物联网关 通讯协议';
+}
 
 if (!existsSync(new URL('dist/index.html', root))) {
   throw new Error('dist/ is missing or empty — run `pnpm build` first.');
@@ -152,6 +162,7 @@ try {
 
     // The id/link rewrite has run.
     await page.waitForFunction(() => window.__printProtocol?.ready === true, null, { timeout: 60_000 });
+    const neutralReport = neutral ? await neutralExport.prepareNeutralPage(page, root, 'protocol', version) : null;
 
     // Fonts loaded and every screenshot decoded. `networkidle` is not enough:
     // a fetched-but-undecoded image still prints blank.
@@ -184,7 +195,8 @@ try {
       throw new Error(`[${locale}] ${failures.length} failed requests while rendering`);
     }
 
-    const out = new URL(`dist/${pdfFileName(locale, version)}`, root);
+    const outputPath = neutral ? `output/pdf/${neutralPdfFileName(version)}` : `dist/${pdfFileName(locale, version)}`;
+    const out = new URL(outputPath, root);
     // The running head and folio render in a separate Chromium document that
     // resolves fonts against the SYSTEM only — no page CSS, no webfonts. CJK here
     // therefore depends on a system CJK family being installed, which is what the
@@ -229,9 +241,26 @@ try {
     const cover = await page.pdf({ ...layout, displayHeaderFooter: false });
     const doc = await PDFDocument.load(body);
     const [coverPage] = await doc.copyPages(await PDFDocument.load(cover), [0]);
+    const oldCoverRef = doc.getPage(0).ref;
     doc.removePage(0);
     doc.insertPage(0, coverPage);
-    writeFileSync(out, await doc.save());
+    if (neutral) neutralExport.retargetPageReferences(doc, oldCoverRef, coverPage.ref);
+    if (neutral) {
+      doc.setTitle(`${title} v${version}`);
+      doc.setAuthor('');
+      doc.setSubject(title);
+      doc.setKeywords([]);
+      doc.setCreator('Documentation PDF Export');
+      doc.setProducer('Documentation PDF Export');
+    }
+    const bytes = await doc.save();
+    if (neutral) {
+      const audit = neutralExport.validateNeutralPdf(bytes, await PDFDocument.load(bytes), title);
+      if (bytes.length < 200_000) throw new Error('中性 PDF 异常偏小');
+      neutralExport.writeNeutralPdf(out, bytes, { ...neutralReport, ...audit });
+    } else {
+      writeFileSync(out, bytes);
+    }
 
     const { size } = statSync(out);
     // Sanity floor, not a target: this document is nearly all text, so most of the
@@ -240,7 +269,7 @@ try {
     if (size < 200_000) {
       throw new Error(`[${locale}] ${out.pathname} is only ${size} bytes — something rendered blank`);
     }
-    console.log(`[${locale}] wrote dist/${pdfFileName(locale, version)} (${(size / 1e6).toFixed(1)} MB) — ${title}`);
+    console.log(`[${locale}] wrote ${outputPath} (${(size / 1e6).toFixed(1)} MB) — ${title}`);
     await page.close();
   }
 } finally {

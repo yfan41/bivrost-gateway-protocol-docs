@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "images": {
+    "/img/protocol/auth/security-control.png": {
+      "sha256": "7744d521243d37c4c6522ebb22a1adc3c61ab556190d579677bdf158efbe7672",
+      "width": 880,
+      "height": 466,
+      "reviewed": "2026-09-08",
+      "regions": []
+    },
+    "/img/protocol/auth/user-security.png": {
+      "sha256": "35b688e8852449c3be07c9bc2a221ba6ad1001201f6445227168c8ec1989ef8a",
+      "width": 520,
+      "height": 462,
+      "reviewed": "2026-09-08",
+      "regions": []
+    }
+  }
+}

@@ -12,7 +12,9 @@
     "serve": "astro preview",
     "astro": "astro",
     "typecheck": "astro check",
-    "pdf": "node scripts/generate-pdf.mjs"
+    "pdf": "node scripts/generate-pdf.mjs",
+    "pdf:neutral": "node scripts/generate-pdf.mjs --neutral",
+    "test:neutral": "node --test scripts/neutral.test.mjs"
   },
   "dependencies": {
     "@astrojs/markdown-satteri": "^0.3.4",
