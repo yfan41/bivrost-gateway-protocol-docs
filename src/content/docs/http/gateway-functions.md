@@ -153,6 +153,8 @@ GET /api/gateway/shut-down
 
 获取网关与因特网的连接状态。此接口无请求参数。
 
+网关在后台按`InternetProbeIntervalMs`（默认 15 秒）并发探测`InternetProbeTargets`中的多个目标，任一连通即为在线；连续`InternetProbeFailuresBeforeOffline`（默认 3）轮全部失败才判定为离线，恢复则立即生效。此接口只读取该缓存结果，不会实时发起探测。
+
 ```http
 GET /api/gateway/internet-connection
 ```
@@ -161,13 +163,17 @@ GET /api/gateway/internet-connection
 
 ```json
 {
-  "isOnline": true
+  "isOnline": true,
+  "checkedAtUnix": 1757376000,
+  "lastOkUnix": 1757376000
 }
 ```
 
 | 返回参数 | 类型 | 说明 |
 | --- | --- | --- |
-| isOnline | Bool | (必需)是否联网，true=已连接，false=未连接。 |
+| isOnline | Bool | 是否联网，true=已连接，false=未连接；首轮探测出结果前或探测被关闭时为 null。 |
+| checkedAtUnix | Int64 | 最近一轮探测完成的 Unix 时间戳（秒）；未探测过时为 null。 |
+| lastOkUnix | Int64 | 最近一次探测到连通的 Unix 时间戳（秒）；从未连通过时为 null。 |
 
 ## 2.10.2.8. hardware-resources 获取网关硬件资源 {#hardware-resources}
 

@@ -153,6 +153,8 @@ Response example
 
 Gets the gateway's connection status to the internet. This interface takes no request parameters.
 
+The gateway probes the targets in `InternetProbeTargets` in parallel every `InternetProbeIntervalMs` (15s by default); any one succeeding means online. It only reports offline after `InternetProbeFailuresBeforeOffline` (3 by default) consecutive all-failed rounds, while one success restores online immediately. This interface reads that cached verdict and never probes on the request itself.
+
 ```http
 GET /api/gateway/internet-connection
 ```
@@ -161,13 +163,17 @@ Response example
 
 ```json
 {
-  "isOnline": true
+  "isOnline": true,
+  "checkedAtUnix": 1757376000,
+  "lastOkUnix": 1757376000
 }
 ```
 
 | Response Parameter | Type | Description |
 | --- | --- | --- |
-| isOnline | Bool | (Required) Whether connected to the internet, true = connected, false = not connected. |
+| isOnline | Bool | Whether connected to the internet, true = connected, false = not connected; null before the first probe round produces a verdict, or when probing is disabled. |
+| checkedAtUnix | Int64 | Unix timestamp (seconds) of the last completed probe round; null when none has run. |
+| lastOkUnix | Int64 | Unix timestamp (seconds) of the last round that reached a target; null when none ever did. |
 
 ## 2.10.2.8. hardware-resources - Get gateway hardware resources {#hardware-resources}
 
