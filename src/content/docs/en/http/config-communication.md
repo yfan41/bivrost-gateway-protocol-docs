@@ -200,6 +200,7 @@ The response parameters are listed in the table below:
 | publishOnValueChange | Bool | Write on value change. true = on, false = off. Default is false. |
 | publishAllOnValueChange | Bool | Upload all content on change. Effective only when publish-on-value-change is enabled. Default is false, meaning only the changed portion is uploaded when a value changes. |
 | timeoutReportingInterval | Int32 | Timeout reporting interval. Effective only when publish-on-value-change is enabled. If the time since the last upload exceeds this interval, data is uploaded once regardless of whether the value changed. Unit: seconds. Default is 0, meaning timeout reporting is disabled. |
+| additionalInfo | Object | Mode-specific settings. Returned for `Gewu` mode and omitted for modes without additional settings. |
 
 #### MQTT mode {#mqtt-mode}
 
@@ -211,7 +212,21 @@ The response parameters are listed in the table below:
 | IoTDA |
 | WisIoT |
 | MKT |
+| GeWu |
 | TB |
+
+#### Gewu additionalInfo parameters
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| gatewayProductKey | String | Product key of the gateway product. |
+| gatewayDeviceKey | String | Gateway device key, 4-32 ASCII letters, digits, or underscores. |
+| gatewayDeviceID | String | Gateway device ID, 10-32 ASCII letters, digits, or hyphens. |
+| gatewayDeviceSecret | String | Gateway device secret. |
+| gatewaySignMethod | Int32 | Signature method: 0 = HMAC-SHA256, 1 = HMAC-SM3. |
+| gatewayOperator | Int32 | Carrier: 0 = none, 1 = China Unicom, 2 = China Mobile, 3 = China Telecom, 4 = China Broadnet. |
+| machineProductKey | String | Product key of the machine product. |
+| groupProductKey | String | Product key of the group product. |
 
 ## 2.9.6.6. update-mqtt-settings Update MQTT Settings {#update-mqtt-settings}
 
@@ -226,21 +241,22 @@ Request body example
 ```json
 {
   "enable": true,
-  "mode": "IoTDA",
-  "brokerAddress": "brokerAddress2",
-  "port": 2222,
-  "clientID": "client2",
-  "username": "username2",
-  "password": "password2",
-  "dataReportTopic": "topic2",
-  "rpcRequestTopic": "rpcReq",
-  "rpcResponseTopic": "rpcRes",
-  "encoding": "UTF-8",
-  "allowAnonymous": true,
-  "arrayToString": true,
+  "mode": "GeWu",
+  "brokerAddress": "mqtt.example.com",
+  "port": 1883,
   "publishOnValueChange": true,
   "publishAllOnValueChange": false,
-  "timeoutReportingInterval": 0
+  "timeoutReportingInterval": 0,
+  "additionalInfo": {
+    "gatewayProductKey": "gatewayProduct",
+    "gatewayDeviceKey": "gateway_0001",
+    "gatewayDeviceID": "gateway-device-0001",
+    "gatewayDeviceSecret": "secret",
+    "gatewaySignMethod": 0,
+    "gatewayOperator": 1,
+    "machineProductKey": "machineProduct",
+    "groupProductKey": "groupProduct"
+  }
 }
 ```
 
@@ -251,21 +267,22 @@ Response example
 ```json
 {
   "enable": true,
-  "mode": "IoTDA",
-  "brokerAddress": "brokerAddress2",
-  "port": 2222,
-  "clientID": "client2",
-  "username": "username2",
-  "password": "password2",
-  "dataReportTopic": "topic2",
-  "rpcRequestTopic": "rpcReq",
-  "rpcResponseTopic": "rpcRes",
-  "encoding": "UTF-8",
-  "allowAnonymous": true,
-  "arrayToString": true,
+  "mode": "GeWu",
+  "brokerAddress": "mqtt.example.com",
+  "port": 1883,
   "publishOnValueChange": true,
   "publishAllOnValueChange": false,
-  "timeoutReportingInterval": 0
+  "timeoutReportingInterval": 0,
+  "additionalInfo": {
+    "gatewayProductKey": "gatewayProduct",
+    "gatewayDeviceKey": "gateway_0001",
+    "gatewayDeviceID": "gateway-device-0001",
+    "gatewayDeviceSecret": "secret",
+    "gatewaySignMethod": 0,
+    "gatewayOperator": 1,
+    "machineProductKey": "machineProduct",
+    "groupProductKey": "groupProduct"
+  }
 }
 ```
 

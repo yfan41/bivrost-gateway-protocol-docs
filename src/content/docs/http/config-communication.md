@@ -200,6 +200,7 @@ GET /api/config/mqtt-settings
 | publishOnValueChange | Bool | 变化值写入，true=开启，false=关闭。默认为 false。 |
 | publishAllOnValueChange | Bool | 变化时上传全部内容，true=开启，false=关闭。启用变化值上传时有效，默认为 false，即值变化时，仅上传变化的部分。 |
 | timeoutReportingInterval | Int32 | 超时上报间隔。启用变化值上传时有效。如果上次上传时间到现在超过此时间，则不管值是否变化都上传一次。单位：秒。默认为 0，即关闭超时上报。 |
+| additionalInfo | Object | 模式专有设置。`Gewu` 模式下返回，没有附加设置的模式下省略。 |
 
 #### MQTT mode 模式 {#mqtt-mode}
 
@@ -211,7 +212,21 @@ GET /api/config/mqtt-settings
 | IoTDA |
 | WisIoT |
 | MKT |
+| GeWu |
 | TB |
+
+#### Gewu additionalInfo 参数
+
+| 参数 | 类型 | 说明 |
+| --- | --- | --- |
+| gatewayProductKey | String | 网关产品的 Product Key。 |
+| gatewayDeviceKey | String | 网关设备 Key，4-32 位 ASCII 字母、数字或下划线。 |
+| gatewayDeviceID | String | 网关设备 ID，10-32 位 ASCII 字母、数字或连字符。 |
+| gatewayDeviceSecret | String | 网关设备密钥。 |
+| gatewaySignMethod | Int32 | 签名方式：0 = HMAC-SHA256，1 = HMAC-SM3。 |
+| gatewayOperator | Int32 | 运营商：0 = 无，1 = 中国联通，2 = 中国移动，3 = 中国电信，4 = 中国广电。 |
+| machineProductKey | String | 机台产品的 Product Key。 |
+| groupProductKey | String | 机组产品的 Product Key。 |
 
 ## 2.9.6.6. update-mqtt-settings 修改 MQTT 设置 {#update-mqtt-settings}
 
@@ -226,21 +241,22 @@ POST /api/config/update-mqtt-settings
 ```json
 {
   "enable": true,
-  "mode": "IoTDA",
-  "brokerAddress": "brokerAddress2",
-  "port": 2222,
-  "clientID": "client2",
-  "username": "username2",
-  "password": "password2",
-  "dataReportTopic": "topic2",
-  "rpcRequestTopic": "rpcReq",
-  "rpcResponseTopic": "rpcRes",
-  "encoding": "UTF-8",
-  "allowAnonymous": true,
-  "arrayToString": true,
+  "mode": "GeWu",
+  "brokerAddress": "mqtt.example.com",
+  "port": 1883,
   "publishOnValueChange": true,
   "publishAllOnValueChange": false,
-  "timeoutReportingInterval": 0
+  "timeoutReportingInterval": 0,
+  "additionalInfo": {
+    "gatewayProductKey": "gatewayProduct",
+    "gatewayDeviceKey": "gateway_0001",
+    "gatewayDeviceID": "gateway-device-0001",
+    "gatewayDeviceSecret": "secret",
+    "gatewaySignMethod": 0,
+    "gatewayOperator": 1,
+    "machineProductKey": "machineProduct",
+    "groupProductKey": "groupProduct"
+  }
 }
 ```
 
@@ -251,21 +267,22 @@ POST /api/config/update-mqtt-settings
 ```json
 {
   "enable": true,
-  "mode": "IoTDA",
-  "brokerAddress": "brokerAddress2",
-  "port": 2222,
-  "clientID": "client2",
-  "username": "username2",
-  "password": "password2",
-  "dataReportTopic": "topic2",
-  "rpcRequestTopic": "rpcReq",
-  "rpcResponseTopic": "rpcRes",
-  "encoding": "UTF-8",
-  "allowAnonymous": true,
-  "arrayToString": true,
+  "mode": "GeWu",
+  "brokerAddress": "mqtt.example.com",
+  "port": 1883,
   "publishOnValueChange": true,
   "publishAllOnValueChange": false,
-  "timeoutReportingInterval": 0
+  "timeoutReportingInterval": 0,
+  "additionalInfo": {
+    "gatewayProductKey": "gatewayProduct",
+    "gatewayDeviceKey": "gateway_0001",
+    "gatewayDeviceID": "gateway-device-0001",
+    "gatewayDeviceSecret": "secret",
+    "gatewaySignMethod": 0,
+    "gatewayOperator": 1,
+    "machineProductKey": "machineProduct",
+    "groupProductKey": "groupProduct"
+  }
 }
 ```
 
