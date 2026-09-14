@@ -396,7 +396,7 @@ GET /api/cnc/readProgramInfo?machineID=MACHINEID&channel=CHANNEL
 | programStack | String | 程序堆栈，当前仅支持西门子和模拟机台 |
 | channel | Int32 | 机台通道号，仅当请求中补充 channel 且不为 0 时出现 |
 
-对于 Fanuc 发那科，标准程序名（字母 O+数字）中数字开头的零会自动去除，如在机床中显示程序名为 O0010，则返回程序名为 O10。
+对于 Fanuc 发那科与 Makino 牧野，标准程序名（字母 O+数字）中数字开头的零会自动去除，如在机床中显示程序名为 O0010，则返回程序名为 O10。
 
 ## 2.5.1.18. readPlcData 读取 PLC 数据 {#readplcdata}
 
@@ -451,6 +451,10 @@ GET /api/cnc/readPlcData?machineID=MACHINEID&area=AREA&start=START&count=COUNT&t
 | Kede 科德 | 标签（变量名） | `$TAG$\|name=NAME\|type=cncVar` | cncVar 类型变量，即 PLC 与数控系统进行交互的变量，如 `$TAG$\|name=PEW4190.1\|type=cncVar` |
 | Lynuc 铼纳克 | 宏变量 | `$MACRO$` | |
 | Lynuc 铼纳克 | 标签（变量名） | `$TAG$\|name=NAME` | 补充 name 标签（变量名），如 `$TAG$\|name=MOU31.25.28` |
+| Makino 牧野 | 诊断数据 | `$DIAG$` | |
+| Makino 牧野 | 宏变量 | `$MACRO$` | |
+| Makino 牧野 | 系统参数 | `$PARAM$` | 支持 Byte，Int16，Int32，与 Double 等类型。 |
+| Makino 牧野 | 系统参数 | `$PARAM$\|axis=AXIS` | 部分参数需要补充轴号，如 axis=1 |
 | Mazak 马扎克 [Smart，Smooth] | 宏变量 | `$MACRO$\|type=R` | R 变量 |
 | Mitsubishi 三菱 | 宏变量（本地变量或公共变量） | `$MACRO$` | 默认执行级别 0 |
 | Mitsubishi 三菱 | 宏变量（本地变量或公共变量） | `$MACRO$\|level=LEVEL` | 如执行级别不为 0，需要补充执行级别，如 level=1 |
@@ -500,6 +504,7 @@ GET /api/cnc/readPlcData?machineID=MACHINEID&area=AREA&start=START&count=COUNT&t
 | 凯恩帝 | | O | O | O | O | | O | O | | | | |
 | 宝元 | O | | | | | O | O | | | | | |
 | 铼纳克 | | | | | | | | O | | | \* | |
+| 牧野 | | O | O | O | O | | O | O | | | \* | |
 | 马扎克 [Smart，Smooth] | | | | | | | O | | | | \* | |
 | 三菱 | O | O | | O | O | O | O | O | | | \* | |
 | 模拟机台 | O | O | O | O | O | O | O | O | | | O | O |

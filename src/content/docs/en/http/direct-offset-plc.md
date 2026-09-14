@@ -396,7 +396,7 @@ Response example
 | programStack | String | Program stack; currently only supported on Siemens and the simulated machine |
 | channel | Int32 | Machine channel number; appears only when channel is supplied in the request and is not 0 |
 
-For Fanuc, a leading zero in a standard program name (letter O + digits) is automatically stripped — for example, a program shown on the machine as O0010 is returned as O10.
+For Fanuc and Makino, a leading zero in a standard program name (letter O + digits) is automatically stripped — for example, a program shown on the machine as O0010 is returned as O10.
 
 ## 2.5.1.18. readPlcData - Read PLC Data {#readplcdata}
 
@@ -451,6 +451,10 @@ GET /api/cnc/readPlcData?machineID=MACHINEID&area=AREA&start=START&count=COUNT&t
 | Kede | Tag (variable name) | `$TAG$\|name=NAME\|type=cncVar` | cncVar-type variable, i.e. a variable used for interaction between the PLC and the CNC system, e.g. `$TAG$\|name=PEW4190.1\|type=cncVar` |
 | Lynuc | Macro variable | `$MACRO$` | |
 | Lynuc | Tag (variable name) | `$TAG$\|name=NAME` | Supply the name tag (variable name), e.g. `$TAG$\|name=MOU31.25.28` |
+| Makino | Diagnostic data | `$DIAG$` | |
+| Makino | Macro variable | `$MACRO$` | |
+| Makino | System parameter | `$PARAM$` | Supports Byte, Int16, Int32, and Double types, among others. |
+| Makino | System parameter | `$PARAM$\|axis=AXIS` | Some parameters require an axis number, e.g. axis=1 |
 | Mazak [Smart, Smooth] | Macro variable | `$MACRO$\|type=R` | R variable |
 | Mitsubishi | Macro variable (local or common variable) | `$MACRO$` | Default execution level 0 |
 | Mitsubishi | Macro variable (local or common variable) | `$MACRO$\|level=LEVEL` | If the execution level is not 0, supply the execution level, e.g. level=1 |
@@ -500,6 +504,7 @@ Note 2: When using the $TAG$ method, the Start start address does not need to be
 | Knd | | O | O | O | O | | O | O | | | | |
 | Lnc | O | | | | | O | O | | | | | |
 | Lynuc | | | | | | | | O | | | \* | |
+| Makino | | O | O | O | O | | O | O | | | \* | |
 | Mazak [Smart, Smooth] | | | | | | | O | | | | \* | |
 | Mitsubishi | O | O | | O | O | O | O | O | | | \* | |
 | Mock simulated machine | O | O | O | O | O | O | O | O | | | O | O |

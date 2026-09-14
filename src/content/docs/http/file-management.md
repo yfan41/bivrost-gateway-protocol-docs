@@ -29,6 +29,7 @@ sidebar:
 | 机台存储器 | Jingdiao 北京精雕［JD50］ | O | `E:\存储文件夹` |
 | 机台存储器 | Lanhao 蓝昊 | O | `昊折\menudir\menu` |
 | 机台存储器 | Lynuc 铼纳克［所有型号］ | O | `/home/Lynuc/Users/NCFiles` |
+| 机台存储器 | Makino 牧野［通用型］\* | O | `//CNC_MEM/` |
 | 机台存储器 | Mitsubishi 三菱［所有型号］\*\* | O | `PRG\USER\` |
 | 机台存储器 | Mock 模拟机台 | O | `/` |
 | 机台存储器 | Okuma 大隈［所有型号］ | O | `MD1` |
@@ -46,7 +47,7 @@ sidebar:
 O：支持；
 X：不支持
 
-\*：FANUC 发那科［0i-F，30i，31i，32i，35i，Power Motion i-A］可以修改目标目录路径为外接 CF 卡，如`//MEMCARD/`。
+\*：FANUC 发那科［0i-F，30i，31i，32i，35i，Power Motion i-A］与 Makino 牧野［通用型］可以修改目标目录路径为外接 CF 卡，如`//MEMCARD/`。
 
 \*\*：Mitsubishi 三菱［M700 系列,M800 系列］可以修改目标目录路径为外接 CF 卡（M700 系列）或 SD 卡（M800 系列），如 IC1。
 
@@ -98,6 +99,7 @@ GET /api/cnc/readProgramList?machineID=MACHINEID&dirAtCNC=DIRATCNC&subDir=SUBDIR
 | 机台存储器 | Fanuc 发那科［除 0i-D，0i-F，30i，31i，32i，35i，Power Motion i-A 以外型号］ | O | X |
 | 机台存储器 | Heidenhain 海德汉［所有型号］ | O | O |
 | 机台存储器 | Lynuc 铼纳克［所有型号］ | O | O |
+| 机台存储器 | Makino 牧野［通用型］ | \* | O |
 | 机台存储器 | Mitsubishi 三菱［所有型号］ | O | O |
 | 机台存储器 | Mock 模拟机台 | O | O |
 | 机台存储器 | Okuma 大隈［所有型号］ | O | O |
@@ -112,7 +114,7 @@ GET /api/cnc/readProgramList?machineID=MACHINEID&dirAtCNC=DIRATCNC&subDir=SUBDIR
 
 O：支持；　X：不支持
 
-\*：FANUC 发那科［0i-D，0i-F，30i，31i，32i，35i，Power Motion i-A］返回标准 FANUC 程序名（字母 O+数字），自动去除数字左侧的零，如在机床中程序名为 00010，返回 O10。非标准命名程序则与机床上一致，如在机床中程序名为 SAMPLE，返回 SAMPLE。
+\*：FANUC 发那科［0i-D，0i-F，30i，31i，32i，35i，Power Motion i-A］与 Makino 牧野［通用型］返回标准 FANUC 程序名（字母 O+数字），自动去除数字左侧的零，如在机床中程序名为 00010，返回 O10。非标准命名程序则与机床上一致，如在机床中程序名为 SAMPLE，返回 SAMPLE。
 
 ## 2.6.2. receiveFileStream 接收机台文件(Stream 方式) {#receivefilestream}
 
@@ -521,7 +523,7 @@ POST /api/cnc/batchDeleteFile
 
 ## 2.6.10. lockFileByRange 锁定/解锁机台程序编辑 {#lockfilebyrange}
 
-当前仅支持 Fanuc 发那科系统程序号在 8000~8999，9000~9999，以及 8000~9999 三个区间内的编辑锁定/解锁（区间以外返回 10017 Invalid API request.），以及 Mock 模拟机台。部分系统在锁定编辑后不可修改，但仍可以从机床端删除。
+当前仅支持 Fanuc 发那科与 Makino 牧野系统程序号在 8000~8999，9000~9999，以及 8000~9999 三个区间内的编辑锁定/解锁（区间以外返回 10017 Invalid API request.），以及 Mock 模拟机台。部分系统在锁定编辑后不可修改，但仍可以从机床端删除。
 
 ```http
 GET /api/cnc/lockFileByRange?machineID=MACHINEID&isLock=ISLOCK&lockStart=LOCKSTART&lockEnd=LOCKEND
@@ -589,6 +591,7 @@ GET /api/cnc/createDir?machineID=MACHINEID&dirName=DIRNAME&dirAtCNC=DIRATCNC&sub
 | 机台存储器 | Heidenhain 海德汉［所有型号］ | O |
 | 机台存储器 | Jingdiao 北京精雕［JD50］ | O |
 | 机台存储器 | Lanhao 蓝昊 | O |
+| 机台存储器 | Makino 牧野［通用型］ | O |
 | 机台存储器 | Mitsubishi 三菱［M70/M700 L，M70/M700 M，M80/M800 L，M80/M800 M］ | \*仅限 CF 卡，SD 卡（路径：IC1） |
 | 机台存储器 | Mock 模拟机台 | O |
 | 机台存储器 | Okuma 大隈［所有型号］ | O |
@@ -723,6 +726,7 @@ GET /api/cnc/selectProgram?machineID=MACHINEID&fileName=FILENAME&dirAtCNC=DIRATC
 | Jingdiao 北京精雕［JD50］ | |
 | KND 凯恩帝［V4.3.00b，V5.1.00c］ | |
 | Lynuc 铼纳克［通用型］ | |
+| Makino 牧野［通用型］ | 必须在 Auto 或 Edit 模式下。 |
 | Mock 模拟机台 | 总是返回 SUCCESS，但不会改变当前程序。 |
 | Okuma 大隈［所有型号］ | 必需补充参数 mode 执行模式。 |
 | Syntec 新代 | |

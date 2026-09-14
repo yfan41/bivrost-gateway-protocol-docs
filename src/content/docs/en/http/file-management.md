@@ -29,6 +29,7 @@ Most file management interfaces accept an additional request parameter, dirAtCNC
 | Machine storage | Jingdiao [JD50] | O | `E:\存储文件夹` |
 | Machine storage | Lanhao | O | `昊折\menudir\menu` |
 | Machine storage | Lynuc [all models] | O | `/home/Lynuc/Users/NCFiles` |
+| Machine storage | Makino [general]\* | O | `//CNC_MEM/` |
 | Machine storage | Mitsubishi [all models]\*\* | O | `PRG\USER\` |
 | Machine storage | Mock machine | O | `/` |
 | Machine storage | Okuma [all models] | O | `MD1` |
@@ -46,7 +47,7 @@ Most file management interfaces accept an additional request parameter, dirAtCNC
 O: Supported;
 X: Not supported
 
-\*: For FANUC [0i-F, 30i, 31i, 32i, 35i, Power Motion i-A], the target directory path can be changed to an external CF card, e.g. `//MEMCARD/`.
+\*: For FANUC [0i-F, 30i, 31i, 32i, 35i, Power Motion i-A] and Makino [general], the target directory path can be changed to an external CF card, e.g. `//MEMCARD/`.
 
 \*\*: For Mitsubishi [M700 series, M800 series], the target directory path can be changed to an external CF card (M700 series) or SD card (M800 series), e.g. IC1.
 
@@ -98,6 +99,7 @@ Response example
 | Machine storage | Fanuc [models other than 0i-D, 0i-F, 30i, 31i, 32i, 35i, Power Motion i-A] | O | X |
 | Machine storage | Heidenhain [all models] | O | O |
 | Machine storage | Lynuc [all models] | O | O |
+| Machine storage | Makino [general] | \* | O |
 | Machine storage | Mitsubishi [all models] | O | O |
 | Machine storage | Mock machine | O | O |
 | Machine storage | Okuma [all models] | O | O |
@@ -112,7 +114,7 @@ Response example
 
 O: Supported;　X: Not supported
 
-\*: FANUC [0i-D, 0i-F, 30i, 31i, 32i, 35i, Power Motion i-A] returns the standard FANUC program name (letter O + number), automatically stripping leading zeros from the number. For example, if the program name on the machine is 00010, it is returned as O10. For non-standard named programs, the name is returned as-is from the machine, e.g. if the program name is SAMPLE, it is returned as SAMPLE.
+\*: FANUC [0i-D, 0i-F, 30i, 31i, 32i, 35i, Power Motion i-A] and Makino [general] return the standard FANUC program name (letter O + number), automatically stripping leading zeros from the number. For example, if the program name on the machine is 00010, it is returned as O10. For non-standard named programs, the name is returned as-is from the machine, e.g. if the program name is SAMPLE, it is returned as SAMPLE.
 
 ## 2.6.2. receiveFileStream — Receive Machine File (Stream Mode) {#receivefilestream}
 
@@ -521,7 +523,7 @@ The response body contains the execution results for each request in the request
 
 ## 2.6.10. lockFileByRange — Lock/Unlock Machine Program Editing {#lockfilebyrange}
 
-Currently, this only supports Fanuc systems, for locking/unlocking editing of program numbers within the ranges 8000-8999, 9000-9999, and 8000-9999 (any other range returns 10017 Invalid API request.), as well as the Mock machine. On some systems, a locked program cannot be edited but can still be deleted from the machine.
+Currently, this only supports Fanuc and Makino systems, for locking/unlocking editing of program numbers within the ranges 8000-8999, 9000-9999, and 8000-9999 (any other range returns 10017 Invalid API request.), as well as the Mock machine. On some systems, a locked program cannot be edited but can still be deleted from the machine.
 
 ```http
 GET /api/cnc/lockFileByRange?machineID=MACHINEID&isLock=ISLOCK&lockStart=LOCKSTART&lockEnd=LOCKEND
@@ -589,6 +591,7 @@ The system models that currently support creating machine directories are listed
 | Machine storage | Heidenhain [all models] | O |
 | Machine storage | Jingdiao [JD50] | O |
 | Machine storage | Lanhao | O |
+| Machine storage | Makino [general] | O |
 | Machine storage | Mitsubishi [M70/M700 L, M70/M700 M, M80/M800 L, M80/M800 M] | \*CF card and SD card only (path: IC1) |
 | Machine storage | Mock machine | O |
 | Machine storage | Okuma [all models] | O |
@@ -723,6 +726,7 @@ Devices currently supported by this interface:
 | Jingdiao [JD50] | |
 | KND [V4.3.00b, V5.1.00c] | |
 | Lynuc [general] | |
+| Makino [general] | Must be in Auto or Edit mode. |
 | Mock machine | Always returns SUCCESS, but does not change the current program. |
 | Okuma [all models] | The mode execution mode parameter must be supplied. |
 | Syntec | |

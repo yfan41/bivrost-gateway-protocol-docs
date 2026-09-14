@@ -348,6 +348,7 @@ AlarmHistory 仅在警报解除时产生一条历史记录，因此不存在「�
 | Kede 科德 | O | X |
 | Knd 凯恩帝 | X | O |
 | Lynuc 铼纳克 | X | O |
+| Makino 牧野 | X | O |
 | Mazak 马扎克 [Smart, Smooth] | X | O |
 | Mitsubishi 三菱 | X | O |
 | Mock 模拟机台 | O | O |
@@ -566,6 +567,7 @@ cumulativeOperatingTimeMs = 13328, 累计运行时间 2
 | Knd 凯恩帝 |  |  | ✅ | ✅ |  |  |  |  |  |  |
 | Lnc 宝元 |  |  |  |  | ✅ |  |  | ✅ |  |  |
 | Lynuc 铼纳克 |  |  |  | ✅ |  | ✅ |  | ✅ |  |  |
+| Makino 牧野 | ✅ |  | ✅ |  | ✅ |  |  | ✅（程序结尾必须复位以清零） |  |  |
 | Mazak 马扎克 [MT-CONNECT] | ✅ |  | ✅ |  | ✅ |  |  |  |  |  |
 | Mazak 马扎克 [Smart, Smooth] | ✅ | ✅ | ✅ | ✅ | ✅ |  |  |  |  |  |
 | Mitsubishi 三菱 | ✅ |  | ✅ |  | ✅ |  |  | ✅ |  |  |
@@ -641,6 +643,7 @@ cumulativeOperatingTimeMs = 13328, 累计运行时间 2
 | Heidenhain 海德汉 | X | X | O | X |
 | Kede 科德 | X | X | O | X |
 | Lynuc 铼纳克 | X | X | O | X |
+| Makino 牧野 | O | O | X | X |
 | Mazak 马扎克 [Smart, Smooth] | X | X | O；"TNo" 列 | X |
 | Mock 模拟机台 | X | X | O | O |
 | Okuma 大隈 [P200L, P300L] | X | X | O；"TOOL" 列 | X |
@@ -665,6 +668,7 @@ X：不需要。
 | Heidenhain 海德汉 | X | O | X |
 | Kede 科德 | O | O | O |
 | Lynuc 铼纳克 | O | O | X |
+| Makino 牧野 | O | O | X |
 | Mock 模拟机台 | O；ToolNum 1~10 | O；ToolNum 11~20 | O；ToolNum 21~30 |
 | Okuma 大隈 | O | O | O |
 | Siemens 西门子 | O | O | O |

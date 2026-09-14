@@ -8,6 +8,12 @@ sidebar:
 This page records **gateway firmware** version changes. The version of this document itself is shown in the sidebar badge and on the PDF cover as "Document Version"; despite the similar numbering the two are not the same thing.
 :::
 
+### v1.19.7.40 (2026-09-14) {#v1-19-7-40}
+
+Release date: 2026-09-14
+
+1. Added the CNC system Makino [general] (Fanuc-based). It behaves like Fanuc 30i series; Makino has been added to the tag-combination, time data, tool life, file management, and PLC special region/data type tables.
+
 ### v1.19.7.24 (2026-08-27) {#v1-19-7-24}
 
 Release date: 2026-08-27

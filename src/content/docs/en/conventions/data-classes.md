@@ -348,6 +348,7 @@ The combination of data tags depends on the machine's control system; the tag co
 | Kede 科德 | O | X |
 | Knd 凯恩帝 | X | O |
 | Lynuc 铼纳克 | X | O |
+| Makino 牧野 | X | O |
 | Mazak 马扎克 [Smart, Smooth] | X | O |
 | Mitsubishi 三菱 | X | O |
 | Mock 模拟机台 | O | O |
@@ -566,6 +567,7 @@ Time data supported by each system model (✅ = supported, blank = not supported
 | Knd 凯恩帝 |  |  | ✅ | ✅ |  |  |  |  |  |  |
 | Lnc 宝元 |  |  |  |  | ✅ |  |  | ✅ |  |  |
 | Lynuc 铼纳克 |  |  |  | ✅ |  | ✅ |  | ✅ |  |  |
+| Makino 牧野 | ✅ |  | ✅ |  | ✅ |  |  | ✅ (must be reset at the end of the program to clear) |  |  |
 | Mazak 马扎克 [MT-CONNECT] | ✅ |  | ✅ |  | ✅ |  |  |  |  |  |
 | Mazak 马扎克 [Smart, Smooth] | ✅ | ✅ | ✅ | ✅ | ✅ |  |  |  |  |  |
 | Mitsubishi 三菱 | ✅ |  | ✅ |  | ✅ |  |  | ✅ |  |  |
@@ -641,6 +643,7 @@ The combination of data tags depends on the machine's control system; the tag co
 | Heidenhain 海德汉 | X | X | O | X |
 | Kede 科德 | X | X | O | X |
 | Lynuc 铼纳克 | X | X | O | X |
+| Makino 牧野 | O | O | X | X |
 | Mazak 马扎克 [Smart, Smooth] | X | X | O; "TNo" column | X |
 | Mock 模拟机台 | X | X | O | O |
 | Okuma 大隈 [P200L, P300L] | X | X | O; "TOOL" column | X |
@@ -665,6 +668,7 @@ Life types supported by each system model (tool life types):
 | Heidenhain 海德汉 | X | O | X |
 | Kede 科德 | O | O | O |
 | Lynuc 铼纳克 | O | O | X |
+| Makino 牧野 | O | O | X |
 | Mock 模拟机台 | O; ToolNum 1~10 | O; ToolNum 11~20 | O; ToolNum 21~30 |
 | Okuma 大隈 | O | O | O |
 | Siemens 西门子 | O | O | O |
